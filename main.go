@@ -1,4 +1,4 @@
-package spyder
+package spider
 
 func main() {
 }

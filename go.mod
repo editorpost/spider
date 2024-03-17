@@ -1,4 +1,4 @@
-module spyder
+module spider
 
 go 1.22
 

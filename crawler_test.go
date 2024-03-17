@@ -1,4 +1,4 @@
-package collect_test
+package spider_test
 
 import (
 	"github.com/gocolly/colly/v2"
@@ -9,18 +9,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"spyder/collect"
+	"spider"
 	"testing"
 )
 
 func TestRun(t *testing.T) {
 
-	srv := ServeFile(t, "colly_test.html")
+	srv := ServeFile(t, "crawler_test.html")
 	defer srv.Close()
 
 	extracted := false
 
-	task := collect.Task{
+	task := spider.Task{
 		StartURL: srv.URL,
 		MatchURL: ".*",
 		Depth:    1,
@@ -31,7 +31,7 @@ func TestRun(t *testing.T) {
 			return nil
 		},
 	}
-	err := collect.Run(task)
+	err := spider.Run(task)
 	require.NoError(t, err)
 	assert.True(t, extracted)
 }
