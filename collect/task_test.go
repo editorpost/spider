@@ -1,44 +1,69 @@
-package spider_test
+package collect_test
 
 import (
-	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/html"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
-	"spider"
+	"spider/collect"
+	"spider/storage"
 	"testing"
 )
 
-func TestRun(t *testing.T) {
+func TestCollect(t *testing.T) {
 
-	srv := ServeFile(t, "crawler_test.html")
+	srv := ServeFile(t, "task_test.html")
 	defer srv.Close()
 
-	extracted := false
+	dispatched := false
 
-	task := spider.Task{
+	task := collect.Task{
 		StartURL: srv.URL,
 		MatchURL: ".*",
 		Depth:    1,
-		Query:    ".article",
-		Extract: func(e *colly.HTMLElement) error {
-			println(e.Text)
-			extracted = true
+		Query:    ".article--ssr",
+		Extract: func(*html.Node, *url.URL) error {
+			dispatched = true
+			return nil
+		},
+		Storage: storage.NewStorage("spider", "mongodb://localhost:27018"),
+	}
+
+	err := task.Start()
+	require.NoError(t, err)
+	assert.True(t, dispatched)
+}
+
+func TestJSCollect(t *testing.T) {
+
+	srv := ServeFile(t, "task_test.html")
+	defer srv.Close()
+
+	dispatched := false
+
+	task := collect.Task{
+		StartURL: srv.URL,
+		MatchURL: ".*",
+		Depth:    1,
+		Query:    ".article--js",
+		Extract: func(*html.Node, *url.URL) error {
+			dispatched = true
 			return nil
 		},
 	}
-	err := spider.Run(task)
-	require.NoError(t, err)
-	assert.True(t, extracted)
+
+	require.NoError(t, task.Start())
+	assert.True(t, dispatched)
 }
 
 func TestServeFile(t *testing.T) {
 
-	srv := ServeFile(t, "colly_test.html")
+	srv := ServeFile(t, "task_test.html")
 	defer srv.Close()
 
 	// create a new request
@@ -61,13 +86,13 @@ func TestServeFile(t *testing.T) {
 		log.Fatalln(err)
 	}
 
-	html := string(b)
+	body := string(b)
 
 	// check the response body
-	require.NotNil(t, html)
+	require.NotNil(t, body)
 
 	// check html contains string "Hello, World!"
-	require.Contains(t, html, "Hello, World!")
+	require.Contains(t, body, "Hello, World!")
 }
 
 // ServeFile serves the file at the given path and returns the URL
