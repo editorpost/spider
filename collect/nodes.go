@@ -6,17 +6,16 @@ import (
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/chromedp"
 	"github.com/gocolly/colly/v2"
-	"golang.org/x/net/html"
 	"log/slog"
 	"strings"
 )
 
 // nodes matching the query (with JS browse if Query is not found in GET response)
-func (task Task) nodes(e *colly.HTMLElement) []*html.Node {
+func (task Task) nodes(e *colly.HTMLElement) []*goquery.Selection {
 
-	entries := e.DOM.Find(task.Query)
+	selection := e.DOM.Find(task.Query)
 
-	if entries.Length() == 0 {
+	if selection.Length() == 0 {
 
 		resp, err := task.browse(e.Request.URL.String())
 		if err != nil {
@@ -36,12 +35,12 @@ func (task Task) nodes(e *colly.HTMLElement) []*html.Node {
 			return nil
 		}
 
-		entries = doc.Find(task.Query)
+		selection = doc.Find(task.Query)
 	}
 
-	var nodes []*html.Node
-	entries.Each(func(i int, s *goquery.Selection) {
-		nodes = append(nodes, s.Nodes...)
+	var nodes []*goquery.Selection
+	selection.Each(func(i int, s *goquery.Selection) {
+		nodes = append(nodes, s)
 	})
 
 	return nodes

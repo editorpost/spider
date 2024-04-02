@@ -77,10 +77,10 @@ func (task Task) visit() func(e *colly.HTMLElement) {
 func (task Task) extract() func(e *colly.HTMLElement) {
 	return func(e *colly.HTMLElement) {
 
-		// html nodes matching the query
+		// selected html nodes matching the query
 		// might be empty if the query is not found
-		for _, node := range task.nodes(e) {
-			err := task.Extract(node, e.Request.URL)
+		for _, selected := range task.nodes(e) {
+			err := task.Extract(selected, e.Request.URL)
 			if err != nil {
 				task.error(e.Request.URL.String(), err)
 				// explicitly
