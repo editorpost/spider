@@ -96,6 +96,8 @@ func TestSave(t *testing.T) {
 		Storage:  collectorStore,
 	}
 
+	// expected ONE result, since we run Chromedp only if no results found
+	// in this case first result is found in the HTML, so JS browse is not used
 	err = task.Start()
 	require.NoError(t, err)
 	assert.True(t, dispatched)
