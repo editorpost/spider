@@ -9,6 +9,7 @@ import (
 	"log/slog"
 )
 
+// Args is a minimal required input arguments for the spider
 type Args struct {
 	// StartURL is the URL to start crawling, e.g. http://example.com
 	StartURL string `json:"StartURL" validate:"trim,required"`
