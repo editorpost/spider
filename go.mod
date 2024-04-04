@@ -35,6 +35,7 @@ require (
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.16.2 // indirect
+	github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/flosch/pongo2/v4 v4.0.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect

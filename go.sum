@@ -75,6 +75,8 @@ github.com/deepmap/oapi-codegen v1.16.2 h1:xGHx0dNqYfy9gE8a7AVgVM8Sd5oF9SEgePzP+
 github.com/deepmap/oapi-codegen v1.16.2/go.mod h1:rdYoEA2GE+riuZ91DvpmBX9hJbQpuY9wchXpfQ3n+ho=
 github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834 h1:3ZgQ6NG9Ron1i0kEGViHv5IlIesuyBrpQa0vt/WA2Tw=
 github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834/go.mod h1:b7GPVqbOqaA6iCxeVDZZpXRm1WTSYBp3rhG3gCMt0xs=
+github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76 h1:ZMRWUaua90GmALkoQh1coULnWR/+KKgfOyHcex2N7bA=
+github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76/go.mod h1:ebV+Zh0ntN9GyVyahDGIJHlBIO1h4dpfG/nz2outoPU=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/fatih/color v1.15.0 h1:kOqh6YHBtK8aywxGerMG2Eq3H6Qgoqeo13Bk2Mv/nBs=

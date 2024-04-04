@@ -1,6 +1,9 @@
 package spider_test
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/mongodb"
 	"github.com/editorpost/spider"
@@ -187,6 +190,58 @@ func TestServeFile(t *testing.T) {
 
 	// check html contains string "Hello, World!"
 	require.Contains(t, body, "Hello, World!")
+}
+
+type Args struct {
+	// StartURL is the URL to start crawling, e.g. http://example.com
+	StartURL string `json:"StartURL"`
+	// MatchURL is the regex to match the URLs, e.g. ".*"
+	MatchURL string `json:"MatchURL"`
+	// Depth is the number of levels to follow the links
+	Depth int `json:"Depth"`
+	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
+	Selector string `json:"Selector"`
+}
+
+func Parse[T any](from any, to *T) error {
+
+	m, ok := from.(map[string]interface{})
+	if !ok {
+		return errors.New("invalid input arguments")
+	}
+
+	// Convert the map to JSON
+	data, err := json.Marshal(m)
+	if err != nil {
+		return fmt.Errorf("failed to marshal input arguments: %w", err)
+	}
+
+	// Convert the JSON to a struct
+	if err = json.Unmarshal(data, to); err != nil {
+		return fmt.Errorf("failed to unmarshal input arguments: %w", err)
+	}
+
+	return nil
+}
+
+func TestParse(t *testing.T) {
+
+	args := Args{}
+	var input any = map[string]interface{}{
+		"StartURL": "http://example.com",
+		"MatchURL": ".*",
+		"Depth":    1,
+		"Selector": ".article--ssr",
+	}
+
+	// Test the Parse function
+	err := Parse(input, &args)
+
+	assert.NoError(t, err, "Expected no error")
+	assert.Equal(t, "http://example.com", args.StartURL)
+	assert.Equal(t, ".*", args.MatchURL)
+	assert.Equal(t, 1, args.Depth)
+	assert.Equal(t, ".article--ssr", args.Selector)
 }
 
 // ServeFile serves the file at the given path and returns the URL

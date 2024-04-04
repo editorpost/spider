@@ -2,6 +2,7 @@ package spider
 
 import (
 	"github.com/editorpost/donq/mongodb"
+	"github.com/editorpost/donq/pkg/script"
 	"github.com/editorpost/spider/collect"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/store"
@@ -10,19 +11,30 @@ import (
 
 type Args struct {
 	// StartURL is the URL to start crawling, e.g. http://example.com
-	StartURL string `json:"StartURL"`
+	StartURL string `json:"StartURL" validate:"trim,required"`
 	// MatchURL is the regex to match the URLs, e.g. ".*"
-	MatchURL string `json:"MatchURL"`
+	MatchURL string `json:"MatchURL" validate:"trim,required"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
 	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
-	Selector string `json:"Selector"`
+	Selector string `json:"Selector" validate:"trim,required"`
+}
+
+// StartWith is an example code for running spider
+// as Windmill Script with extract.Article
+func StartWith(input any) error {
+
+	args := &Args{}
+	if err := script.ParseArgs(input, args); err != nil {
+		return err
+	}
+
+	return Start(args)
 }
 
 // Start is an example code for running spider
 // as Windmill Script with extract.Article
 func Start(args *Args) error {
-
 	crawler := &collect.Crawler{
 		StartURL:  args.StartURL,
 		MatchURL:  args.MatchURL,
