@@ -3,6 +3,10 @@ package spider_test
 import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/mongodb"
+	"github.com/editorpost/spider"
+	"github.com/editorpost/spider/collect"
+	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -11,10 +15,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"spider"
-	"spider/collect"
-	"spider/extract"
-	"spider/store"
 	"testing"
 )
 

@@ -5,12 +5,12 @@ import (
 	"errors"
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/editorpost/donq/mongodb"
+	"github.com/editorpost/spider/extract"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log/slog"
 	"runtime/debug"
-	"spider/extract"
 )
 
 type (

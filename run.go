@@ -2,10 +2,10 @@ package spider
 
 import (
 	"github.com/editorpost/donq/mongodb"
+	"github.com/editorpost/spider/collect"
+	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/store"
 	"log/slog"
-	"spider/collect"
-	"spider/extract"
-	"spider/store"
 )
 
 // WindmillExample is an example code for running spider as Windmill Script
