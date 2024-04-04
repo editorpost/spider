@@ -1,4 +1,4 @@
-module spider
+module github.com/editorpost/spider
 
 go 1.21
 
