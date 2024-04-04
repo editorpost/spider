@@ -8,19 +8,27 @@ import (
 	"log/slog"
 )
 
-// WindmillExample is an example code for running spider as Windmill Script
-func WindmillExample() error {
+type WindmillArgs struct {
+	StartURL string
+	MatchURL string
+	Depth    int
+	Query    string
+}
 
-	task := &collect.Task{
-		StartURL: "http://example.com",
-		MatchURL: ".*",
-		Depth:    1,
-		Query:    ".article--ssr",
-		Extract:  Extract(extract.Article),
-		Storage:  nil, // use colly default in-memory storage
+// WindmillArticleExample is an example code for running spider
+// as Windmill Script with extract.Article
+func WindmillArticleExample() error {
+
+	crawler := &collect.Crawler{
+		StartURL:  "http://example.com",
+		MatchURL:  ".*",
+		Depth:     1,
+		Query:     ".article--ssr",
+		Extractor: Extract(extract.Article),
+		Collector: nil, // use colly default in-memory storage
 	}
 
-	return task.Start()
+	return crawler.Start()
 }
 
 // Extract creates Pipe with given extractor called before Save
@@ -39,7 +47,7 @@ func Extract(extractor extract.PipeFn) extract.ExtractFn {
 		panic(err)
 	}
 
-	return extract.Pipe(WindmillMeta, extract.Crawler, extractor, storage.Save)
+	return extract.Pipe(WindmillMeta, extract.Html, extractor, storage.Save)
 }
 
 // WindmillMeta is a meta data extractor

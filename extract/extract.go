@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/go-shiori/go-readability"
+	"github.com/gocolly/colly/v2"
 	"log/slog"
 	"net/url"
 	"strings"
@@ -17,10 +18,10 @@ const (
 
 type (
 	PipeFn    func(*Payload) error
-	ExtractFn func(*goquery.Selection, *url.URL) error
+	ExtractFn func(doc *colly.HTMLElement, s *goquery.Selection) error
 
 	Payload struct {
-		HTML      string
+		Doc       *colly.HTMLElement
 		Selection *goquery.Selection
 		URL       *url.URL
 		Data      map[string]any
@@ -31,22 +32,19 @@ type (
 // Order of the pipes is important.
 func Pipe(pipes ...PipeFn) ExtractFn {
 
-	return func(s *goquery.Selection, u *url.URL) error {
+	return func(doc *colly.HTMLElement, s *goquery.Selection) error {
 
 		if s == nil {
 			return errors.New("document is nil")
 		}
 
-		str, err := s.Html()
-		if err != nil {
-			return err
-		}
-
 		payload := &Payload{
-			HTML:      str,
+			Doc:       doc,
 			Selection: s,
-			URL:       u,
-			Data:      make(map[string]any),
+			URL:       doc.Request.URL,
+			Data: map[string]any{
+				UrlField: doc.Request.URL.String(),
+			},
 		}
 
 		for _, pipe := range pipes {
@@ -62,7 +60,13 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 
 func Article(p *Payload) error {
 
-	article, err := readability.FromReader(strings.NewReader(p.HTML), p.URL)
+	htmlStr, err := p.Selection.Html()
+	if err != nil {
+		slog.Warn("html failed", err)
+		return err
+	}
+
+	article, err := readability.FromReader(strings.NewReader(htmlStr), p.URL)
 	if err != nil {
 		slog.Error("extract failed", err)
 		return err
@@ -87,10 +91,7 @@ func Article(p *Payload) error {
 	return nil
 }
 
-func Crawler(p *Payload) (err error) {
-
-	p.Data[UrlField] = p.URL.String()
-	p.Data[HtmlField], err = p.Selection.Html()
-
+func Html(p *Payload) (err error) {
+	p.Data[HtmlField], err = p.Doc.DOM.Html()
 	return err
 }

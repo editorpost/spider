@@ -11,13 +11,13 @@ import (
 )
 
 // nodes matching the query (with JS browse if Query is not found in GET response)
-func (task Task) nodes(e *colly.HTMLElement) []*goquery.Selection {
+func (crawler *Crawler) nodes(e *colly.HTMLElement) []*goquery.Selection {
 
-	selection := e.DOM.Find(task.Query)
+	selection := e.DOM.Find(crawler.Query)
 
 	if selection.Length() == 0 {
 
-		resp, err := task.browse(e.Request.URL.String())
+		resp, err := crawler.browse(e.Request.URL.String())
 		if err != nil {
 			slog.Error("browser failed",
 				slog.String("error", err.Error()),
@@ -35,7 +35,7 @@ func (task Task) nodes(e *colly.HTMLElement) []*goquery.Selection {
 			return nil
 		}
 
-		selection = doc.Find(task.Query)
+		selection = doc.Find(crawler.Query)
 	}
 
 	var nodes []*goquery.Selection
@@ -47,19 +47,19 @@ func (task Task) nodes(e *colly.HTMLElement) []*goquery.Selection {
 }
 
 // browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
-func (task Task) browse(reqURL string) (string, error) {
+func (crawler *Crawler) browse(reqURL string) (string, error) {
 
 	// Initialize a new browser context
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
-	chromedp.UserAgent(task.UserAgent)
+	chromedp.UserAgent(crawler.UserAgent)
 
 	// Navigate to the URL and fetch the rendered HTML
 	var htmlContent string
 	err := chromedp.Run(ctx,
 		&emulation.SetUserAgentOverrideParams{
-			UserAgent:      task.UserAgent,
+			UserAgent:      crawler.UserAgent,
 			AcceptLanguage: "en-US,en;q=0.9",
 		},
 		chromedp.Navigate(reqURL),

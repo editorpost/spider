@@ -9,51 +9,51 @@ import (
 )
 
 // collector based on colly
-func (task Task) collector() *colly.Collector {
+func (crawler *Crawler) collector() *colly.Collector {
 
-	if task.collect != nil {
-		return task.collect
+	if crawler.collect != nil {
+		return crawler.collect
 	}
 
 	// default collector
-	task.collect = colly.NewCollector(
+	crawler.collect = colly.NewCollector(
 		colly.Async(true),
-		colly.AllowedDomains(MustHost(task.StartURL), "127.0.0.1"),
-		colly.UserAgent(task.UserAgent),
-		colly.MaxDepth(task.Depth),
+		colly.AllowedDomains(MustHost(crawler.StartURL), "127.0.0.1"),
+		colly.UserAgent(crawler.UserAgent),
+		colly.MaxDepth(crawler.Depth),
 		colly.URLFilters(
-			regexp.MustCompile(task.MatchURL),
+			regexp.MustCompile(crawler.MatchURL),
 		),
 	)
 
 	// storage backend
-	if task.Storage != nil {
-		err := task.collect.SetStorage(task.Storage)
+	if crawler.Collector != nil {
+		err := crawler.collect.SetStorage(crawler.Collector)
 		if err != nil {
 			panic(err)
 		}
 	}
 
 	// limit parallelism per domain
-	rule := &colly.LimitRule{DomainGlob: MustHost(task.StartURL), Parallelism: 2, RandomDelay: time.Second}
-	if err := task.collect.Limit(rule); err != nil {
+	rule := &colly.LimitRule{DomainGlob: MustHost(crawler.StartURL), Parallelism: 2, RandomDelay: time.Second}
+	if err := crawler.collect.Limit(rule); err != nil {
 		panic(err)
 	}
 
-	task.collect.OnHTML(`a[href]`, task.visit())
-	task.collect.OnHTML(`html`, task.extract())
+	crawler.collect.OnHTML(`a[href]`, crawler.visit())
+	crawler.collect.OnHTML(`html`, crawler.extract())
 
-	return task.collect
+	return crawler.collect
 }
 
 // visit links found in the DOM
-func (task Task) visit() func(e *colly.HTMLElement) {
+func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 
 	return func(e *colly.HTMLElement) {
 
 		link := e.Request.AbsoluteURL(e.Attr("href"))
 
-		err := task.collector().Visit(link)
+		err := crawler.collector().Visit(link)
 		if err == nil {
 			return
 		}
@@ -74,15 +74,15 @@ func (task Task) visit() func(e *colly.HTMLElement) {
 }
 
 // extract entries from html nodes
-func (task Task) extract() func(e *colly.HTMLElement) {
-	return func(e *colly.HTMLElement) {
+func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
+	return func(doc *colly.HTMLElement) {
 
 		// selected html nodes matching the query
 		// might be empty if the query is not found
-		for _, selected := range task.nodes(e) {
-			err := task.Extract(selected, e.Request.URL)
+		for _, selected := range crawler.nodes(doc) {
+			err := crawler.Extractor(doc, selected)
 			if err != nil {
-				task.error(e.Request.URL.String(), err)
+				crawler.error(doc.Request.URL.String(), err)
 				// explicitly
 				continue
 			}

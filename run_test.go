@@ -7,13 +7,13 @@ import (
 	"github.com/editorpost/spider/collect"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/store"
+	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"testing"
 )
@@ -63,16 +63,16 @@ func TestCollect(t *testing.T) {
 
 	dispatched := false
 
-	task := collect.Task{
+	task := collect.Crawler{
 		StartURL: srv.URL,
 		MatchURL: ".*",
 		Depth:    1,
 		Query:    ".article--ssr",
-		Extract: func(*goquery.Selection, *url.URL) error {
+		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
 			dispatched = true
 			return nil
 		},
-		Storage: collector,
+		Collector: collector,
 	}
 
 	err := task.Start()
@@ -95,13 +95,13 @@ func TestSave(t *testing.T) {
 	extractor, err := store.NewExtractStore(testDbName, mongoCfg)
 	require.NoError(t, err)
 
-	task := collect.Task{
-		StartURL: srv.URL,
-		MatchURL: ".*",
-		Depth:    1,
-		Query:    ".article--ssr",
-		Extract:  extract.Pipe(spider.WindmillMeta, extract.Crawler, dispatcher, extractor.Save),
-		Storage:  collector,
+	task := collect.Crawler{
+		StartURL:  srv.URL,
+		MatchURL:  ".*",
+		Depth:     1,
+		Query:     ".article--ssr",
+		Extractor: extract.Pipe(spider.WindmillMeta, extract.Html, extract.Article, dispatcher, extractor.Save),
+		Collector: collector,
 	}
 
 	// expected ONE result, since we run Chromedp only if no results found
@@ -118,12 +118,12 @@ func TestJSCollect(t *testing.T) {
 
 	dispatched := false
 
-	task := collect.Task{
+	task := collect.Crawler{
 		StartURL: srv.URL,
 		MatchURL: ".*",
 		Depth:    1,
 		Query:    ".article--js",
-		Extract: func(*goquery.Selection, *url.URL) error {
+		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
 			dispatched = true
 			return nil
 		},
