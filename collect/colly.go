@@ -73,13 +73,13 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 	}
 }
 
-// extract entries from html nodes
+// extract entries from html selections
 func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
 	return func(doc *colly.HTMLElement) {
 
-		// selected html nodes matching the query
+		// selected html selections matching the query
 		// might be empty if the query is not found
-		for _, selected := range crawler.nodes(doc) {
+		for _, selected := range crawler.selections(doc) {
 			err := crawler.Extractor(doc, selected)
 			if err != nil {
 				crawler.error(doc.Request.URL.String(), err)

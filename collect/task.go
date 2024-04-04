@@ -6,6 +6,7 @@ import (
 	"github.com/gocolly/colly/v2/storage"
 	"log/slog"
 	"net/url"
+	"sync/atomic"
 )
 
 // Crawler for scraping a website
@@ -28,7 +29,10 @@ type Crawler struct {
 	// Collector is the storage backend for the collector
 	Collector storage.Storage
 
-	collect *colly.Collector
+	// jsLoadSuccess count the number of successful fallback JS loads
+	jsFallbackSuccess *atomic.Int32
+	jsSuccessRequired int32
+	collect           *colly.Collector
 }
 
 // Start the scraping Crawler.
