@@ -1,7 +1,8 @@
-package collect_test
+package spider_test
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"github.com/editorpost/donq/mongodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -10,15 +11,54 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"spider"
 	"spider/collect"
 	"spider/extract"
-	"spider/storage"
+	"spider/store"
 	"testing"
 )
 
+const (
+	testDbName = "test_test"
+)
+
+var (
+	mongoCfg  *mongodb.Config
+	collector *store.CollectStore
+)
+
+func TestMain(m *testing.M) {
+
+	res := map[string]any{
+		"db": "spider_meta",
+		"servers": []any{
+			map[string]any{
+				"host": "localhost",
+				"port": 27018,
+			},
+		},
+		"credential": map[string]any{
+			"username": "root",
+			"password": "nopass",
+		},
+	}
+
+	var err error
+	if mongoCfg, err = mongodb.ConfigFromResource(res); err != nil {
+		log.Fatal(err)
+	}
+
+	collector, err = store.NewCollectStore(testDbName, mongoCfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	os.Exit(m.Run())
+}
+
 func TestCollect(t *testing.T) {
 
-	srv := ServeFile(t, "task_test.html")
+	srv := ServeFile(t, "run_test.html")
 	defer srv.Close()
 
 	dispatched := false
@@ -32,7 +72,7 @@ func TestCollect(t *testing.T) {
 			dispatched = true
 			return nil
 		},
-		Storage: storage.NewCollectorStore("spider", "mongodb://localhost:27018"),
+		Storage: collector,
 	}
 
 	err := task.Start()
@@ -42,58 +82,26 @@ func TestCollect(t *testing.T) {
 
 func TestSave(t *testing.T) {
 
-	srv := ServeFile(t, "task_test.html")
+	srv := ServeFile(t, "run_test.html")
 	defer srv.Close()
 
 	dispatched := false
-
-	// todo replace task id
-	_ = os.Setenv("CRAWLAB_TASK_ID", "65f3b30ffc2e89f5abbd078a")
-	_ = os.Setenv("CRAWLAB_MONGO_HOST", "localhost")
-	_ = os.Setenv("CRAWLAB_MONGO_PORT", "27018")
-	_ = os.Setenv("CRAWLAB_MONGO_DATABASE", "spider")
-	_ = os.Setenv("CRAWLAB_COLLECTION", "results_test")
-	_ = os.Setenv("CRAWLAB_MONGO_USERNAME", "root")
-	_ = os.Setenv("CRAWLAB_MONGO_PASSWORD", "nopass")
-	_ = os.Setenv("CRAWLAB_MONGO_AUTHSOURCE", "admin")
-	// _ = os.Setenv("CRAWLAB_DATA_SOURCE", "mongodb://root:nopass@mongo:27018/crawlab?authSource=admin")
-	_ = os.Setenv("CRAWLAB_NODE_MASTER", "Y")
-	_ = os.Setenv("CRAWLAB_MONGO_DB", "crawlab")
-
-	// leave empty to use source from env
-	// _ = os.Setenv("CRAWLAB_DATA_SOURCE", "")
-	_ = os.Setenv("CRAWLAB_DATA_SOURCE", "mongodb://root:nopass@localhost:27018/spider?authSource=admin")
 
 	dispatcher := func(payload *extract.Payload) error {
 		dispatched = true
 		return nil
 	}
 
-	collectorStore := storage.NewCollectorStore("spider", "mongodb://localhost:27018")
-	err := collectorStore.Init()
+	extractor, err := store.NewExtractStore(testDbName, mongoCfg)
 	require.NoError(t, err)
-
-	extractorStore := storage.NewExtractStoreFromEnv()
-
-	saveExtracted := func(p *extract.Payload) error {
-
-		p.Data["_tid"] = os.Getenv("CRAWLAB_TASK_ID") // todo: investigate why used explicit value. Testing?
-		p.Data["url"] = p.URL
-		p.Data["html"], err = p.Selection.Html()
-		if err != nil {
-			return err
-		}
-
-		return extractorStore.Save(p.Data)
-	}
 
 	task := collect.Task{
 		StartURL: srv.URL,
 		MatchURL: ".*",
 		Depth:    1,
 		Query:    ".article--ssr",
-		Extract:  extract.Pipe(extract.Article, saveExtracted, dispatcher),
-		Storage:  collectorStore,
+		Extract:  extract.Pipe(spider.WindmillMeta, extract.Crawler, dispatcher, extractor.Save),
+		Storage:  collector,
 	}
 
 	// expected ONE result, since we run Chromedp only if no results found
@@ -105,7 +113,7 @@ func TestSave(t *testing.T) {
 
 func TestJSCollect(t *testing.T) {
 
-	srv := ServeFile(t, "task_test.html")
+	srv := ServeFile(t, "run_test.html")
 	defer srv.Close()
 
 	dispatched := false
@@ -125,9 +133,31 @@ func TestJSCollect(t *testing.T) {
 	assert.True(t, dispatched)
 }
 
+func TestMongoConfig(t *testing.T) {
+	// Test the mongodb config
+	validResource := map[string]interface{}{
+		"db": "exampleDb",
+		"servers": []interface{}{
+			map[string]interface{}{
+				"host": "exampleHost",
+				"port": 1234.0,
+			},
+		},
+		"credential": map[string]interface{}{
+			"password": "examplePassword",
+			"username": "exampleUsername",
+		},
+	}
+
+	config, err := mongodb.ConfigFromResource(validResource)
+
+	assert.NoError(t, err, "Expected no error")
+	assert.NotNil(t, config, "Expected non-nil config")
+}
+
 func TestServeFile(t *testing.T) {
 
-	srv := ServeFile(t, "task_test.html")
+	srv := ServeFile(t, "run_test.html")
 	defer srv.Close()
 
 	// create a new request

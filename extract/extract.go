@@ -11,6 +11,8 @@ import (
 
 const (
 	EntityArticle = "article"
+	UrlField      = "url"
+	HtmlField     = "html"
 )
 
 type (
@@ -83,4 +85,12 @@ func Article(p *Payload) error {
 	slog.Debug("extract success", slog.String("title", article.Title))
 
 	return nil
+}
+
+func Crawler(p *Payload) (err error) {
+
+	p.Data[UrlField] = p.URL.String()
+	p.Data[HtmlField], err = p.Selection.Html()
+
+	return err
 }
