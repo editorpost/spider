@@ -8,22 +8,26 @@ import (
 	"log/slog"
 )
 
-type WindmillArgs struct {
+type Args struct {
+	// StartURL is the URL to start crawling, e.g. http://example.com
 	StartURL string
+	// MatchURL is the regex to match the URLs, e.g. ".*"
 	MatchURL string
-	Depth    int
-	Query    string
+	// Depth is the number of levels to follow the links
+	Depth int
+	// Query is the CSS selector to match the elements, e.g. ".article--ssr"
+	Query string
 }
 
-// WindmillArticleExample is an example code for running spider
+// Start is an example code for running spider
 // as Windmill Script with extract.Article
-func WindmillArticleExample() error {
+func Start(args *Args) error {
 
 	crawler := &collect.Crawler{
-		StartURL:  "http://example.com",
-		MatchURL:  ".*",
-		Depth:     1,
-		Query:     ".article--ssr",
+		StartURL:  args.StartURL,
+		MatchURL:  args.MatchURL,
+		Depth:     args.Depth,
+		Query:     args.Query,
 		Extractor: Extract(extract.Article),
 		Collector: nil, // use colly default in-memory storage
 	}
