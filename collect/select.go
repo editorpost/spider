@@ -10,7 +10,7 @@ func (crawler *Crawler) selections(e *colly.HTMLElement) []*goquery.Selection {
 
 	selections := e.DOM.Find(crawler.Query)
 
-	// if the Query is not found in the GET response,
+	// if the Selector is not found in the GET response,
 	// but in the fallback js browser call
 	if selections.Length() == 0 {
 		var err error

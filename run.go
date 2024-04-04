@@ -10,13 +10,13 @@ import (
 
 type Args struct {
 	// StartURL is the URL to start crawling, e.g. http://example.com
-	StartURL string
+	StartURL string `json:"StartURL"`
 	// MatchURL is the regex to match the URLs, e.g. ".*"
-	MatchURL string
+	MatchURL string `json:"MatchURL"`
 	// Depth is the number of levels to follow the links
-	Depth int
-	// Query is the CSS selector to match the elements, e.g. ".article--ssr"
-	Query string
+	Depth int `json:"Depth"`
+	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
+	Selector string `json:"Selector"`
 }
 
 // Start is an example code for running spider
@@ -27,7 +27,7 @@ func Start(args *Args) error {
 		StartURL:  args.StartURL,
 		MatchURL:  args.MatchURL,
 		Depth:     args.Depth,
-		Query:     args.Query,
+		Query:     args.Selector,
 		Extractor: Extract(extract.Article),
 		Collector: nil, // use colly default in-memory storage
 	}
