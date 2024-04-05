@@ -57,7 +57,13 @@ func Extract(extractor extract.PipeFn) extract.ExtractFn {
 		panic(err)
 	}
 
-	jobID := Env().GetRootFlowJobID()
+	jobID := Env().GetJobID()
+
+	if jobID == "" {
+		slog.Error("job_id is empty")
+		panic("job_id is empty")
+	}
+
 	storage, err := store.NewExtractStore(jobID, cfg)
 	if err != nil {
 		slog.Error("failed to create extract store", slog.String("error", err.Error()))
