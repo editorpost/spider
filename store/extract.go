@@ -44,7 +44,13 @@ func NewExtractStore(jobDbName string, cfg *mongodb.Config) (s *ExtractStore, er
 
 // Save saves extracted data to mongo
 func (s *ExtractStore) Save(p *extract.Payload) error {
-	return s.save(p.Data)
+	err := s.save(p.Data)
+
+	if err != nil {
+		slog.Info("saved", slog.String("url", p.URL.String()))
+	}
+
+	return err
 }
 
 func (s *ExtractStore) Client() *mongo.Client {

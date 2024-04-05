@@ -22,21 +22,8 @@ import (
 )
 
 func main(crawler interface{}) (interface{}, error) {
-	//require github.com/editorpost/spider v0.0.0-20240405160747-44ad051bec9e
+	//require github.com/editorpost/spider v0.0.0-20240405201109-79b03452a487
 	return 0, spider.StartWith(crawler)
 }
 
 ```
-
-Init script for workers in Windmill:
-```bash
-# the last line of the stdout is the return value
-# unless you write json to './result.json' or a string to './result.out'
-echo "Hello $msg"
-go clean -cache
-go clean -modcache
-rm -rf /tmp/windmill/cache/gobin/*
-rm -rf /tmp/windmill/cache/go/pkg/mod/github.com/editorpost/
-```
-use it as comment in script to pin version
-//require github.com/editorpost/spider 

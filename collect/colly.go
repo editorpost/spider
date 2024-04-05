@@ -4,7 +4,10 @@ import (
 	"errors"
 	"github.com/gocolly/colly/v2"
 	"log/slog"
+	"net/http/cookiejar"
+	"net/url"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -25,6 +28,14 @@ func (crawler *Crawler) collector() *colly.Collector {
 			regexp.MustCompile(crawler.AllowedURL),
 		),
 	)
+
+	// Turn off cookie handling
+	// crawler.collect.DisableCookies()
+
+	j, err := cookiejar.New(&cookiejar.Options{})
+	if err == nil {
+		crawler.collect.SetCookieJar(j)
+	}
 
 	// storage backend
 	if crawler.Collector != nil {
@@ -59,6 +70,19 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 
 		link := e.Request.AbsoluteURL(e.Attr("href"))
 
+		if len(link) == 0 {
+			return
+		}
+
+		if strings.HasPrefix(link, "#") {
+			return
+		}
+
+		// skip images, scripts, etc.
+		if !isValidURLExtension(link) {
+			return
+		}
+
 		err := crawler.collector().Visit(link)
 		if err == nil {
 			return
@@ -82,6 +106,7 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 
 		slog.Warn("visit failed",
 			slog.String("url", link),
+			slog.String("href", e.Attr("href")),
 			slog.String("err", err.Error()),
 		)
 	}
@@ -109,4 +134,35 @@ func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
 			}
 		}
 	}
+}
+
+func isValidURLExtension(urlStr string) bool {
+	allowedExtensions := map[string]bool{
+		".php":   true,
+		".xhtml": true,
+		".shtml": true,
+		".cfm":   true,
+		".html":  true,
+		".htm":   true,
+		".asp":   true,
+		".aspx":  true,
+		".jsp":   true,
+		".jspx":  true,
+	}
+
+	// Parse the URL to extract the path
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return false
+	}
+
+	// Extract the file extension if present
+	path := parsedURL.Path
+	if dotIndex := strings.LastIndex(path, "."); dotIndex != -1 {
+		ext := path[dotIndex:]
+		return allowedExtensions[ext] // True if allowed, false otherwise
+	}
+
+	// True if no file extension is present
+	return true
 }

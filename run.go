@@ -51,8 +51,10 @@ func Start(args *Args) error {
 		UseBrowser:     args.UseBrowser,
 		Depth:          args.Depth,
 		EntitySelector: args.Selector,
-		Extractor:      Extract(args.Name, extract.Article),
-		Collector:      nil, // use colly default in-memory storage
+		Extractor: Extract(args.Name, func(*extract.Payload) error {
+			return nil
+		}),
+		Collector: nil, // use colly default in-memory storage
 	}
 
 	return crawler.Start()

@@ -83,6 +83,28 @@ func TestCollect(t *testing.T) {
 	assert.True(t, dispatched)
 }
 
+func TestReal(t *testing.T) {
+
+	dispatched := false
+
+	task := collect.Crawler{
+		StartURL:       "https://thailand-news.ru",
+		AllowedURL:     "https://thailand-news\\.ru?.+",
+		EntityURL:      "https://thailand-news\\.ru/news/((?:[^/]+/)*[^/]+)/.+",
+		Depth:          3,
+		EntitySelector: ".node-article--full",
+		Extractor: func(c *colly.HTMLElement, q *goquery.Selection) error {
+			dispatched = true
+			println(c.Request.URL.String())
+			return nil
+		},
+		Collector: nil,
+	}
+	err := task.Start()
+	require.NoError(t, err)
+	assert.True(t, dispatched)
+}
+
 func TestSave(t *testing.T) {
 
 	srv := ServeFile(t, "run_test.html")
