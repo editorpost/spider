@@ -270,7 +270,10 @@ func NewServer(content []byte) (*httptest.Server, error) {
 
 	// create a new server
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(content)
+		_, err := w.Write(content)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}))
 
 	return srv, nil

@@ -29,6 +29,8 @@ type Args struct {
 
 // StartWith is an example code for running spider
 // as Windmill Script with extract.Article
+//
+//goland:noinspection GoUnusedExportedFunction
 func StartWith(input any) error {
 
 	args := &Args{}
