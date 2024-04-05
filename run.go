@@ -11,12 +11,14 @@ import (
 
 // Args is a minimal required input arguments for the spider
 type Args struct {
+	// Name is the name of the spider and mongo collection
+	Name string `json:"Name" validate:"trim,required"`
 	// StartURL is the URL to start crawling, e.g. http://example.com
 	StartURL string `json:"StartURL" validate:"trim,required"`
 	// AllowedURL is the regex to match the URLs, e.g. "https://example.com/articles/.+"
 	AllowedURL string `json:"AllowedURL" validate:"trim,required"`
-	// EntityURL is the URL to extract, e.g. "https://example.com/articles/123"
-	EntityURL string `json:"EntityURL" validate:"trim,required"`
+	// EntityURL is the URL to extract, e.g. "https://example.com/articles/science/.+"
+	EntityURL string `json:"EntityURL" validate:"trim"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
 	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
@@ -44,7 +46,7 @@ func Start(args *Args) error {
 		EntityURL:  args.EntityURL,
 		Depth:      args.Depth,
 		Query:      args.Selector,
-		Extractor:  Extract(extract.Article),
+		Extractor:  Extract(args.Name, extract.Article),
 		Collector:  nil, // use colly default in-memory storage
 	}
 
@@ -52,7 +54,7 @@ func Start(args *Args) error {
 }
 
 // Extract creates Pipe with given extractor called before Save
-func Extract(extractor extract.PipeFn) extract.ExtractFn {
+func Extract(dbName string, extractor extract.PipeFn) extract.ExtractFn {
 
 	cfg, err := mongodb.GetResource("u/spider/mongo")
 	if err != nil {
@@ -60,14 +62,7 @@ func Extract(extractor extract.PipeFn) extract.ExtractFn {
 		panic(err)
 	}
 
-	jobID := Env().GetJobID()
-
-	if jobID == "" {
-		slog.Error("job_id is empty")
-		panic("job_id is empty")
-	}
-
-	storage, err := store.NewExtractStore(jobID, cfg)
+	storage, err := store.NewExtractStore(dbName, cfg)
 	if err != nil {
 		slog.Error("failed to create extract store", slog.String("error", err.Error()))
 		panic(err)
