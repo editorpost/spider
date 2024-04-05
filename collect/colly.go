@@ -22,7 +22,7 @@ func (crawler *Crawler) collector() *colly.Collector {
 		colly.UserAgent(crawler.UserAgent),
 		colly.MaxDepth(crawler.Depth),
 		colly.URLFilters(
-			regexp.MustCompile(crawler.MatchURL),
+			regexp.MustCompile(crawler.AllowedURL),
 		),
 	)
 
@@ -40,6 +40,12 @@ func (crawler *Crawler) collector() *colly.Collector {
 		panic(err)
 	}
 
+	// entity url regex
+	if len(crawler.EntityURL) > 0 {
+		crawler._entityURL = regexp.MustCompile(crawler.EntityURL)
+	}
+
+	// set event handlers
 	crawler.collect.OnHTML(`a[href]`, crawler.visit())
 	crawler.collect.OnHTML(`html`, crawler.extract())
 
@@ -76,6 +82,13 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 // extract entries from html selections
 func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
 	return func(doc *colly.HTMLElement) {
+
+		// entity url regex
+		if crawler._entityURL != nil {
+			if !crawler._entityURL.MatchString(doc.Request.URL.String()) {
+				return
+			}
+		}
 
 		// selected html selections matching the query
 		// might be empty if the query is not found

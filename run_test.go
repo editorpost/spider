@@ -67,10 +67,10 @@ func TestCollect(t *testing.T) {
 	dispatched := false
 
 	task := collect.Crawler{
-		StartURL: srv.URL,
-		MatchURL: ".*",
-		Depth:    1,
-		Query:    ".article--ssr",
+		StartURL:   srv.URL,
+		AllowedURL: ".*",
+		Depth:      1,
+		Query:      ".article--ssr",
 		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
 			dispatched = true
 			return nil
@@ -99,12 +99,12 @@ func TestSave(t *testing.T) {
 	require.NoError(t, err)
 
 	task := collect.Crawler{
-		StartURL:  srv.URL,
-		MatchURL:  ".*",
-		Depth:     1,
-		Query:     ".article--ssr",
-		Extractor: extract.Pipe(spider.WindmillMeta, extract.Html, extract.Article, dispatcher, extractor.Save),
-		Collector: collector,
+		StartURL:   srv.URL,
+		AllowedURL: ".*",
+		Depth:      1,
+		Query:      ".article--ssr",
+		Extractor:  extract.Pipe(spider.WindmillMeta, extract.Html, extract.Article, dispatcher, extractor.Save),
+		Collector:  collector,
 	}
 
 	// expected ONE result, since we run Chromedp only if no results found
@@ -122,10 +122,10 @@ func TestJSCollect(t *testing.T) {
 	dispatched := false
 
 	task := collect.Crawler{
-		StartURL: srv.URL,
-		MatchURL: ".*",
-		Depth:    1,
-		Query:    ".article--js",
+		StartURL:   srv.URL,
+		AllowedURL: ".*",
+		Depth:      1,
+		Query:      ".article--js",
 		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
 			dispatched = true
 			return nil
@@ -195,8 +195,8 @@ func TestServeFile(t *testing.T) {
 type Args struct {
 	// StartURL is the URL to start crawling, e.g. http://example.com
 	StartURL string `json:"StartURL"`
-	// MatchURL is the regex to match the URLs, e.g. ".*"
-	MatchURL string `json:"MatchURL"`
+	// AllowedURL is the regex to match the URLs, e.g. ".*"
+	MatchURL string `json:"AllowedURL"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
 	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
@@ -228,10 +228,10 @@ func TestParse(t *testing.T) {
 
 	args := Args{}
 	var input any = map[string]interface{}{
-		"StartURL": "http://example.com",
-		"MatchURL": ".*",
-		"Depth":    1,
-		"Selector": ".article--ssr",
+		"StartURL":   "http://example.com",
+		"AllowedURL": ".*",
+		"Depth":      1,
+		"Selector":   ".article--ssr",
 	}
 
 	// Test the Parse function

@@ -6,6 +6,7 @@ import (
 	"github.com/gocolly/colly/v2/storage"
 	"log/slog"
 	"net/url"
+	"regexp"
 	"sync/atomic"
 )
 
@@ -13,9 +14,12 @@ import (
 type Crawler struct {
 	// StartURL is the url to start the scraping
 	StartURL string
-	// MatchURL is comma separated regex to match the urls
+	// AllowedURL is comma separated regex to match the urls
 	// use it to reduce the number of urls to visit
-	MatchURL string
+	AllowedURL string
+	// EntityURL is the regex to match the entity urls
+	// use it to extract the entity urls
+	EntityURL string
 	// Query is the css selector to match the elements
 	// use selector for extracting entities and filtering pages
 	Query string
@@ -33,6 +37,7 @@ type Crawler struct {
 	jsFallbackSuccess *atomic.Int32
 	jsSuccessRequired int32
 	collect           *colly.Collector
+	_entityURL        *regexp.Regexp
 }
 
 // Start the scraping Crawler.

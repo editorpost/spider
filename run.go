@@ -13,8 +13,10 @@ import (
 type Args struct {
 	// StartURL is the URL to start crawling, e.g. http://example.com
 	StartURL string `json:"StartURL" validate:"trim,required"`
-	// MatchURL is the regex to match the URLs, e.g. ".*"
-	MatchURL string `json:"MatchURL" validate:"trim,required"`
+	// AllowedURL is the regex to match the URLs, e.g. "https://example.com/articles/.+"
+	AllowedURL string `json:"AllowedURL" validate:"trim,required"`
+	// EntityURL is the URL to extract, e.g. "https://example.com/articles/123"
+	EntityURL string `json:"EntityURL" validate:"trim,required"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
 	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
@@ -37,12 +39,13 @@ func StartWith(input any) error {
 // as Windmill Script with extract.Article
 func Start(args *Args) error {
 	crawler := &collect.Crawler{
-		StartURL:  args.StartURL,
-		MatchURL:  args.MatchURL,
-		Depth:     args.Depth,
-		Query:     args.Selector,
-		Extractor: Extract(extract.Article),
-		Collector: nil, // use colly default in-memory storage
+		StartURL:   args.StartURL,
+		AllowedURL: args.AllowedURL,
+		EntityURL:  args.EntityURL,
+		Depth:      args.Depth,
+		Query:      args.Selector,
+		Extractor:  Extract(extract.Article),
+		Collector:  nil, // use colly default in-memory storage
 	}
 
 	return crawler.Start()

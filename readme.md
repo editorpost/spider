@@ -20,13 +20,13 @@ import (
 )
 
 func main(crawler interface{}) (interface{}, error) {
-	//require github.com/editorpost/spider v0.0.0-20240405135259-a91b2b9eebbe
+	//require github.com/editorpost/spider v0.0.0-20240405160747-44ad051bec9e
 	return 0, spider.StartWith(crawler)
 }
 
 ```
 
-Clean workers cache
+Init script for workers in Windmill:
 ```bash
 # the last line of the stdout is the return value
 # unless you write json to './result.json' or a string to './result.out'
