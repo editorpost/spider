@@ -1,6 +1,7 @@
 package collect
 
 import (
+	"context"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/storage"
@@ -40,12 +41,21 @@ type Crawler struct {
 	jsSuccessRequired int32
 	collect           *colly.Collector
 	_entityURL        *regexp.Regexp
+	chromeCtx         context.Context
 }
 
 // Start the scraping Crawler.
 func (crawler *Crawler) Start() error {
 
 	collector := crawler.collector()
+
+	if crawler.UseBrowser {
+		// create chrome allocator context
+		cancel := crawler.setupChrome()
+		// disable async in browser mode
+		collector.Async = false
+		defer cancel()
+	}
 
 	if err := collector.Visit(crawler.StartURL); err != nil {
 		return err

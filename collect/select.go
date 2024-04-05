@@ -12,7 +12,7 @@ func (crawler *Crawler) selections(e *colly.HTMLElement) []*goquery.Selection {
 
 	// if the Selector is not found in the GET response,
 	// but in the fallback js browser call
-	if selections.Length() == 0 {
+	if crawler.UseBrowser {
 		var err error
 		selections, err = crawler.browse(e.Request.URL.String())
 		if err != nil {

@@ -72,6 +72,14 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 			return
 		}
 
+		if errors.Is(err, colly.ErrForbiddenURL) {
+			return
+		}
+
+		if errors.Is(err, colly.ErrNoURLFiltersMatch) {
+			return
+		}
+
 		slog.Warn("visit failed",
 			slog.String("url", link),
 			slog.String("err", err.Error()),

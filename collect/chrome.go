@@ -12,7 +12,7 @@ import (
 // browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
 func (crawler *Crawler) browse(reqURL string) (*goquery.Selection, error) {
 
-	resp, err := crawler.chrome(reqURL)
+	resp, err := crawler.browseChrome(reqURL)
 	if err != nil {
 		slog.Error("browser failed",
 			slog.String("error", err.Error()),
@@ -34,10 +34,10 @@ func (crawler *Crawler) browse(reqURL string) (*goquery.Selection, error) {
 }
 
 // browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
-func (crawler *Crawler) chrome(reqURL string) (string, error) {
+func (crawler *Crawler) browseChrome(reqURL string) (string, error) {
 
 	// Initialize a new browser context
-	ctx, cancel := chromedp.NewContext(context.Background())
+	ctx, cancel := chromedp.NewContext(crawler.chromeCtx)
 	defer cancel()
 
 	chromedp.UserAgent(crawler.UserAgent)
@@ -58,4 +58,26 @@ func (crawler *Crawler) chrome(reqURL string) (string, error) {
 	}
 
 	return htmlContent, nil
+}
+
+func (crawler *Crawler) setupChrome() context.CancelFunc {
+
+	opts := []chromedp.ExecAllocatorOption{
+		chromedp.NoFirstRun,
+		chromedp.NoDefaultBrowserCheck,
+		chromedp.Headless,
+		chromedp.DisableGPU,
+	}
+
+	// create context
+	ctx, cancelAlloc := chromedp.NewExecAllocator(context.Background(), opts...)
+	crawler.chromeCtx = ctx
+
+	// create context
+	_, cancel := chromedp.NewContext(crawler.chromeCtx) // create new tab
+
+	return func() {
+		cancelAlloc()
+		cancel()
+	}
 }

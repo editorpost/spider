@@ -125,6 +125,7 @@ func TestJSCollect(t *testing.T) {
 		StartURL:       srv.URL,
 		AllowedURL:     ".*",
 		Depth:          1,
+		UseBrowser:     true,
 		EntitySelector: ".article--js",
 		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
 			dispatched = true
