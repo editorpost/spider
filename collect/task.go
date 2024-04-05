@@ -20,9 +20,11 @@ type Crawler struct {
 	// EntityURL is the regex to match the entity urls
 	// use it to extract the entity urls
 	EntityURL string
-	// Query is the css selector to match the elements
+	// EntitySelector is the css selector to match the elements
 	// use selector for extracting entities and filtering pages
-	Query string
+	EntitySelector string
+	// UseBrowser is a flag to use browser for rendering the page
+	UseBrowser bool
 	// Depth if is 1, so only the links on the scraped page
 	// is visited, and no further links are followed
 	Depth int
@@ -59,7 +61,7 @@ func (crawler *Crawler) error(url string, err error) {
 	slog.Error("crawler failed",
 		slog.String("error", err.Error()),
 		slog.String("url", url),
-		slog.String("query", crawler.Query),
+		slog.String("query", crawler.EntitySelector),
 	)
 }
 

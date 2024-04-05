@@ -19,6 +19,8 @@ type Args struct {
 	AllowedURL string `json:"AllowedURL" validate:"trim,required"`
 	// EntityURL is the URL to extract, e.g. "https://example.com/articles/science/.+"
 	EntityURL string `json:"EntityURL" validate:"trim"`
+	// UseBrowser is a flag to use browser for rendering the page
+	UseBrowser bool `json:"UseBrowser"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
 	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
@@ -41,13 +43,14 @@ func StartWith(input any) error {
 // as Windmill Script with extract.Article
 func Start(args *Args) error {
 	crawler := &collect.Crawler{
-		StartURL:   args.StartURL,
-		AllowedURL: args.AllowedURL,
-		EntityURL:  args.EntityURL,
-		Depth:      args.Depth,
-		Query:      args.Selector,
-		Extractor:  Extract(args.Name, extract.Article),
-		Collector:  nil, // use colly default in-memory storage
+		StartURL:       args.StartURL,
+		AllowedURL:     args.AllowedURL,
+		EntityURL:      args.EntityURL,
+		UseBrowser:     args.UseBrowser,
+		Depth:          args.Depth,
+		EntitySelector: args.Selector,
+		Extractor:      Extract(args.Name, extract.Article),
+		Collector:      nil, // use colly default in-memory storage
 	}
 
 	return crawler.Start()

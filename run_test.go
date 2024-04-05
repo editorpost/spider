@@ -67,10 +67,10 @@ func TestCollect(t *testing.T) {
 	dispatched := false
 
 	task := collect.Crawler{
-		StartURL:   srv.URL,
-		AllowedURL: ".*",
-		Depth:      1,
-		Query:      ".article--ssr",
+		StartURL:       srv.URL,
+		AllowedURL:     ".*",
+		Depth:          1,
+		EntitySelector: ".article--ssr",
 		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
 			dispatched = true
 			return nil
@@ -99,12 +99,12 @@ func TestSave(t *testing.T) {
 	require.NoError(t, err)
 
 	task := collect.Crawler{
-		StartURL:   srv.URL,
-		AllowedURL: ".*",
-		Depth:      1,
-		Query:      ".article--ssr",
-		Extractor:  extract.Pipe(spider.WindmillMeta, extract.Html, extract.Article, dispatcher, extractor.Save),
-		Collector:  collector,
+		StartURL:       srv.URL,
+		AllowedURL:     ".*",
+		Depth:          1,
+		EntitySelector: ".article--ssr",
+		Extractor:      extract.Pipe(spider.WindmillMeta, extract.Html, extract.Article, dispatcher, extractor.Save),
+		Collector:      collector,
 	}
 
 	// expected ONE result, since we run Chromedp only if no results found
@@ -122,10 +122,10 @@ func TestJSCollect(t *testing.T) {
 	dispatched := false
 
 	task := collect.Crawler{
-		StartURL:   srv.URL,
-		AllowedURL: ".*",
-		Depth:      1,
-		Query:      ".article--js",
+		StartURL:       srv.URL,
+		AllowedURL:     ".*",
+		Depth:          1,
+		EntitySelector: ".article--js",
 		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
 			dispatched = true
 			return nil

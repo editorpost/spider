@@ -30,7 +30,7 @@ func (crawler *Crawler) browse(reqURL string) (*goquery.Selection, error) {
 		return nil, err
 	}
 
-	return doc.Find(crawler.Query), nil
+	return doc.Find(crawler.EntitySelector), nil
 }
 
 // browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML

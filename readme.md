@@ -5,7 +5,9 @@ Expected arguments:
 ```json 
 {
   "StartURL": "https://thailand-news.ru/news/turizm/khochu-na-pkhuket",
-  "MatchURL": "https://thailand-news.ru/news/turizm/.+",
+  "AllowedURL": "https://thailand-news.ru/news/.+",
+  "EntityURL": "https://thailand-news.ru/news/tourizm/.+",
+  "UseBrowser": false,
   "Depth": 1,
   "Selector": ".node-article--full"
 }

@@ -5,10 +5,10 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-// selections matching the query (with JS browse if Query is not found in GET response)
+// selections matching the query (with JS browse if EntitySelector is not found in GET response)
 func (crawler *Crawler) selections(e *colly.HTMLElement) []*goquery.Selection {
 
-	selections := e.DOM.Find(crawler.Query)
+	selections := e.DOM.Find(crawler.EntitySelector)
 
 	// if the Selector is not found in the GET response,
 	// but in the fallback js browser call
