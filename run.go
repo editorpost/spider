@@ -81,6 +81,7 @@ func Extract(dbResource, dbName string, extractor extract.PipeFn) extract.Extrac
 		panic(err)
 	}
 
+	// note: the `Save` must provide `created` and `updated` fields behavior
 	storage, err := store.NewExtractStore(dbName, cfg)
 	if err != nil {
 		slog.Error("failed to create extract store", slog.String("error", err.Error()))

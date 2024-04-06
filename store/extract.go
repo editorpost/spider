@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log/slog"
 	"runtime/debug"
+	"time"
 )
 
 type (
@@ -125,6 +126,10 @@ func (s *ExtractStore) absentPerRun(req bson.M) bool {
 
 func (s *ExtractStore) insert(row map[string]any) error {
 
+	// set created and updated fields
+	row["created"] = time.Now().UTC()
+	row["updated"] = time.Now().UTC()
+
 	_, err := s.col.InsertOne(context.Background(), row)
 
 	if err != nil {
@@ -138,6 +143,9 @@ func (s *ExtractStore) insert(row map[string]any) error {
 }
 
 func (s *ExtractStore) update(req bson.M, row map[string]any) error {
+
+	// set updated field
+	row["updated"] = time.Now().UTC()
 
 	_, err := s.col.ReplaceOne(context.Background(), req, row)
 	s.cache.Add([]byte(row[s.uniqueField].(string)))
