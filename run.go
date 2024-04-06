@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	// MongoDbResourceName is the name of the mongo resource
-	MongoDbResourceName = "u/spider/mongodb"
+	// DefaultMongoResource is the name of the mongo resource
+	DefaultMongoResource = "u/spider/mongodb"
 )
 
 // Args is a minimal required input arguments for the spider
@@ -30,6 +30,8 @@ type Args struct {
 	UseBrowser bool `json:"UseBrowser"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
+	// MongoDbResource is the name of the mongo resource, e.g. "u/spider/mongodb"
+	MongoDbResource string `json:"MongoDbResource" validate:"trim,required"`
 }
 
 // StartWith is an example code for running spider
@@ -57,7 +59,7 @@ func Start(args *Args) error {
 		UseBrowser:     args.UseBrowser,
 		Depth:          args.Depth,
 		EntitySelector: args.EntitySelector,
-		Extractor: Extract(args.Name, func(*extract.Payload) error {
+		Extractor: Extract(args.MongoDbResource, args.Name, func(*extract.Payload) error {
 			return nil
 		}),
 		Collector: nil, // use colly default in-memory storage
@@ -67,9 +69,13 @@ func Start(args *Args) error {
 }
 
 // Extract creates Pipe with given extractor called before Save
-func Extract(dbName string, extractor extract.PipeFn) extract.ExtractFn {
+func Extract(dbResource, dbName string, extractor extract.PipeFn) extract.ExtractFn {
 
-	cfg, err := mongodb.GetResource(MongoDbResourceName)
+	if len(dbResource) == 0 {
+		dbResource = DefaultMongoResource
+	}
+
+	cfg, err := mongodb.GetResource(dbResource)
 	if err != nil {
 		slog.Error("failed to get mongo resource", slog.String("error", err.Error()))
 		panic(err)

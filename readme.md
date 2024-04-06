@@ -5,8 +5,6 @@
 
 Ensure you have the Windmill Mongodb resource `u/spider/mongodb` available in your Windmill environment.
 
-```bash
-
 Expected arguments:
 ```json 
 {
@@ -31,8 +29,8 @@ func main(crawler interface{}) (interface{}, error) {
 	//require github.com/editorpost/spider v0.0.1
 	return 0, spider.StartWith(crawler)
 }
-
 ```
+
 Note! You can use the specific version of the library providing comment with `//require repo/pkg v0.0.1`. The version is specified for example only.
 Use `git rev-parse HEAD` to get the current version of the library.
 
@@ -63,6 +61,7 @@ func main(
 		EntitySelector: entitySelector,
 		UseBrowser:     useBrowser,
 		Depth:          depth,
+		MongoDbResource: "u/spider/mongo",
 	}
 
 	return 0, spider.Start(args)
