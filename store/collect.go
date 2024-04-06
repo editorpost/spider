@@ -18,7 +18,7 @@ import (
 const (
 	CollectorVisited  = "visited"
 	CollectorCookies  = "cookies"
-	ExtractorResults  = "extracted"
+	ExtractorResults  = "crawled"
 	StoreRequestIDKey = "requestID"
 	StoreVisitedKey   = "visited"
 	StoreHostKey      = "host"

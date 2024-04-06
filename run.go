@@ -7,7 +7,6 @@ import (
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/store"
 	"log/slog"
-	"time"
 )
 
 const (
@@ -107,10 +106,6 @@ func WindmillMeta(p *extract.Payload) error {
 	p.Data["job_id"] = Env().GetRootFlowJobID()
 	p.Data["flow_path"] = Env().GetFlowPath()
 	p.Data["flow_job_id"] = Env().GetFlowJobID()
-
-	// zero-time for extracted
-	p.Data["extracted"] = time.Time{}
-	p.Data["extractor"] = ""
 
 	return nil
 }
