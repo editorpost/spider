@@ -85,3 +85,15 @@ func MustHost(fromURL string) string {
 
 	return uri.Host
 }
+
+// MustRootUrl return the root url
+// e.g. https://example.com/articles/1234/5678 => https://example.com
+func MustRootUrl(fromURL string) string {
+
+	uri, err := url.Parse(fromURL)
+	if err != nil {
+		panic(err)
+	}
+
+	return uri.Scheme + "://" + uri.Host // no port explicitly
+}

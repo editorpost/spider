@@ -18,6 +18,9 @@ func (crawler *Crawler) collector() *colly.Collector {
 		return crawler.collect
 	}
 
+	// url regex from crawler args
+	crawler.StartURL, crawler.AllowedURL, crawler.EntityURL = crawler.urlsRegexp()
+
 	// default collector
 	crawler.collect = colly.NewCollector(
 		colly.Async(true),
@@ -29,9 +32,8 @@ func (crawler *Crawler) collector() *colly.Collector {
 		),
 	)
 
-	// Turn off cookie handling
-	// crawler.collect.DisableCookies()
-
+	// cookie handling
+	// for turning off - crawler.collect.DisableCookies()
 	j, err := cookiejar.New(&cookiejar.Options{})
 	if err == nil {
 		crawler.collect.SetCookieJar(j)
@@ -134,6 +136,27 @@ func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
 			}
 		}
 	}
+}
+
+func (crawler *Crawler) urlsRegexp() (start, allowed, entity string) {
+
+	start = strings.TrimSpace(crawler.StartURL)
+	if len(start) == 0 {
+		panic("crawler: start url is required")
+	}
+
+	allowed = strings.TrimSpace(crawler.AllowedURL)
+	if len(allowed) == 0 {
+		// get the host from the start url
+		allowed = MustRootUrl(start) + "{any}"
+	}
+
+	entityUrl := strings.TrimSpace(crawler.EntityURL)
+	if len(entityUrl) == 0 {
+		entityUrl = ""
+	}
+
+	return PlaceholdersToRegex(start), PlaceholdersToRegex(allowed), PlaceholdersToRegex(entityUrl)
 }
 
 func isValidURLExtension(urlStr string) bool {

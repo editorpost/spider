@@ -9,6 +9,7 @@ require (
 	github.com/chromedp/cdproto v0.0.0-20240328024531-fe04f09ede24
 	github.com/chromedp/chromedp v0.9.5
 	github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834
+	github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76
 	github.com/go-shiori/go-readability v0.0.0-20240204090920-819593fddc6b
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/stretchr/testify v1.9.0
@@ -35,7 +36,6 @@ require (
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.16.2 // indirect
-	github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/flosch/pongo2/v4 v4.0.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect

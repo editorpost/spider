@@ -15,16 +15,16 @@ type Args struct {
 	Name string `json:"Name" validate:"trim,required"`
 	// StartURL is the URL to start crawling, e.g. http://example.com
 	StartURL string `json:"StartURL" validate:"trim,required"`
-	// AllowedURL is the regex to match the URLs, e.g. "https://example.com/articles/.+"
+	// AllowedURL is the regex to match the URLs, e.g. "https://example.com?.+"
 	AllowedURL string `json:"AllowedURL" validate:"trim,required"`
-	// EntityURL is the URL to extract, e.g. "https://example.com/articles/science/.+"
+	// EntityURL is the URL to extract, e.g. "https://example.com/articles/((?:[^/]+/)*[^/]+)/.+"
 	EntityURL string `json:"EntityURL" validate:"trim"`
+	// EntitySelector CSS to match the entities to extract, e.g. ".article--ssr"
+	EntitySelector string `json:"EntitySelector" validate:"trim,required"`
 	// UseBrowser is a flag to use browser for rendering the page
 	UseBrowser bool `json:"UseBrowser"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
-	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
-	Selector string `json:"Selector" validate:"trim,required"`
 }
 
 // StartWith is an example code for running spider
@@ -44,13 +44,14 @@ func StartWith(input any) error {
 // Start is an example code for running spider
 // as Windmill Script with extract.Article
 func Start(args *Args) error {
+
 	crawler := &collect.Crawler{
 		StartURL:       args.StartURL,
 		AllowedURL:     args.AllowedURL,
 		EntityURL:      args.EntityURL,
 		UseBrowser:     args.UseBrowser,
 		Depth:          args.Depth,
-		EntitySelector: args.Selector,
+		EntitySelector: args.EntitySelector,
 		Extractor: Extract(args.Name, func(*extract.Payload) error {
 			return nil
 		}),

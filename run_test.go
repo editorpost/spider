@@ -83,14 +83,13 @@ func TestCollect(t *testing.T) {
 	assert.True(t, dispatched)
 }
 
-func testReal(t *testing.T) {
+func TestReal(t *testing.T) {
 
 	dispatched := false
 
 	task := collect.Crawler{
 		StartURL:       "https://thailand-news.ru",
-		AllowedURL:     "https://thailand-news\\.ru?.+",
-		EntityURL:      "https://thailand-news\\.ru/news/((?:[^/]+/)*[^/]+)/.+",
+		EntityURL:      "https://thailand-news.ru/news/{dir}/{some}",
 		Depth:          3,
 		EntitySelector: ".node-article--full",
 		Extractor: func(c *colly.HTMLElement, q *goquery.Selection) error {
@@ -222,8 +221,8 @@ type Args struct {
 	MatchURL string `json:"AllowedURL"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
-	// Selector CSS to match the entities to extract, e.g. ".article--ssr"
-	Selector string `json:"Selector"`
+	// EntitySelector CSS to match the entities to extract, e.g. ".article--ssr"
+	Selector string `json:"EntitySelector"`
 }
 
 func Parse[T any](from any, to *T) error {
@@ -251,10 +250,10 @@ func TestParse(t *testing.T) {
 
 	args := Args{}
 	var input any = map[string]interface{}{
-		"StartURL":   "http://example.com",
-		"AllowedURL": ".*",
-		"Depth":      1,
-		"Selector":   ".article--ssr",
+		"StartURL":       "http://example.com",
+		"AllowedURL":     ".*",
+		"Depth":          1,
+		"EntitySelector": ".article--ssr",
 	}
 
 	// Test the Parse function
