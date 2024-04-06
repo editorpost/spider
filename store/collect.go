@@ -37,7 +37,7 @@ type CollectStore struct {
 
 // Init satisfy colly/storage.Storage interface
 func (s *CollectStore) Init() error {
-	return nil
+	return s.preload()
 }
 
 func NewCollectStore(jobDbName string, cfg *mongodb.Config) (s *CollectStore, err error) {
@@ -50,12 +50,46 @@ func NewCollectStore(jobDbName string, cfg *mongodb.Config) (s *CollectStore, er
 	}
 
 	s.db = s.client.Database(jobDbName)
-	s.visited = s.db.Collection(CollectorVisited)
 	s.cookies = s.db.Collection(CollectorCookies)
-	s._visited = bloom.NewWithEstimates(1000000, 0.01)
 	s._cookies = &sync.Map{}
 
 	return
+}
+
+// preload loads visited urls from db to cache
+func (s *CollectStore) preload() error {
+
+	// init visited collection
+	s.visited = s.db.Collection(CollectorVisited)
+	s._visited = bloom.NewWithEstimates(1000000, 0.01)
+
+	// load visited urls from db
+	cursor, dbErr := s.visited.Find(nil, bson.D{})
+
+	if errors.Is(dbErr, mongo.ErrNoDocuments) {
+		return nil
+	}
+
+	if dbErr != nil {
+		return dbErr
+	}
+	defer cursor.Close(nil)
+
+	for cursor.Next(nil) {
+		doc := bson.D{}
+		if err := cursor.Decode(&doc); err != nil {
+			return err
+		}
+
+		requestID, err := strconv.ParseUint(doc.Map()[StoreRequestIDKey].(string), 10, 64)
+		if err != nil {
+			return err
+		}
+
+		s.cacheVisited(requestID)
+	}
+
+	return nil
 }
 
 // Visited implements colly/storage.Visited()
