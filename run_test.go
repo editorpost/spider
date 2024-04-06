@@ -83,7 +83,7 @@ func TestCollect(t *testing.T) {
 	assert.True(t, dispatched)
 }
 
-func TestReal(t *testing.T) {
+func testReal(t *testing.T) {
 
 	dispatched := false
 

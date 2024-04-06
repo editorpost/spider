@@ -1,0 +1,41 @@
+name: Docker Image
+
+on:
+  push:
+    branches:
+      - main
+      - seed
+    tags:
+      - v*
+  pull_request:
+env:
+  IMAGE_NAME: parsing
+  GOPRIVATE: github.com/editorpost/*,github.com/estatie/*
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.x'
+      - name: Configure git for private modules
+        run: git config --global url."https://${{ secrets.ORG_PAT }}@github.com".insteadOf "https://github.com"
+      - name: Module cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go
+      - name: Install dependencies
+        run: go mod download
+      - name: Unit test
+        run: find . -name go.mod -execdir go test ./... \;
