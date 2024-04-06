@@ -64,13 +64,13 @@ func (s *ExtractStore) Close() error {
 func (s *ExtractStore) save(row map[string]any) error {
 
 	if len(s.uniqueField) > 0 {
-		return s.overwrite(row)
+		return s.upsert(row)
 	}
 
 	return s.insert(row)
 }
 
-func (s *ExtractStore) overwrite(row map[string]any) error {
+func (s *ExtractStore) upsert(row map[string]any) error {
 
 	// check if item exists
 	field := s.uniqueField
