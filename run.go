@@ -93,5 +93,7 @@ func Extract(dbResource, dbName string, extractor extract.PipeFn) extract.Extrac
 // WindmillMeta is a meta data extractor
 func WindmillMeta(p *extract.Payload) error {
 	p.Data["job_id"] = Env().GetRootFlowJobID()
+	p.Data["flow_path"] = Env().GetFlowPath()
+	p.Data["flow_job_id"] = Env().GetFlowJobID()
 	return nil
 }

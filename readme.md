@@ -64,7 +64,7 @@ func main(
 		MongoDbResource: "f/spider/resource/mongodb",
 	}
 
-	return 0, spider.Start(args)
+	return name, spider.Start(args)
 }
 ```
 
