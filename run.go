@@ -71,15 +71,15 @@ func Start(args *Args) error {
 		UseBrowser:     args.UseBrowser,
 		Depth:          args.Depth,
 		EntitySelector: args.EntitySelector,
-		Extractor:      MustExtractor(mongoCfg, args.Name, extractor),
-		Collector:      nil, // use colly default in-memory storage
+		Extractor:      MustExtractor(args.Name, mongoCfg, extractor),
+		Collector:      MustCollector(args.Name, mongoCfg), // or nil for use colly default in-memory storage
 	}
 
 	return crawler.Start()
 }
 
 // MustExtractor creates Pipe with given extractor called before Save
-func MustExtractor(cfg *mongodb.Config, dbName string, extractor extract.PipeFn) extract.ExtractFn {
+func MustExtractor(dbName string, cfg *mongodb.Config, extractor extract.PipeFn) extract.ExtractFn {
 
 	// note: the `Save` must provide `created` and `updated` fields behavior
 	storage, err := store.NewExtractStore(dbName, cfg)
@@ -89,6 +89,18 @@ func MustExtractor(cfg *mongodb.Config, dbName string, extractor extract.PipeFn)
 	}
 
 	return extract.Pipe(WindmillMeta, extract.Html, extractor, storage.Save)
+}
+
+// MustCollector creates a new collector store
+func MustCollector(dbName string, cfg *mongodb.Config) *store.CollectStore {
+
+	s, err := store.NewCollectStore(dbName, cfg)
+	if err != nil {
+		slog.Error("failed to create collect store", slog.String("error", err.Error()))
+		panic(err)
+	}
+
+	return s
 }
 
 // MetricStore creates a new metric store
