@@ -25,6 +25,8 @@ type Args struct {
 	AllowedURL string `json:"AllowedURL" validate:"trim,required"`
 	// EntityURL is the URL to extract, e.g. "https://example.com/articles/((?:[^/]+/)*[^/]+)/.+"
 	EntityURL string `json:"EntityURL" validate:"trim"`
+	// Extractor is the function to process matched the data
+	EntityExtract func(*extract.Payload) error
 	// EntitySelector CSS to match the entities to extract, e.g. ".article--ssr"
 	EntitySelector string `json:"EntitySelector" validate:"trim,required"`
 	// UseBrowser is a flag to use browser for rendering the page
@@ -53,6 +55,14 @@ func StartWith(input any) error {
 // as Windmill Script with extract.Article
 func Start(args *Args) error {
 
+	extractor := args.EntityExtract
+
+	if extractor == nil {
+		extractor = func(*extract.Payload) error {
+			return nil
+		}
+	}
+
 	crawler := &collect.Crawler{
 		StartURL:       args.StartURL,
 		AllowedURL:     args.AllowedURL,
@@ -60,10 +70,8 @@ func Start(args *Args) error {
 		UseBrowser:     args.UseBrowser,
 		Depth:          args.Depth,
 		EntitySelector: args.EntitySelector,
-		Extractor: Extract(args.MongoDbResource, args.Name, func(*extract.Payload) error {
-			return nil
-		}),
-		Collector: nil, // use colly default in-memory storage
+		Extractor:      Extract(args.MongoDbResource, args.Name, extractor),
+		Collector:      nil, // use colly default in-memory storage
 	}
 
 	return crawler.Start()

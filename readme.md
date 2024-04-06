@@ -26,12 +26,12 @@ import (
 )
 
 func main(crawler interface{}) (interface{}, error) {
-	//require github.com/editorpost/spider v0.0.6
+	//require github.com/editorpost/spider v0.0.7
 	return 0, spider.StartWith(crawler)
 }
 ```
 
-Note! You can use the specific version of the library providing comment with `//require repo/pkg v0.0.6`. The version is specified for example only.
+Note! You can use the specific version of the library providing comment with `//require repo/pkg v0.0.7`. The version is specified for example only.
 Use `git rev-parse HEAD` to get the current version of the library.
 
 ### Initialization with user parameters:
@@ -52,7 +52,7 @@ func main(
 	useBrowser bool,
 ) (interface{}, error) {
 
-	//require github.com/editorpost/spider v0.0.6
+	//require github.com/editorpost/spider v0.0.7
 	args := &spider.Args{
 		Name:           name,
 		StartURL:       startURL,
