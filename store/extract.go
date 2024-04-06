@@ -130,7 +130,7 @@ func (s *ExtractStore) insert(row map[string]any) error {
 
 func (s *ExtractStore) update(req bson.M, row map[string]any) error {
 
-	_, err := s.col.UpdateOne(context.Background(), req, row)
+	_, err := s.col.ReplaceOne(context.Background(), req, row)
 	s.cache.Add([]byte(row[s.uniqueField].(string)))
 
 	return err
