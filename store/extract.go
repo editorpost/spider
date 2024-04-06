@@ -17,11 +17,12 @@ type (
 
 	// ExtractStore with deduplication based on unique field
 	ExtractStore struct {
-		client      *mongo.Client
-		db          *mongo.Database
-		col         *mongo.Collection
-		cache       *bloom.BloomFilter
-		uniqueField string
+		client          *mongo.Client
+		db              *mongo.Database
+		col             *mongo.Collection
+		cache           *bloom.BloomFilter
+		uniqueField     string
+		uniqueOverwrite bool
 	}
 )
 
@@ -36,8 +37,11 @@ func NewExtractStore(jobDbName string, cfg *mongodb.Config) (s *ExtractStore, er
 
 	s.db = s.client.Database(jobDbName)
 	s.col = s.db.Collection(ExtractorResults)
-	s.uniqueField = extract.UrlField
 	s.cache = bloom.NewWithEstimates(1000000, 0.01)
+
+	// do not uniqueOverwrite by default
+	s.uniqueOverwrite = false
+	s.uniqueField = extract.UrlField
 
 	return
 }
@@ -90,6 +94,11 @@ func (s *ExtractStore) upsert(row map[string]any) error {
 		if err != nil {
 			slog.Error("read db error: ", err)
 			return err
+		}
+
+		// row exists, no need to overwrite
+		if !s.uniqueOverwrite {
+			return nil
 		}
 	}
 
