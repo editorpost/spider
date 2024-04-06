@@ -62,6 +62,8 @@ func Start(args *Args) error {
 		}
 	}
 
+	mongoCfg := MustMongoConfig(args.MongoDbResource)
+
 	crawler := &collect.Crawler{
 		StartURL:       args.StartURL,
 		AllowedURL:     args.AllowedURL,
@@ -69,25 +71,15 @@ func Start(args *Args) error {
 		UseBrowser:     args.UseBrowser,
 		Depth:          args.Depth,
 		EntitySelector: args.EntitySelector,
-		Extractor:      Extract(args.MongoDbResource, args.Name, extractor),
+		Extractor:      MustExtractor(mongoCfg, args.Name, extractor),
 		Collector:      nil, // use colly default in-memory storage
 	}
 
 	return crawler.Start()
 }
 
-// Extract creates Pipe with given extractor called before Save
-func Extract(dbResource, dbName string, extractor extract.PipeFn) extract.ExtractFn {
-
-	if len(dbResource) == 0 {
-		dbResource = DefaultMongoResource
-	}
-
-	cfg, err := mongodb.GetResource(dbResource)
-	if err != nil {
-		slog.Error("failed to get mongo resource", slog.String("error", err.Error()))
-		panic(err)
-	}
+// MustExtractor creates Pipe with given extractor called before Save
+func MustExtractor(cfg *mongodb.Config, dbName string, extractor extract.PipeFn) extract.ExtractFn {
 
 	// note: the `Save` must provide `created` and `updated` fields behavior
 	storage, err := store.NewExtractStore(dbName, cfg)
@@ -97,6 +89,34 @@ func Extract(dbResource, dbName string, extractor extract.PipeFn) extract.Extrac
 	}
 
 	return extract.Pipe(WindmillMeta, extract.Html, extractor, storage.Save)
+}
+
+// MetricStore creates a new metric store
+func MustMetricStore(cfg *mongodb.Config) *store.MetricStore {
+
+	s, err := store.NewMetricStore(cfg)
+	if err != nil {
+		slog.Error("failed to create metric store", slog.String("error", err.Error()))
+		panic(err)
+	}
+
+	return s
+}
+
+// MustMongoConfig returns the mongo config or panic
+func MustMongoConfig(resource string) *mongodb.Config {
+
+	if len(resource) == 0 {
+		resource = DefaultMongoResource
+	}
+
+	cfg, err := mongodb.GetResource(resource)
+	if err != nil {
+		slog.Error("failed to get mongo resource", slog.String("error", err.Error()))
+		panic(err)
+	}
+
+	return cfg
 }
 
 // WindmillMeta is a meta data extractor
