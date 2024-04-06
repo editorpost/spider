@@ -83,6 +83,7 @@ func TestCollect(t *testing.T) {
 	assert.True(t, dispatched)
 }
 
+//goland:noinspection GoUnusedFunction
 func testReal(t *testing.T) {
 
 	dispatched := false
