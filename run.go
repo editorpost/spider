@@ -11,7 +11,7 @@ import (
 
 const (
 	// DefaultMongoResource is the name of the mongo resource
-	DefaultMongoResource = "u/spider/mongodb"
+	DefaultMongoResource = "f/spider/resource/mongodb"
 )
 
 // Args is a minimal required input arguments for the spider

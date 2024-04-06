@@ -3,7 +3,7 @@
 
 # Usage as Windmill Script
 
-Ensure you have the Windmill Mongodb resource `u/spider/mongodb` available in your Windmill environment.
+Ensure you have the Windmill Mongodb resource `f/spider/resource/mongodbdb` available in your Windmill environment.
 
 Expected arguments:
 ```json 
@@ -26,12 +26,12 @@ import (
 )
 
 func main(crawler interface{}) (interface{}, error) {
-	//require github.com/editorpost/spider v0.0.1
+	//require github.com/editorpost/spider v0.0.5
 	return 0, spider.StartWith(crawler)
 }
 ```
 
-Note! You can use the specific version of the library providing comment with `//require repo/pkg v0.0.1`. The version is specified for example only.
+Note! You can use the specific version of the library providing comment with `//require repo/pkg v0.0.5`. The version is specified for example only.
 Use `git rev-parse HEAD` to get the current version of the library.
 
 ### Initialization with user parameters:
@@ -52,7 +52,7 @@ func main(
 	useBrowser bool,
 ) (interface{}, error) {
 
-	//require github.com/editorpost/spider v0.0.1
+	//require github.com/editorpost/spider v0.0.5
 	args := &spider.Args{
 		Name:           name,
 		StartURL:       startURL,
@@ -61,7 +61,7 @@ func main(
 		EntitySelector: entitySelector,
 		UseBrowser:     useBrowser,
 		Depth:          depth,
-		MongoDbResource: "u/spider/mongo",
+		MongoDbResource: "f/spider/resource/mongodb",
 	}
 
 	return 0, spider.Start(args)
