@@ -9,6 +9,11 @@ import (
 	"log/slog"
 )
 
+const (
+	// MongoDbResourceName is the name of the mongo resource
+	MongoDbResourceName = "u/spider/mongodb"
+)
+
 // Args is a minimal required input arguments for the spider
 type Args struct {
 	// Name is the name of the spider and mongo collection
@@ -64,7 +69,7 @@ func Start(args *Args) error {
 // Extract creates Pipe with given extractor called before Save
 func Extract(dbName string, extractor extract.PipeFn) extract.ExtractFn {
 
-	cfg, err := mongodb.GetResource("u/spider/mongo")
+	cfg, err := mongodb.GetResource(MongoDbResourceName)
 	if err != nil {
 		slog.Error("failed to get mongo resource", slog.String("error", err.Error()))
 		panic(err)

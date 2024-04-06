@@ -3,12 +3,16 @@
 
 # Usage as Windmill Script
 
+Ensure you have the Windmill Mongodb resource `u/spider/mongodb` available in your Windmill environment.
+
+```bash
+
 Expected arguments:
 ```json 
 {
-  "StartURL": "https://thailand-news.ru/news/turizm/khochu-na-pkhuket",
-  "AllowedURL": "https://thailand-news.ru{any}",
-  "EntityURL": "https://thailand-news.ru/news/{dir}/{some}",
+  "StartURL": "https://news.com/news/business/new-offshore-zones-promoted",
+  "AllowedURL": "https://news.com{any}",
+  "EntityURL": "https://news.com/news/{dir}/{some}",
   "EntitySelector": ".node-article--full",
   "UseBrowser": false,
   "Depth": 1
@@ -24,7 +28,7 @@ import (
 )
 
 func main(crawler interface{}) (interface{}, error) {
-	//require github.com/editorpost/spider v0.0.0-20240405201109-79b03452a487
+	//require github.com/editorpost/spider v0.0.1
 	return 0, spider.StartWith(crawler)
 }
 
@@ -38,7 +42,6 @@ package inner
 
 import (
 	"github.com/editorpost/spider"
-	"github.com/editorpost/spider/extract"
 )
 
 func main(
@@ -51,23 +54,18 @@ func main(
 	useBrowser bool,
 ) (interface{}, error) {
 
-	//require github.com/editorpost/spider v0.0.0-20240405201109-79b03452a487
-	args := spider.Args{
+	//require github.com/editorpost/spider v0.0.1
+	args := &spider.Args{
+		Name:           name,
 		StartURL:       startURL,
 		AllowedURL:     allowedURL,
 		EntityURL:      entityURL,
 		EntitySelector: entitySelector,
 		UseBrowser:     useBrowser,
 		Depth:          depth,
-		Extractor: extract.Extract(name, func(*extract.Payload) error {
-			return nil
-		}),
-		Collector: nil, // use colly default in-memory storage
 	}
 
-	_ = args
-
-	return 0, nil //spider.Start(args)
+	return 0, spider.Start(args)
 }
 ```
 
