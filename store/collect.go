@@ -50,6 +50,7 @@ func NewCollectStore(jobDbName string, cfg *mongodb.Config) (s *CollectStore, er
 	}
 
 	s.db = s.client.Database(jobDbName)
+	s.visited = s.db.Collection(CollectorVisited)
 	s.cookies = s.db.Collection(CollectorCookies)
 	s._cookies = &sync.Map{}
 
@@ -60,7 +61,6 @@ func NewCollectStore(jobDbName string, cfg *mongodb.Config) (s *CollectStore, er
 func (s *CollectStore) preload() error {
 
 	// init visited collection
-	s.visited = s.db.Collection(CollectorVisited)
 	s._visited = bloom.NewWithEstimates(1000000, 0.01)
 
 	// load visited urls from db
