@@ -155,13 +155,14 @@ func (s *CollectStore) Cookies(u *url.URL) string {
 
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			slog.Warn("cookies not found", slog.String("host", u.Host))
+			slog.Info("cookies have not exist yet", slog.String("host", u.Host))
 		}
 		return ""
 	}
 
 	str := doc.Map()[StoreCookiesKey].(string)
 	s._cookies.Store(u.Host, str)
+	slog.Info("Set cookies from db", slog.String("host", u.Host), slog.String("cookies", str))
 
 	return str
 }
