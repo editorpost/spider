@@ -185,11 +185,11 @@ func (s *CollectStore) SetCookies(u *url.URL, cookies string) {
 // Drop job database collections from storage with all data
 func (s *CollectStore) Drop() error {
 
-	if err := s.visited.Drop(nil); err != nil {
+	if err := s.visited.Drop(context.Background()); err != nil {
 		return err
 	}
 
-	if err := s.cookies.Drop(nil); err != nil {
+	if err := s.cookies.Drop(context.Background()); err != nil {
 		return err
 	}
 
