@@ -58,6 +58,11 @@ func (s *ExtractStore) Save(p *extract.Payload) error {
 	return nil
 }
 
+// Drop job database collections from storage with all data
+func (s *ExtractStore) Drop() error {
+	return s.db.Drop(context.Background())
+}
+
 func (s *ExtractStore) Client() *mongo.Client {
 	return s.client
 }

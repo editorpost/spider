@@ -78,6 +78,28 @@ func Start(args *Args) error {
 	return crawler.Start()
 }
 
+func Drop(dbName, mongoDbResource string) error {
+
+	cfg := MustMongoConfig(mongoDbResource)
+
+	collector, err := store.NewCollectStore(dbName, cfg)
+	if err != nil {
+		return err
+	}
+
+	err = collector.Drop()
+	if err != nil {
+		return err
+	}
+
+	extractor, err := store.NewExtractStore(dbName, cfg)
+	if err != nil {
+		return err
+	}
+
+	return extractor.Drop()
+}
+
 // MustExtractor creates Pipe with given extractor called before Save
 func MustExtractor(dbName string, cfg *mongodb.Config, extractor extract.PipeFn) extract.ExtractFn {
 

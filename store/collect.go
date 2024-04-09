@@ -182,6 +182,20 @@ func (s *CollectStore) SetCookies(u *url.URL, cookies string) {
 	s._cookies.Store(u.Host, cookies)
 }
 
+// Drop job database collections from storage with all data
+func (s *CollectStore) Drop() error {
+
+	if err := s.visited.Drop(nil); err != nil {
+		return err
+	}
+
+	if err := s.cookies.Drop(nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // cacheVisited sets requestID as visited to cache
 func (s *CollectStore) cacheVisited(requestID uint64) {
 	key := make([]byte, 8)
