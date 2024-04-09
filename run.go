@@ -78,11 +78,9 @@ func Start(args *Args) error {
 	return crawler.Start()
 }
 
-func Drop(dbName, mongoDbResource string) error {
+func Drop(name string, cfg *mongodb.Config) error {
 
-	cfg := MustMongoConfig(mongoDbResource)
-
-	collector, err := store.NewCollectStore(dbName, cfg)
+	collector, err := store.NewCollectStore(name, cfg)
 	if err != nil {
 		return err
 	}
@@ -92,7 +90,7 @@ func Drop(dbName, mongoDbResource string) error {
 		return err
 	}
 
-	extractor, err := store.NewExtractStore(dbName, cfg)
+	extractor, err := store.NewExtractStore(name, cfg)
 	if err != nil {
 		return err
 	}
