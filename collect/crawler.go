@@ -40,6 +40,7 @@ type Crawler struct {
 	collect           *colly.Collector
 	_entityURL        *regexp.Regexp
 	chromeCtx         context.Context
+	_retryCounter     map[string]uint16
 }
 
 // Start the scraping Crawler.
