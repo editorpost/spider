@@ -101,6 +101,9 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 
 		// visit the link
 		err := crawler.collector().Visit(link)
+		if err == nil {
+			return
+		}
 
 		// skip errors
 		skipErrors := []error{

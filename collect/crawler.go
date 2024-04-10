@@ -31,8 +31,6 @@ type Crawler struct {
 	Depth int
 	// UserAgent is the user agent string used by the collector
 	UserAgent string
-	// ProxyList is the list of proxies to use with colly.RoundRobinProxySwitcher
-	ProxyList []string
 	// ProxyFn is the function to return the proxy for the request
 	ProxyFn func(*http.Request) (*url.URL, error)
 	// Extractor is the function to process matched the data, e.g. html tag node
