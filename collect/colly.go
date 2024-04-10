@@ -42,6 +42,9 @@ func (crawler *Crawler) collector() *colly.Collector {
 		crawler.collect.SetProxyFunc(crawler.ProxyFn)
 	}
 
+	// timeouts
+	crawler.collect.SetRequestTimeout(30 * time.Second)
+
 	// cookie handling
 	// for turning off - crawler.collect.DisableCookies()
 	j, err := cookiejar.New(&cookiejar.Options{})
