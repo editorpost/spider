@@ -14,15 +14,7 @@ func (crawler *Crawler) error(resp *colly.Response, err error) {
 		return
 	}
 
-	// write error log
-	slog.Warn("visit failed",
-		slog.String("url", resp.Request.URL.String()),
-		slog.String("proxy", resp.Request.ProxyURL),
-		slog.String("err", err.Error()),
-	)
-
-	slog.Error("crawler failed",
-		slog.String("error", err.Error()),
+	slog.Error(err.Error(),
 		slog.String("url", resp.Request.URL.String()),
 		slog.String("proxy", resp.Request.ProxyURL),
 		slog.String("query", crawler.EntitySelector),
