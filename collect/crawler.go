@@ -45,6 +45,7 @@ type Crawler struct {
 	_entityURL        *regexp.Regexp
 	chromeCtx         context.Context
 	retry             *Retry
+	report            *Report
 }
 
 // Start the scraping Crawler.

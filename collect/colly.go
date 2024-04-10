@@ -18,6 +18,9 @@ func (crawler *Crawler) collector() *colly.Collector {
 		return crawler.collect
 	}
 
+	// init metrics reporter
+	crawler.report = NewReport()
+
 	// url regex from crawler args
 	crawler.StartURL, crawler.AllowedURL, crawler.EntityURL = crawler.urlsRegexp()
 
@@ -102,6 +105,7 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 		// visit the link
 		err := crawler.collector().Visit(link)
 		if err == nil {
+			crawler.report.Visited()
 			return
 		}
 
@@ -144,14 +148,11 @@ func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
 		for _, selected := range crawler.selections(doc) {
 			err := crawler.Extractor(doc, selected)
 			if err != nil {
-				slog.Error("extractor failed",
-					slog.String("error", err.Error()),
-					slog.String("url", doc.Request.URL.String()),
-					slog.String("query", crawler.EntitySelector),
-				)
-				// explicitly
+				crawler.report.ExtractFailed()
 				continue
 			}
+
+			crawler.report.Extracted()
 		}
 	}
 }

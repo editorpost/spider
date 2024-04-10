@@ -51,6 +51,7 @@ func NewExtractStore(jobDbName string, cfg *mongodb.Config) (s *ExtractStore, er
 func (s *ExtractStore) Save(p *extract.Payload) error {
 
 	if err := s.save(p.Data); err != nil {
+		slog.Error("save error: ", err)
 		return err
 	}
 
