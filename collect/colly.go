@@ -33,6 +33,7 @@ func (crawler *Crawler) collector() *colly.Collector {
 		colly.URLFilters(
 			regexp.MustCompile(crawler.AllowedURL),
 		),
+		colly.MaxBodySize(10<<20), // 10MB
 		// todo must be depending on crawl strategy chosen - singe or incremental
 		// colly.AllowURLRevisit(),
 	)
