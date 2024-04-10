@@ -74,6 +74,13 @@ func Start(args *Args) error {
 		UserAgent:      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
 		Extractor:      MustExtractor(args.Name, mongoCfg, extractor),
 		Collector:      MustCollector(args.Name, mongoCfg), // or nil for use colly default in-memory storage
+		ProxyFn: collect.NewProxyList(
+			"http://52.222.28.135:443",
+			"http://159.65.77.168:8585",
+			"http://164.77.240.27:999",
+			"http://162.240.75.37:80",
+			"http://162.223.94.164",
+		),
 	}
 
 	return crawler.Start()

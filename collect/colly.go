@@ -1,8 +1,8 @@
 package collect
 
 import (
+	"errors"
 	"github.com/gocolly/colly/v2"
-	"github.com/gocolly/colly/v2/proxy"
 	"log/slog"
 	"net/http/cookiejar"
 	"net/url"
@@ -34,14 +34,10 @@ func (crawler *Crawler) collector() *colly.Collector {
 		// colly.AllowURLRevisit(),
 	)
 
-	// Rotate two socks5 proxies
-	// todo load from proxy list and save
-	//
-	rp, err := proxy.RoundRobinProxySwitcher("http://52.222.28.135:443", "http://159.65.77.168:8585", "http://164.77.240.27:999", "http://162.240.75.37:80", "http://162.223.94.164")
-	if err != nil {
-		panic(err)
+	// proxy handling
+	if crawler.ProxyFn != nil {
+		crawler.collect.SetProxyFunc(crawler.ProxyFn)
 	}
-	crawler.collect.SetProxyFunc(rp)
 
 	// cookie handling
 	// for turning off - crawler.collect.DisableCookies()
@@ -69,6 +65,9 @@ func (crawler *Crawler) collector() *colly.Collector {
 		crawler._entityURL = regexp.MustCompile(crawler.EntityURL)
 	}
 
+	// Request setup
+	crawler.retry = NewRetry()
+
 	// set event handlers
 	crawler.collect.OnHTML(`a[href]`, crawler.visit())
 	crawler.collect.OnHTML(`html`, crawler.extract())
@@ -82,12 +81,15 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 
 	return func(e *colly.HTMLElement) {
 
+		// absolute url
 		link := e.Request.AbsoluteURL(e.Attr("href"))
 
+		// skip empty links
 		if len(link) == 0 {
 			return
 		}
 
+		// skip anchor links
 		if strings.HasPrefix(link, "#") {
 			return
 		}
@@ -97,7 +99,24 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 			return
 		}
 
+		// visit the link
 		err := crawler.collector().Visit(link)
+
+		// skip errors
+		skipErrors := []error{
+			colly.ErrAlreadyVisited,
+			colly.ErrForbiddenDomain,
+			colly.ErrForbiddenURL,
+			colly.ErrNoURLFiltersMatch,
+		}
+		for _, skip := range skipErrors {
+			if errors.Is(err, skip) {
+				slog.Debug("ignore error", slog.String("error", err.Error()))
+				return
+			}
+		}
+
+		// log the error
 		slog.Warn("crawler visit",
 			slog.String("url", link),
 			slog.String("proxy", e.Request.ProxyURL),

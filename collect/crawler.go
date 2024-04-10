@@ -5,6 +5,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/storage"
+	"net/http"
+	"net/url"
 	"regexp"
 	"sync/atomic"
 )
@@ -29,6 +31,10 @@ type Crawler struct {
 	Depth int
 	// UserAgent is the user agent string used by the collector
 	UserAgent string
+	// ProxyList is the list of proxies to use with colly.RoundRobinProxySwitcher
+	ProxyList []string
+	// ProxyFn is the function to return the proxy for the request
+	ProxyFn func(*http.Request) (*url.URL, error)
 	// Extractor is the function to process matched the data, e.g. html tag node
 	Extractor func(*colly.HTMLElement, *goquery.Selection) error
 	// Collector is the storage backend for the collector
@@ -40,7 +46,7 @@ type Crawler struct {
 	collect           *colly.Collector
 	_entityURL        *regexp.Regexp
 	chromeCtx         context.Context
-	_retryCounter     map[string]uint16
+	retry             *Retry
 }
 
 // Start the scraping Crawler.
