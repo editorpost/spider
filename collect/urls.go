@@ -1,6 +1,9 @@
 package collect
 
-import "strings"
+import (
+	"net/url"
+	"strings"
+)
 
 // PlaceholdersToRegex transforms a given URL pattern into a regular expression string for matching URLs.
 // The function supports specific placeholders within the pattern to capture dynamic parts of URLs:
@@ -46,4 +49,27 @@ func PlaceholdersToRegex(pattern string) string {
 	str = "^" + str + "$" // Match entire string
 
 	return str
+}
+
+// MustHost from url
+func MustHost(fromURL string) string {
+
+	uri, err := url.Parse(fromURL)
+	if err != nil {
+		panic(err)
+	}
+
+	return uri.Host
+}
+
+// MustRootUrl return the root url
+// e.g. https://example.com/articles/1234/5678 => https://example.com
+func MustRootUrl(fromURL string) string {
+
+	uri, err := url.Parse(fromURL)
+	if err != nil {
+		panic(err)
+	}
+
+	return uri.Scheme + "://" + uri.Host // no port explicitly
 }

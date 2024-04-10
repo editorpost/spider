@@ -5,8 +5,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/storage"
-	"log/slog"
-	"net/url"
 	"regexp"
 	"sync/atomic"
 )
@@ -64,36 +62,4 @@ func (crawler *Crawler) Start() error {
 	collector.Wait()
 
 	return nil
-}
-
-// error logging
-func (crawler *Crawler) error(url string, err error) {
-	slog.Error("crawler failed",
-		slog.String("error", err.Error()),
-		slog.String("url", url),
-		slog.String("query", crawler.EntitySelector),
-	)
-}
-
-// MustHost from url
-func MustHost(fromURL string) string {
-
-	uri, err := url.Parse(fromURL)
-	if err != nil {
-		panic(err)
-	}
-
-	return uri.Host
-}
-
-// MustRootUrl return the root url
-// e.g. https://example.com/articles/1234/5678 => https://example.com
-func MustRootUrl(fromURL string) string {
-
-	uri, err := url.Parse(fromURL)
-	if err != nil {
-		panic(err)
-	}
-
-	return uri.Scheme + "://" + uri.Host // no port explicitly
 }

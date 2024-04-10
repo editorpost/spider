@@ -1,8 +1,8 @@
 package collect
 
 import (
-	"errors"
 	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/proxy"
 	"log/slog"
 	"net/http/cookiejar"
 	"net/url"
@@ -30,7 +30,18 @@ func (crawler *Crawler) collector() *colly.Collector {
 		colly.URLFilters(
 			regexp.MustCompile(crawler.AllowedURL),
 		),
+		// todo must be depending on crawl strategy chosen - singe or incremental
+		// colly.AllowURLRevisit(),
 	)
+
+	// Rotate two socks5 proxies
+	// todo load from proxy list and save
+	//
+	rp, err := proxy.RoundRobinProxySwitcher("http://52.222.28.135:443", "http://159.65.77.168:8585", "http://164.77.240.27:999", "http://162.240.75.37:80", "http://162.223.94.164")
+	if err != nil {
+		panic(err)
+	}
+	crawler.collect.SetProxyFunc(rp)
 
 	// cookie handling
 	// for turning off - crawler.collect.DisableCookies()
@@ -61,6 +72,7 @@ func (crawler *Crawler) collector() *colly.Collector {
 	// set event handlers
 	crawler.collect.OnHTML(`a[href]`, crawler.visit())
 	crawler.collect.OnHTML(`html`, crawler.extract())
+	crawler.collect.OnError(crawler.error)
 
 	return crawler.collect
 }
@@ -86,30 +98,10 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 		}
 
 		err := crawler.collector().Visit(link)
-		if err == nil {
-			return
-		}
-
-		if errors.Is(err, colly.ErrAlreadyVisited) {
-			return
-		}
-
-		if errors.Is(err, colly.ErrForbiddenDomain) {
-			return
-		}
-
-		if errors.Is(err, colly.ErrForbiddenURL) {
-			return
-		}
-
-		if errors.Is(err, colly.ErrNoURLFiltersMatch) {
-			return
-		}
-
-		slog.Warn("visit failed",
+		slog.Warn("crawler visit",
 			slog.String("url", link),
-			slog.String("href", e.Attr("href")),
-			slog.String("err", err.Error()),
+			slog.String("proxy", e.Request.ProxyURL),
+			slog.String("error", err.Error()),
 		)
 	}
 }
@@ -130,7 +122,11 @@ func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
 		for _, selected := range crawler.selections(doc) {
 			err := crawler.Extractor(doc, selected)
 			if err != nil {
-				crawler.error(doc.Request.URL.String(), err)
+				slog.Error("extractor failed",
+					slog.String("error", err.Error()),
+					slog.String("url", doc.Request.URL.String()),
+					slog.String("query", crawler.EntitySelector),
+				)
 				// explicitly
 				continue
 			}
