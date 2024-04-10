@@ -8,8 +8,12 @@ import (
 )
 
 const (
-	RetryLimit          = 2
-	RetryForbiddenLimit = 15
+	// RequestRetries is the number of retries for request errors from colly.onError handler.
+	// it handler network errors, timeouts, etc.
+	RequestRetries = 2
+	// ResponseRetries is the number of retries for response errors from crawler.visit handler.
+	// it handler http status codes, anti-scraping, captcha, etc.
+	ResponseRetries = 15
 )
 
 type Retry struct {
@@ -25,9 +29,6 @@ func NewRetry() *Retry {
 }
 
 func (r *Retry) Request(resp *colly.Response) bool {
-
-	// todo: in case of async collector where is no round robin proxy,
-	// todo: there will be a gap made by other routines
 
 	if r.Limited(resp) {
 		return false
@@ -54,12 +55,12 @@ func (r *Retry) Limited(resp *colly.Response) bool {
 	count := r.Count(resp.Request.URL.String())
 
 	if resp.StatusCode == http.StatusForbidden {
-		if count > RetryForbiddenLimit {
+		if count > ResponseRetries {
 			return false
 		}
 	}
 
-	return count > RetryLimit
+	return count > RequestRetries
 }
 
 func (r *Retry) Count(url string) uint16 {
