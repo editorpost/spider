@@ -94,7 +94,7 @@ func (pool *Pool) GetProxyURL(pr *http.Request) (*url.URL, error) {
 func (pool *Pool) load() error {
 
 	if pool.Loader == nil {
-		pool.Loader = LoadProxyScrapeList
+		pool.Loader = LoadPublicLists
 	}
 
 	proxies, err := pool.Loader()

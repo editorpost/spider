@@ -33,10 +33,9 @@ type Args struct {
 	UseBrowser bool `json:"UseBrowser"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
-	// ProxyListURL is the URL to get the list of proxies,
-	// e.g. https://sunny9577.github.io/proxy-scraper/proxies.json
-	// or https://www.proxy-list.download/api/v1/get?type=http
-	ProxyListURL string `json:"ProxyListURL"`
+	// ProxySourceURLs is the list of proxy sources, expected to return list of proxies URLs
+	// by default used public proxy sources
+	ProxySources []string `json:"ProxySources"`
 	// MongoDbResource is the name of the mongo resource, e.g. "u/spider/mongodb"
 	MongoDbResource string `json:"MongoDbResource" validate:"trim,required"`
 }
@@ -67,13 +66,7 @@ func Start(args *Args) error {
 		}
 	}
 
-	// start the proxy pool
-	proxies := proxy.NewPool(args.StartURL)
-	if err := proxies.Start(); err != nil {
-		return err
-	}
-
-	// get the mongo config
+	proxies := MustProxyPool(args)
 	mongoCfg := MustMongoConfig(args.MongoDbResource)
 
 	// create the crawler
@@ -91,6 +84,26 @@ func Start(args *Args) error {
 	}
 
 	return crawler.Start()
+}
+
+func MustProxyPool(args *Args) *proxy.Pool {
+
+	// start the proxy pool
+	pool := proxy.NewPool(args.StartURL)
+
+	// provide user defined proxy sources
+	// or used default public sources
+	if len(args.ProxySources) > 0 {
+		pool.Loader = func() ([]string, error) {
+			return proxy.LoadStringLists(args.ProxySources)
+		}
+	}
+
+	if err := pool.Start(); err != nil {
+		panic(err)
+	}
+
+	return pool
 }
 
 func Drop(name string, cfg *mongodb.Config) error {

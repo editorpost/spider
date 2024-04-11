@@ -7,9 +7,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sync"
 )
 
-// LoadStringsFrom loads the valid list from the given url
+// LoadJSONList loads the valid list from the given url
 // Returns nil if the url is empty.
 func LoadJSONList(url string) []string {
 
@@ -73,4 +74,34 @@ func LoadStringList(sourceURL string) ([]string, error) {
 	}
 
 	return lines, nil
+}
+
+// LoadStringLists loads the valid list from public sources
+func LoadStringLists(sources []string) ([]string, error) {
+
+	if len(sources) == 0 {
+		return nil, nil
+	}
+
+	wg := &sync.WaitGroup{}
+
+	// load all sources
+	proxies := NewList()
+
+	for _, source := range sources {
+		wg.Add(1)
+
+		go func(source string) {
+			defer wg.Done()
+			urls, err := LoadStringList(source)
+			if err != nil {
+				return
+			}
+			proxies.Add(NewProxies(urls...)...)
+		}(source)
+	}
+
+	wg.Wait()
+
+	return proxies.Strings(), nil
 }

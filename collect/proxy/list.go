@@ -58,18 +58,18 @@ func (lst *List) Next(pr *http.Request) *Proxy {
 }
 
 // Add adds a new valid to the list
-func (lst *List) Add(p *Proxy) {
-
-	// skip existing
-	if lst.Exists(p) {
-		return
-	}
+func (lst *List) Add(proxies ...*Proxy) {
 
 	// lock the list
 	lst.mute.Lock()
 	defer lst.mute.Unlock()
 
-	lst.proxies = append(lst.proxies, p)
+	for _, p := range proxies {
+		if lst.Exists(p) {
+			continue
+		}
+		lst.proxies = append(lst.proxies, p)
+	}
 }
 
 // Exists by hostname
