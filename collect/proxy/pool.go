@@ -43,6 +43,9 @@ func (pool *Pool) Start() error {
 
 	go pool.Check()
 
+	// log metrics every 30 seconds
+	go pool.Report()
+
 	return nil
 }
 
@@ -52,6 +55,7 @@ func (pool *Pool) GetProxyURL(pr *http.Request) (*url.URL, error) {
 
 	// load next valid proxy
 	if proxy := pool.valid.Next(pr); proxy != nil {
+		slog.Info("with proxy", slog.String("url", proxy.URL.String()))
 		proxy.AddUsageMetric()
 		return proxy.URL, nil
 	}
@@ -146,4 +150,11 @@ func (pool *Pool) SetCheckContent(contains string) {
 
 func (pool *Pool) SetCheckTimeout(timeout time.Duration) {
 	pool.checkTimeout = timeout
+}
+
+func (pool *Pool) Report() {
+	for {
+		time.Sleep(time.Second * 30)
+		slog.Info("valid proxies", slog.Int("count", len(pool.valid.Slice())))
+	}
 }
