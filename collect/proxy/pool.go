@@ -190,8 +190,9 @@ func (pool *Pool) ReportFiveMostFailed() {
 		return proxies[i].fails.Load() > proxies[j].fails.Load()
 	})
 
-	// print 5 most failed
-	for _, p := range proxies[:max(5, len(proxies))] {
+	slog.Info("MOST FAILED PROXIES")
+
+	for _, p := range proxies[:min(5, len(proxies))] {
 		slog.Info("proxy",
 			slog.Int("success", int(p.success.Load())),
 			slog.Int("fails", int(p.fails.Load())),
@@ -212,9 +213,9 @@ func (pool *Pool) ReportFiveMostUsed() {
 	sort.Slice(proxies, func(i, j int) bool {
 		return proxies[i].usage.Load() > proxies[j].usage.Load()
 	})
+	slog.Info("TOP USED PROXIES")
 
-	// print 5 most used
-	for _, p := range proxies[:max(5, len(proxies))] {
+	for _, p := range proxies[:min(5, len(proxies))] {
 		slog.Info("proxy",
 			slog.Int("success", int(p.success.Load())),
 			slog.Int("fails", int(p.fails.Load())),
