@@ -10,7 +10,7 @@ import (
 const (
 	// RequestRetries is the number of retries for request errors from colly.onError handler.
 	// it handler network errors, timeouts, etc.
-	RequestRetries = 2
+	RequestRetries = 15
 	// ResponseRetries is the number of retries for response errors from crawler.visit handler.
 	// it handler http status codes, anti-scraping, captcha, etc.
 	ResponseRetries = 15
