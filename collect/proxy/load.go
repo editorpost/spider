@@ -91,14 +91,15 @@ func LoadStringLists(sources []string) ([]string, error) {
 	for _, source := range sources {
 		wg.Add(1)
 
-		go func(source string) {
+		go func(source string, wg *sync.WaitGroup) {
 			defer wg.Done()
 			urls, err := LoadStringList(source)
 			if err != nil {
 				return
 			}
+
 			proxies.Add(NewProxies(urls...)...)
-		}(source)
+		}(source, wg)
 	}
 
 	wg.Wait()

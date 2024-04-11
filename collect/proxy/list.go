@@ -65,7 +65,7 @@ func (lst *List) Add(proxies ...*Proxy) {
 	defer lst.mute.Unlock()
 
 	for _, p := range proxies {
-		if lst.Exists(p) {
+		if lst.existsUnsafe(p) {
 			continue
 		}
 		lst.proxies = append(lst.proxies, p)
@@ -79,8 +79,14 @@ func (lst *List) Exists(proxy *Proxy) bool {
 	lst.mute.RLock()
 	defer lst.mute.RUnlock()
 
+	return lst.existsUnsafe(proxy)
+}
+
+// Exists check if the valid exists in the list. Unsafe to use in concurrent environment.
+func (lst *List) existsUnsafe(proxy *Proxy) bool {
+
 	for _, p := range lst.proxies {
-		if p.String() == proxy.String() {
+		if p.Compare(proxy) {
 			return true
 		}
 	}
