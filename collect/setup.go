@@ -23,7 +23,7 @@ func (crawler *Crawler) collector() *colly.Collector {
 	// https://go-colly.org/docs/examples/queue/
 	var err error
 	crawler.queue, err = queue.New(
-		10, // Number of consumer threads
+		25, // Number of consumer threads
 		&queue.InMemoryQueueStorage{MaxSize: 50000000}, // 50MB
 	)
 
@@ -56,6 +56,10 @@ func (crawler *Crawler) collector() *colly.Collector {
 	// proxy handling
 	if crawler.ProxyFn != nil {
 		crawler.collect.SetProxyFunc(crawler.ProxyFn)
+		//crawler.collect.WithTransport(&http.Transport{
+		//	Proxy:             crawler.ProxyFn,
+		//	DisableKeepAlives: true,
+		//})
 	}
 
 	// timeouts
