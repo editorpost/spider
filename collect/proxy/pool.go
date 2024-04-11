@@ -21,9 +21,8 @@ type Pool struct {
 	// Loader is a function to load the proxy list
 	Loader func() ([]string, error)
 	// Checker is a function to check the proxy by URI string
-	Checker   func(string) error
-	mute      sync.RWMutex
-	transport *http.Transport
+	Checker func(string) error
+	mute    sync.RWMutex
 }
 
 func NewPool(testURL string) *Pool {
@@ -34,11 +33,6 @@ func NewPool(testURL string) *Pool {
 		checkURL:     testURL,
 		checkTimeout: time.Second * 30,
 		Checker:      nil,
-	}
-
-	pool.transport = &http.Transport{
-		Proxy:             pool.GetProxyURL,
-		DisableKeepAlives: true,
 	}
 
 	return pool
