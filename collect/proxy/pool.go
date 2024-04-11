@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"sort"
 	"sync"
 	"time"
 )
@@ -20,18 +21,27 @@ type Pool struct {
 	// Loader is a function to load the proxy list
 	Loader func() ([]string, error)
 	// Checker is a function to check the proxy by URI string
-	Checker func(string) error
-	mute    sync.RWMutex
+	Checker   func(string) error
+	mute      sync.RWMutex
+	transport *http.Transport
 }
 
 func NewPool(testURL string) *Pool {
-	return &Pool{
+
+	pool := &Pool{
 		valid:        NewList(),
 		check:        NewList(),
 		checkURL:     testURL,
 		checkTimeout: time.Second * 30,
 		Checker:      nil,
 	}
+
+	pool.transport = &http.Transport{
+		Proxy:             pool.GetProxyURL,
+		DisableKeepAlives: true,
+	}
+
+	return pool
 }
 
 // Start initializes the pool with the given proxies.
@@ -47,6 +57,13 @@ func (pool *Pool) Start() error {
 	go pool.Report()
 
 	return nil
+}
+
+func (pool *Pool) Transport() *http.Transport {
+	return &http.Transport{
+		Proxy:             pool.GetProxyURL,
+		DisableKeepAlives: true,
+	}
 }
 
 // GetProxyURL returns the next valid from the pool or blocks until one is available.
@@ -159,7 +176,56 @@ func (pool *Pool) SetCheckTimeout(timeout time.Duration) {
 
 func (pool *Pool) Report() {
 	for {
-		time.Sleep(time.Second * 30)
+		time.Sleep(time.Second * 60)
 		slog.Info("valid proxies", slog.Int("count", len(pool.valid.Slice())))
+
+		pool.ReportFiveMostFailed()
+		pool.ReportFiveMostUsed()
+	}
+}
+
+func (pool *Pool) ReportFiveMostFailed() {
+
+	proxies := pool.valid.Slice()
+	if len(proxies) == 0 {
+		return
+	}
+
+	// sort by fails
+	sort.Slice(proxies, func(i, j int) bool {
+		return proxies[i].fails.Load() > proxies[j].fails.Load()
+	})
+
+	// print 5 most failed
+	for _, p := range proxies[:max(5, len(proxies))] {
+		slog.Info("proxy",
+			slog.Int("success", int(p.success.Load())),
+			slog.Int("fails", int(p.fails.Load())),
+			slog.Int("usage", int(p.usage.Load())),
+			slog.String("url", p.URL.String()),
+		)
+	}
+}
+
+func (pool *Pool) ReportFiveMostUsed() {
+
+	proxies := pool.valid.Slice()
+	if len(proxies) == 0 {
+		return
+	}
+
+	// sort by usage
+	sort.Slice(proxies, func(i, j int) bool {
+		return proxies[i].usage.Load() > proxies[j].usage.Load()
+	})
+
+	// print 5 most used
+	for _, p := range proxies[:max(5, len(proxies))] {
+		slog.Info("proxy",
+			slog.Int("success", int(p.success.Load())),
+			slog.Int("fails", int(p.fails.Load())),
+			slog.Int("usage", int(p.usage.Load())),
+			slog.String("url", p.URL.String()),
+		)
 	}
 }
