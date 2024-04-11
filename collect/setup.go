@@ -45,13 +45,13 @@ func (crawler *Crawler) collector() *colly.Collector {
 		// colly.AllowURLRevisit(),
 	)
 
+	extensions.RandomUserAgent(crawler.collect)
+
 	// limit parallelism per domain
 	//rule := &colly.LimitRule{DomainGlob: MustHost(crawler.StartURL), Parallelism: 1}
 	//if err := crawler.collect.Limit(rule); err != nil {
 	//	panic(err)
 	//}
-
-	extensions.RandomUserAgent(crawler.collect)
 
 	// proxy handling
 	if crawler.ProxyFn != nil {
