@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/queue"
 	"github.com/gocolly/colly/v2/storage"
 	"net/http"
 	"net/url"
@@ -46,26 +47,31 @@ type Crawler struct {
 	chromeCtx         context.Context
 	retry             *Retry
 	report            *Report
+	queue             *queue.Queue
 }
 
 // Start the scraping Crawler.
 func (crawler *Crawler) Start() error {
 
-	collector := crawler.collector()
+	crawler.collector()
 
 	if crawler.UseBrowser {
 		// create chrome allocator context
 		cancel := crawler.setupChrome()
 		// disable async in browser mode
-		collector.Async = false
+		crawler.collect.Async = false
 		defer cancel()
 	}
 
-	if err := collector.Visit(crawler.StartURL); err != nil {
+	if err := crawler.queue.AddURL(crawler.StartURL); err != nil {
 		return err
 	}
 
-	collector.Wait()
+	if err := crawler.queue.Run(crawler.collect); err != nil {
+		return err
+	}
+
+	crawler.collect.Wait()
 
 	return nil
 }

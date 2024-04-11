@@ -1,8 +1,9 @@
 package collect
 
 import (
-	"errors"
 	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/extensions"
+	"github.com/gocolly/colly/v2/queue"
 	"log/slog"
 	"net/http/cookiejar"
 	"net/url"
@@ -18,6 +19,14 @@ func (crawler *Crawler) collector() *colly.Collector {
 		return crawler.collect
 	}
 
+	// create a request queue with 2 consumer threads
+	// https://go-colly.org/docs/examples/queue/
+	var err error
+	crawler.queue, err = queue.New(
+		10, // Number of consumer threads
+		&queue.InMemoryQueueStorage{MaxSize: 50000000}, // 50MB
+	)
+
 	// init metrics reporter
 	crawler.report = NewReport()
 
@@ -26,17 +35,23 @@ func (crawler *Crawler) collector() *colly.Collector {
 
 	// default collector
 	crawler.collect = colly.NewCollector(
-		colly.Async(true),
 		colly.AllowedDomains(MustHost(crawler.StartURL), "127.0.0.1"),
-		colly.UserAgent(crawler.UserAgent),
 		colly.MaxDepth(crawler.Depth),
-		colly.URLFilters(
-			regexp.MustCompile(crawler.AllowedURL),
-		),
+		colly.URLFilters(regexp.MustCompile(crawler.AllowedURL)),
 		colly.MaxBodySize(10<<20), // 10MB
+
+		// colly.Async(true),
 		// todo must be depending on crawl strategy chosen - singe or incremental
 		// colly.AllowURLRevisit(),
 	)
+
+	// limit parallelism per domain
+	//rule := &colly.LimitRule{DomainGlob: MustHost(crawler.StartURL), Parallelism: 1}
+	//if err := crawler.collect.Limit(rule); err != nil {
+	//	panic(err)
+	//}
+
+	extensions.RandomUserAgent(crawler.collect)
 
 	// proxy handling
 	if crawler.ProxyFn != nil {
@@ -44,7 +59,7 @@ func (crawler *Crawler) collector() *colly.Collector {
 	}
 
 	// timeouts
-	crawler.collect.SetRequestTimeout(30 * time.Second)
+	crawler.collect.SetRequestTimeout(25 * time.Second)
 
 	// cookie handling
 	// for turning off - crawler.collect.DisableCookies()
@@ -61,12 +76,6 @@ func (crawler *Crawler) collector() *colly.Collector {
 		}
 	}
 
-	// limit parallelism per domain
-	rule := &colly.LimitRule{DomainGlob: MustHost(crawler.StartURL), Parallelism: 2, RandomDelay: time.Second}
-	if err := crawler.collect.Limit(rule); err != nil {
-		panic(err)
-	}
-
 	// entity url regex
 	if len(crawler.EntityURL) > 0 {
 		crawler._entityURL = regexp.MustCompile(crawler.EntityURL)
@@ -80,6 +89,14 @@ func (crawler *Crawler) collector() *colly.Collector {
 	crawler.collect.OnHTML(`html`, crawler.extract())
 	crawler.collect.OnError(crawler.error)
 
+	crawler.collect.OnRequest(func(r *colly.Request) {
+		slog.Info("visiting", slog.String("url", r.URL.String()))
+	})
+
+	crawler.collect.OnResponse(func(r *colly.Response) {
+		crawler.report.Visited()
+	})
+
 	return crawler.collect
 }
 
@@ -91,13 +108,8 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 		// absolute url
 		link := e.Request.AbsoluteURL(e.Attr("href"))
 
-		// skip empty links
-		if len(link) == 0 {
-			return
-		}
-
-		// skip anchor links
-		if strings.HasPrefix(link, "#") {
+		// skip empty and anchor links
+		if link == "" || strings.HasPrefix(link, "#") {
 			return
 		}
 
@@ -107,32 +119,36 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 		}
 
 		// visit the link
-		err := crawler.collector().Visit(link)
-		if err == nil {
-			crawler.report.Visited()
-			return
+		if err := crawler.queue.AddURL(link); err != nil {
+			slog.Warn("crawler queue", slog.String("error", err.Error()))
 		}
+		//
+		//err := crawler.collector().Visit(link)
+		//if err == nil {
+		//	crawler.report.Visited()
+		//	return
+		//}
 
-		// skip errors
-		skipErrors := []error{
-			colly.ErrAlreadyVisited,
-			colly.ErrForbiddenDomain,
-			colly.ErrForbiddenURL,
-			colly.ErrNoURLFiltersMatch,
-		}
-		for _, skip := range skipErrors {
-			if errors.Is(err, skip) {
-				slog.Debug("ignore error", slog.String("error", err.Error()))
-				return
-			}
-		}
-
-		// log the error
-		slog.Warn("crawler visit",
-			slog.String("url", link),
-			slog.String("proxy", e.Request.ProxyURL),
-			slog.String("error", err.Error()),
-		)
+		//// skip errors
+		//skipErrors := []error{
+		//	colly.ErrAlreadyVisited,
+		//	colly.ErrForbiddenDomain,
+		//	colly.ErrForbiddenURL,
+		//	colly.ErrNoURLFiltersMatch,
+		//}
+		//for _, skip := range skipErrors {
+		//	if errors.Is(err, skip) {
+		//		slog.Debug("ignore error", slog.String("error", err.Error()))
+		//		return
+		//	}
+		//}
+		//
+		//// log the error
+		//slog.Warn("crawler visit",
+		//	slog.String("url", link),
+		//	slog.String("proxy", e.Request.ProxyURL),
+		//	slog.String("error", err.Error()),
+		//)
 	}
 }
 
@@ -206,7 +222,8 @@ func isValidURLExtension(urlStr string) bool {
 	path := parsedURL.Path
 	if dotIndex := strings.LastIndex(path, "."); dotIndex != -1 {
 		ext := path[dotIndex:]
-		return allowedExtensions[ext] // True if allowed, false otherwise
+		allowed := allowedExtensions[ext] // True if allowed, false otherwise
+		return allowed
 	}
 
 	// True if no file extension is present
