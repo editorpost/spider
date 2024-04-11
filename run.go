@@ -4,6 +4,7 @@ import (
 	"github.com/editorpost/donq/mongodb"
 	"github.com/editorpost/donq/pkg/script"
 	"github.com/editorpost/spider/collect"
+	"github.com/editorpost/spider/collect/proxy"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/store"
 	"log/slog"
@@ -58,16 +59,24 @@ func StartWith(input any) error {
 // as Windmill Script with extract.Article
 func Start(args *Args) error {
 
+	// fallback to user extractor
 	extractor := args.EntityExtract
-
 	if extractor == nil {
 		extractor = func(*extract.Payload) error {
 			return nil
 		}
 	}
 
+	// start the proxy pool
+	proxies := proxy.NewPool(args.StartURL)
+	if err := proxies.Start(); err != nil {
+		return err
+	}
+
+	// get the mongo config
 	mongoCfg := MustMongoConfig(args.MongoDbResource)
 
+	// create the crawler
 	crawler := &collect.Crawler{
 		StartURL:       args.StartURL,
 		AllowedURL:     args.AllowedURL,
@@ -78,7 +87,7 @@ func Start(args *Args) error {
 		UserAgent:      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
 		Extractor:      MustExtractor(args.Name, mongoCfg, extractor),
 		Collector:      MustCollector(args.Name, mongoCfg), // or nil for use colly default in-memory storage
-		ProxyFn:        collect.LoadProxyList(args.ProxyListURL),
+		ProxyFn:        proxies.GetProxyURL,
 	}
 
 	return crawler.Start()
