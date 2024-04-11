@@ -55,7 +55,7 @@ func (s *ExtractStore) Save(p *extract.Payload) error {
 		return err
 	}
 
-	slog.Info("saved", slog.String("url", p.URL.String()))
+	slog.Debug("saved", slog.String("url", p.URL.String()))
 	return nil
 }
 
