@@ -4,25 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/gocolly/colly/v2/proxy"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 )
 
-// NewProxyList creates a new valid rotator from the given valid urls
-func NewProxyList(proxies ...string) func(pr *http.Request) (*url.URL, error) {
-	rp, err := proxy.RoundRobinProxySwitcher(proxies...)
-	if err != nil {
-		panic(err)
-	}
-	return rp
-}
-
-// LoadProxyList loads the valid list from the given url
+// LoadStringsFrom loads the valid list from the given url
 // Returns nil if the url is empty.
-func LoadProxyList(url string) func(pr *http.Request) (*url.URL, error) {
+func LoadJSONList(url string) []string {
 
 	if url == "" {
 		return nil
@@ -48,25 +37,23 @@ func LoadProxyList(url string) func(pr *http.Request) (*url.URL, error) {
 		panic(err)
 	}
 
-	var args []string
+	var lines []string
 	for _, p := range proxies {
-		args = append(args, p.String())
+		lines = append(lines, p.String())
 	}
 
-	if len(args) == 0 {
+	if len(lines) == 0 {
 		panic("no proxies found")
 	}
 
-	return NewProxyList(args...)
+	return lines
 }
 
-// LoadProxyScrapeList loads the valid list from proxyscrape.com
-func LoadProxyScrapeList() ([]string, error) {
-
-	uri := "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&proxy_format=protocolipport&format=text&timeout=20000"
+// LoadStringList loads the valid list from proxyscrape.com
+func LoadStringList(sourceURL string) ([]string, error) {
 
 	// fetch the url
-	res, err := http.Get(uri)
+	res, err := http.Get(sourceURL)
 	if err != nil {
 		return nil, fmt.Errorf("can not load proxy list from proxyscrape.com: %w", err)
 	}

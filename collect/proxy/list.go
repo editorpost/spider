@@ -23,7 +23,7 @@ func NewList(proxies ...*Proxy) *List {
 	}
 }
 
-// NewProxyList creates a new valid rotator from the given valid urls
+// Rounder creates a new valid rotator from the given valid urls
 // Example for collect.Crawler set Crawler.ProxyFn to NewList("http://proxy1.com", "http://proxy2.com").Rounder
 func (lst *List) Rounder() func(pr *http.Request) (*url.URL, error) {
 	rp, err := proxy.RoundRobinProxySwitcher(lst.Strings()...)
