@@ -26,10 +26,11 @@ type Pool struct {
 
 func NewPool(testURL string) *Pool {
 	return &Pool{
-		valid:    NewList(),
-		check:    NewList(),
-		checkURL: testURL,
-		Checker:  nil,
+		valid:        NewList(),
+		check:        NewList(),
+		checkURL:     testURL,
+		checkTimeout: time.Second * 30,
+		Checker:      nil,
 	}
 }
 
