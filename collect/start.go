@@ -6,6 +6,7 @@ import (
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 	"github.com/gocolly/colly/v2/storage"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -52,6 +53,15 @@ type Crawler struct {
 
 // Start the scraping Crawler.
 func (crawler *Crawler) Start() error {
+
+	slog.Info("start",
+		slog.String("url", crawler.StartURL),
+		slog.String("allowed", crawler.AllowedURL),
+		slog.String("entity", crawler.EntityURL),
+		slog.String("selector", crawler.EntitySelector),
+		slog.Bool("browser", crawler.UseBrowser),
+		slog.Int("depth", crawler.Depth),
+	)
 
 	crawler.collector()
 
