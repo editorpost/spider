@@ -2,7 +2,9 @@ package proxy
 
 import (
 	"fmt"
+	"log/slog"
 	"net/url"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -21,11 +23,19 @@ type Proxy struct {
 
 // NewProxy creates a new valid from the given uri.
 // Schema: {http|socks4|socks5}://{ip}:{port} parsed to struct
-func NewProxy(uri string) *Proxy {
+func NewProxy(uri string) (*Proxy, error) {
+
+	// set schema to http if not set
+	for _, schema := range []string{"http", "socks4", "socks5"} {
+		if strings.HasPrefix(uri, schema) {
+			uri = "http://" + uri
+			break
+		}
+	}
 
 	u, err := url.Parse(uri)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return &Proxy{
@@ -33,14 +43,21 @@ func NewProxy(uri string) *Proxy {
 		fails:   &atomic.Uint32{},
 		success: &atomic.Uint32{},
 		usage:   &atomic.Uint32{},
-	}
+	}, nil
 }
 
 // NewProxies creates a new valid list from the given uris
 func NewProxies(uris ...string) []*Proxy {
 	var proxies []*Proxy
 	for _, uri := range uris {
-		proxies = append(proxies, NewProxy(uri))
+
+		p, err := NewProxy(uri)
+		if err != nil {
+			slog.Warn("skip invalid proxy", slog.String("uri", uri), slog.String("error", err.Error()))
+			continue
+		}
+
+		proxies = append(proxies, p)
 	}
 	return proxies
 }

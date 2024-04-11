@@ -97,13 +97,18 @@ func (pool *Pool) load() error {
 		pool.Loader = LoadPublicLists
 	}
 
-	proxies, err := pool.Loader()
-	if err != nil {
-		return err
+	proxies, loadErr := pool.Loader()
+	if loadErr != nil {
+		return loadErr
 	}
 
 	for _, proxy := range proxies {
-		pool.check.Add(NewProxy(proxy))
+		p, err := NewProxy(proxy)
+		if err != nil {
+			slog.Warn("skip invalid proxy", slog.String("uri", proxy), slog.String("error", err.Error()))
+			continue
+		}
+		pool.check.Add(p)
 	}
 
 	return nil
