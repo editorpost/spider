@@ -55,7 +55,7 @@ func (pool *Pool) GetProxyURL(pr *http.Request) (*url.URL, error) {
 
 	// load next valid proxy
 	if proxy := pool.valid.Next(pr); proxy != nil {
-		slog.Info("with proxy", slog.String("url", proxy.URL.String()))
+		slog.Debug("with proxy", slog.String("url", proxy.URL.String()))
 		proxy.AddUsageMetric()
 		return proxy.URL, nil
 	}

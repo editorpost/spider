@@ -90,7 +90,7 @@ func (crawler *Crawler) collector() *colly.Collector {
 	crawler.collect.OnError(crawler.error)
 
 	crawler.collect.OnRequest(func(r *colly.Request) {
-		slog.Info("visiting", slog.String("url", r.URL.String()))
+		slog.Debug("visiting", slog.String("url", r.URL.String()))
 	})
 
 	crawler.collect.OnResponse(func(r *colly.Response) {
