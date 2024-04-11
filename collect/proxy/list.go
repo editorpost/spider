@@ -50,8 +50,11 @@ func (lst *List) Next(pr *http.Request) *Proxy {
 
 	// set the valid URL in the request context
 	if pr != nil {
+		// note this context doesn't applied to final request
+		// since colly doesn't copy this context (but tries to retrieve by this key, probably bug)
+		// leave this part here in hope it will be fixed in the future in colly
 		ctx := context.WithValue(pr.Context(), colly.ProxyURLKey, next.String())
-		*pr = *pr.WithContext(ctx)
+		pr = pr.WithContext(ctx)
 	}
 
 	return next
