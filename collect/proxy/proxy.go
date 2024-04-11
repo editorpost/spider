@@ -26,12 +26,7 @@ type Proxy struct {
 func NewProxy(uri string) (*Proxy, error) {
 
 	// set schema to http if not set
-	for _, schema := range []string{"http", "socks4", "socks5"} {
-		if strings.HasPrefix(uri, schema) {
-			uri = "http://" + uri
-			break
-		}
-	}
+	uri = NormalizeProxyURI(uri)
 
 	u, err := url.Parse(uri)
 	if err != nil {
@@ -48,7 +43,9 @@ func NewProxy(uri string) (*Proxy, error) {
 
 // NewProxies creates a new valid list from the given uris
 func NewProxies(uris ...string) []*Proxy {
+
 	var proxies []*Proxy
+
 	for _, uri := range uris {
 
 		p, err := NewProxy(uri)
@@ -99,4 +96,20 @@ func (p *Proxy) AddUsageMetric() *Proxy {
 // String returns the valid url as {http|socks4|socks5}://{ip}:{port} format
 func (p *Proxy) String() string {
 	return fmt.Sprintf("%s://%s:%s", p.URL.Scheme, p.URL.Hostname(), p.URL.Port())
+}
+
+// Compare check
+func (p *Proxy) Compare(proxy *Proxy) bool {
+	return p.URL.Hostname() == proxy.URL.Hostname() && p.URL.Port() == proxy.URL.Port() && p.URL.Scheme == proxy.URL.Scheme
+}
+
+func NormalizeProxyURI(uri string) string {
+
+	for _, schema := range []string{"http", "https", "socks4", "socks5"} {
+		if strings.HasPrefix(uri, schema) {
+			return uri
+		}
+	}
+
+	return "http://" + uri
 }
