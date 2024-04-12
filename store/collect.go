@@ -155,7 +155,7 @@ func (s *CollectStore) Cookies(u *url.URL) string {
 
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			slog.Info("cookies have not exist yet", slog.String("host", u.Host))
+			slog.Debug("cookies have not exist yet", slog.String("host", u.Host))
 		}
 		return ""
 	}
