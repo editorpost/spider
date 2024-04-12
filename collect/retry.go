@@ -51,7 +51,7 @@ func (r *Retry) Request(resp *colly.Response) bool {
 		}
 
 		if tries.Load() >= int32(r.limit) {
-			slog.Error("retry failed",
+			slog.Debug("retry failed",
 				slog.String("url", resp.Request.URL.String()),
 				slog.String("err", err.Error()),
 			)

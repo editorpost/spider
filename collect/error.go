@@ -36,7 +36,7 @@ func (crawler *Crawler) error(resp *colly.Response, err error) {
 			return
 		}
 
-		slog.Error("url error",
+		slog.Debug("url error",
 			slog.String("err", err.Error()),
 			slog.String("url", resp.Request.URL.String()),
 			slog.String("proxy", resp.Request.ProxyURL),
@@ -45,7 +45,7 @@ func (crawler *Crawler) error(resp *colly.Response, err error) {
 		return
 	}
 
-	slog.Error("response failed",
+	slog.Debug("response failed",
 		slog.String("err", err.Error()),
 		slog.String("url", resp.Request.URL.String()),
 		slog.String("proxy", resp.Request.ProxyURL),
