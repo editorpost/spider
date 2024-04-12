@@ -4,6 +4,7 @@ import (
 	"github.com/gocolly/colly/v2"
 	"log/slog"
 	"sync"
+	"sync/atomic"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 	BadProxyRetries = 15
 	// ResponseRetries is the number of retries for response errors from crawler.visit handler.
 	// it handler http status codes, anti-scraping, captcha, etc.
-	ResponseRetries = 15
+	ResponseRetries = 3
 )
 
 type Retry struct {
@@ -36,18 +37,29 @@ func (r *Retry) Request(resp *colly.Response) bool {
 	}
 
 	r.inc(resp.Request.URL.String())
-	err := resp.Request.Retry()
 
-	// not actual response error, since request might be executed in async mode
-	if err != nil {
-		slog.Error("Request failed",
-			slog.String("url", resp.Request.URL.String()),
-			slog.String("proxy", resp.Request.ProxyURL),
-			slog.String("err", err.Error()),
-		)
+	tries := &atomic.Int32{}
+
+	for {
+
+		tries.Add(1)
+		err := resp.Request.Retry()
+
+		// not actual response error, since request might be executed in async mode
+		if err == nil {
+			return true
+		}
+
+		if tries.Load() >= int32(r.limit) {
+			slog.Error("retry failed",
+				slog.String("url", resp.Request.URL.String()),
+				slog.String("err", err.Error()),
+			)
+			// limit reached
+			return false
+		}
 	}
 
-	return true
 }
 
 func (r *Retry) Limited(resp *colly.Response) bool {

@@ -56,13 +56,14 @@ func NewPool(testURL string) *Pool {
 				return nil
 			}
 
+			p.AddFailMetric()
+
 			if p.fails.Load() > 10 {
+
 				pool.valid.Delete(proxyURL.String())
 				pool.suspect.Add(p)
 				return nil
 			}
-
-			p.AddFailMetric()
 
 			return ErrBadProxy
 		},
@@ -198,7 +199,7 @@ func (pool *Pool) Report() {
 		slog.Info("valid proxies", slog.Int("count", len(pool.valid.Slice())))
 
 		pool.ReportFiveMostFailed()
-		pool.ReportFiveMostUsed()
+		pool.ReportFiveMostSuccess()
 	}
 }
 
@@ -226,7 +227,7 @@ func (pool *Pool) ReportFiveMostFailed() {
 	}
 }
 
-func (pool *Pool) ReportFiveMostUsed() {
+func (pool *Pool) ReportFiveMostSuccess() {
 
 	proxies := pool.valid.Slice()
 	if len(proxies) == 0 {
@@ -235,9 +236,9 @@ func (pool *Pool) ReportFiveMostUsed() {
 
 	// sort by usage
 	sort.Slice(proxies, func(i, j int) bool {
-		return proxies[i].usage.Load() > proxies[j].usage.Load()
+		return proxies[i].success.Load() > proxies[j].success.Load()
 	})
-	slog.Info("TOP USED PROXIES")
+	slog.Info("TOP SUCCESS PROXIES")
 
 	for _, p := range proxies[:min(5, len(proxies))] {
 		slog.Info("proxy",
