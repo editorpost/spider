@@ -35,6 +35,8 @@ type Crawler struct {
 	UserAgent string
 	// ProxyFn is the function to return the proxy for the request
 	ProxyFn func(*http.Request) (*url.URL, error)
+	// RoundTripper is the function to return the next proxy from the list
+	RoundTripper http.RoundTripper
 	// Extractor is the function to process matched the data, e.g. html tag node
 	Extractor func(*colly.HTMLElement, *goquery.Selection) error
 	// Collector is the storage backend for the collector
@@ -46,7 +48,8 @@ type Crawler struct {
 	collect           *colly.Collector
 	_entityURL        *regexp.Regexp
 	chromeCtx         context.Context
-	retry             *Retry
+	errRetry          *Retry
+	proxyRetry        *Retry
 	report            *Report
 	queue             *queue.Queue
 }

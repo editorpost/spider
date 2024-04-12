@@ -3,28 +3,29 @@ package collect
 import (
 	"github.com/gocolly/colly/v2"
 	"log/slog"
-	"net/http"
 	"sync"
 )
 
 const (
-	// RequestRetries is the number of retries for request errors from colly.onError handler.
+	// BadProxyRetries is the number of retries for request errors from colly.onError handler.
 	// it handler network errors, timeouts, etc.
-	RequestRetries = 15
+	BadProxyRetries = 15
 	// ResponseRetries is the number of retries for response errors from crawler.visit handler.
 	// it handler http status codes, anti-scraping, captcha, etc.
 	ResponseRetries = 15
 )
 
 type Retry struct {
-	_count map[string]uint16
+	limit  uint16
 	mute   *sync.Mutex
+	_count map[string]uint16
 }
 
-func NewRetry() *Retry {
+func NewRetry(limit uint16) *Retry {
 	return &Retry{
-		_count: make(map[string]uint16),
+		limit:  limit,
 		mute:   &sync.Mutex{},
+		_count: make(map[string]uint16),
 	}
 }
 
@@ -51,16 +52,10 @@ func (r *Retry) Request(resp *colly.Response) bool {
 
 func (r *Retry) Limited(resp *colly.Response) bool {
 
-	// skip some errors
-	count := r.Count(resp.Request.URL.String())
+	url := resp.Request.URL.String()
+	count := r.Count(url)
 
-	if resp.StatusCode == http.StatusForbidden {
-		if count > ResponseRetries {
-			return false
-		}
-	}
-
-	return count > RequestRetries
+	return count > r.limit
 }
 
 func (r *Retry) Count(url string) uint16 {

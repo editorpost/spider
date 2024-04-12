@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -10,11 +11,16 @@ import (
 	"time"
 )
 
+var (
+	ErrBadProxy = errors.New("bad proxy")
+)
+
 // Pool is a pool of proxies checked against the test URL.
 // Periodically checks the proxies and updates the valid list.
 type Pool struct {
 	valid        *List
 	check        *List
+	suspect      *List
 	checkURL     string
 	checkContent string
 	checkTimeout time.Duration
@@ -23,6 +29,7 @@ type Pool struct {
 	// Checker is a function to check the proxy by URI string
 	Checker func(string) error
 	mute    sync.RWMutex
+	rtp     *http.Transport
 }
 
 func NewPool(testURL string) *Pool {
@@ -30,9 +37,35 @@ func NewPool(testURL string) *Pool {
 	pool := &Pool{
 		valid:        NewList(),
 		check:        NewList(),
+		suspect:      NewList(),
 		checkURL:     testURL,
 		checkTimeout: time.Second * 30,
 		Checker:      nil,
+	}
+
+	pool.rtp = &http.Transport{
+		Proxy:             pool.GetProxyURL,
+		DisableKeepAlives: true,
+		OnProxyConnectResponse: func(ctx context.Context, proxyURL *url.URL, req *http.Request, resp *http.Response) error {
+
+			p := pool.valid.Get(proxyURL.String())
+			p.AddUsageMetric()
+
+			if resp.StatusCode == http.StatusOK {
+				p.AddSuccessMetric()
+				return nil
+			}
+
+			if p.fails.Load() > 10 {
+				pool.valid.Delete(proxyURL.String())
+				pool.suspect.Add(p)
+				return nil
+			}
+
+			p.AddFailMetric()
+
+			return ErrBadProxy
+		},
 	}
 
 	return pool
@@ -54,10 +87,7 @@ func (pool *Pool) Start() error {
 }
 
 func (pool *Pool) Transport() *http.Transport {
-	return &http.Transport{
-		Proxy:             pool.GetProxyURL,
-		DisableKeepAlives: true,
-	}
+	return pool.rtp
 }
 
 // GetProxyURL returns the next valid from the pool or blocks until one is available.
@@ -66,8 +96,6 @@ func (pool *Pool) GetProxyURL(pr *http.Request) (*url.URL, error) {
 
 	// load next valid proxy
 	if proxy := pool.valid.Next(pr); proxy != nil {
-		slog.Debug("with proxy", slog.String("url", proxy.URL.String()))
-		proxy.AddUsageMetric()
 		return proxy.URL, nil
 	}
 
@@ -149,14 +177,10 @@ func (pool *Pool) CheckProxy(p *Proxy, wg *sync.WaitGroup) {
 
 	// check proxy
 	if err := checker(p.String()); err != nil {
-		// failed proxy
-		p.AddFailMetric()
 		pool.check.Delete(p.String())
 		return
 	}
 
-	// success proxy
-	p.AddSuccessMetric()
 	pool.valid.Add(p)
 }
 

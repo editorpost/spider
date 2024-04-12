@@ -2,26 +2,37 @@ package collect
 
 import (
 	"errors"
+	"github.com/editorpost/spider/collect/proxy"
 	"github.com/gocolly/colly/v2"
 	"log/slog"
-	"net/url"
 )
 
 // error logging
 func (crawler *Crawler) error(resp *colly.Response, err error) {
 
-	// slog.Error(err.Error())
+	if errors.Is(err, proxy.ErrBadProxy) {
 
-	var urlErr *url.Error
-	if errors.As(err, &urlErr) {
-		err = urlErr.Err
-		if crawler.retry.Request(resp) {
+		// retry on error with new proxy candidate
+		if crawler.proxyRetry.Request(resp) {
 			return
 		}
+
+		slog.Error("cannot find proper proxy candidate for the url",
+			slog.String("url", resp.Request.URL.String()),
+			slog.String("proxy", resp.Request.ProxyURL),
+			slog.Int("status", resp.StatusCode),
+		)
+
+		return
 	}
 
-	// error if retry limit is reached
-	slog.Error(err.Error(),
+	// retry on error with new working proxy
+	if crawler.errRetry.Request(resp) {
+		return
+	}
+
+	slog.Error("response failed",
+		slog.String("err", err.Error()),
 		slog.String("url", resp.Request.URL.String()),
 		slog.String("proxy", resp.Request.ProxyURL),
 		slog.Int("status", resp.StatusCode),

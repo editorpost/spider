@@ -53,13 +53,15 @@ func (crawler *Crawler) collector() *colly.Collector {
 	//	panic(err)
 	//}
 
-	// proxy handling
+	// round tripper
+	if crawler.RoundTripper != nil {
+		crawler.collect.WithTransport(crawler.RoundTripper)
+	}
+
+	// proxy func, note this injects to transport
+	// it is better to call after transport init.
 	if crawler.ProxyFn != nil {
 		crawler.collect.SetProxyFunc(crawler.ProxyFn)
-		//crawler.collect.WithTransport(&http.Transport{
-		//	Proxy:             crawler.ProxyFn,
-		//	DisableKeepAlives: true,
-		//})
 	}
 
 	// timeouts
@@ -86,7 +88,8 @@ func (crawler *Crawler) collector() *colly.Collector {
 	}
 
 	// Request setup
-	crawler.retry = NewRetry()
+	crawler.errRetry = NewRetry(ResponseRetries)
+	crawler.proxyRetry = NewRetry(BadProxyRetries)
 
 	// set event handlers
 	crawler.collect.OnHTML(`a[href]`, crawler.visit())

@@ -54,7 +54,7 @@ func (lst *List) Next(pr *http.Request) *Proxy {
 		// since colly doesn't copy this context (but tries to retrieve by this key, probably bug)
 		// leave this part here in hope it will be fixed in the future in colly
 		ctx := context.WithValue(pr.Context(), colly.ProxyURLKey, next.String())
-		pr = pr.WithContext(ctx)
+		*pr = *pr.WithContext(ctx)
 	}
 
 	return next
@@ -73,6 +73,21 @@ func (lst *List) Add(proxies ...*Proxy) {
 		}
 		lst.proxies = append(lst.proxies, p)
 	}
+}
+
+func (lst *List) Get(uri string) *Proxy {
+
+	// lock the list
+	lst.mute.RLock()
+	defer lst.mute.RUnlock()
+
+	for _, p := range lst.proxies {
+		if p.String() == uri {
+			return p
+		}
+	}
+
+	return nil
 }
 
 // Exists by hostname
