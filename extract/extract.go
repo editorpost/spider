@@ -3,11 +3,8 @@ package extract
 import (
 	"errors"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/go-shiori/go-readability"
 	"github.com/gocolly/colly/v2"
-	"log/slog"
 	"net/url"
-	"strings"
 )
 
 const (
@@ -56,42 +53,4 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 
 		return nil
 	}
-}
-
-func Article(p *Payload) error {
-
-	htmlStr, err := p.Selection.Html()
-	if err != nil {
-		slog.Warn("html failed", err)
-		return err
-	}
-
-	article, err := readability.FromReader(strings.NewReader(htmlStr), p.URL)
-	if err != nil {
-		slog.Error("extract failed", err)
-		return err
-	}
-
-	p.Data["entity__type"] = EntityArticle
-	p.Data["entity__title"] = article.Title
-	p.Data["entity__byline"] = article.Byline
-	p.Data["entity__content"] = article.Content
-	p.Data["entity__text"] = article.TextContent
-	p.Data["entity__length"] = article.Length
-	p.Data["entity__excerpt"] = article.Excerpt
-	p.Data["entity__site"] = article.SiteName
-	p.Data["entity__image"] = article.Image
-	p.Data["entity__favicon"] = article.Favicon
-	p.Data["entity__language"] = article.Language
-	p.Data["entity__published"] = article.PublishedTime
-	p.Data["entity__modified"] = article.ModifiedTime
-
-	slog.Debug("extract success", slog.String("title", article.Title))
-
-	return nil
-}
-
-func Html(p *Payload) (err error) {
-	p.Data[HtmlField], err = p.Doc.DOM.Html()
-	return err
 }
