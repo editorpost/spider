@@ -1,4 +1,4 @@
-package spider
+package manage
 
 import (
 	"github.com/caarlos0/env/v10"

@@ -1,4 +1,4 @@
-package spider_test
+package tests
 
 import (
 	"encoding/json"
@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/mongodb"
-	"github.com/editorpost/spider"
 	"github.com/editorpost/spider/collect"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/manage"
 	"github.com/editorpost/spider/store"
 	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/assert"
@@ -61,7 +61,7 @@ func TestMain(m *testing.M) {
 
 func TestCollect(t *testing.T) {
 
-	srv := ServeFile(t, "run_test.html")
+	srv := ServeFile(t, "local_data.html")
 	defer srv.Close()
 
 	dispatched := false
@@ -85,7 +85,7 @@ func TestCollect(t *testing.T) {
 
 func TestSave(t *testing.T) {
 
-	srv := ServeFile(t, "run_test.html")
+	srv := ServeFile(t, "local_data.html")
 	defer srv.Close()
 
 	dispatched := false
@@ -103,7 +103,7 @@ func TestSave(t *testing.T) {
 		AllowedURL:     ".*",
 		Depth:          1,
 		EntitySelector: ".article--ssr",
-		Extractor:      extract.Pipe(spider.WindmillMeta, extract.Html, extract.Article, dispatcher, extractor.Save),
+		Extractor:      extract.Pipe(manage.WindmillMeta, extract.Html, extract.Article, dispatcher, extractor.Save),
 		Collector:      collector,
 	}
 
@@ -116,7 +116,7 @@ func TestSave(t *testing.T) {
 
 func TestJSCollect(t *testing.T) {
 
-	srv := ServeFile(t, "run_test.html")
+	srv := ServeFile(t, "local_data.html")
 	defer srv.Close()
 
 	dispatched := false
@@ -161,7 +161,7 @@ func TestMongoConfig(t *testing.T) {
 
 func TestServeFile(t *testing.T) {
 
-	srv := ServeFile(t, "run_test.html")
+	srv := ServeFile(t, "local_data.html")
 	defer srv.Close()
 
 	// create a new request
