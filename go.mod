@@ -5,11 +5,13 @@ go 1.21
 require (
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
+	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/chromedp/cdproto v0.0.0-20240328024531-fe04f09ede24
 	github.com/chromedp/chromedp v0.9.5
 	github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834
 	github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76
+	github.com/go-playground/validator/v10 v10.19.0
 	github.com/go-shiori/go-readability v0.0.0-20240204090920-819593fddc6b
 	github.com/gocolly/colly/v2 v2.1.1-0.20240327170223-5224b972e22b
 	github.com/stretchr/testify v1.9.0
@@ -43,7 +45,6 @@ require (
 	github.com/gin-gonic/gin v1.9.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.19.0 // indirect
 	github.com/go-shiori/dom v0.0.0-20230515143342-73569d674e1c // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
