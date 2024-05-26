@@ -1,26 +1,47 @@
 package article
 
+import (
+	"github.com/go-playground/validator/v10"
+	"log/slog"
+)
+
 // Image represents an image in the article.
 type Image struct {
 	// URL is the URL of the image.
 	// This field is required and should be a valid URL.
-	URL string `json:"url" validate:"required,url"`
+	URL string `json:"url" validate:"url,max=4096"`
 
 	// AltText is the alternative text for the image.
 	// This field is required and should be between 1 and 255 characters long.
-	AltText string `json:"alt_text" validate:"required,min=1,max=255"`
+	AltText string `json:"alt_text" validate:"max=255"`
 
 	// Width is the width of the image in pixels.
 	// This field is optional.
-	Width int `json:"width,omitempty"`
+	Width int `json:"width" validate:"min=0"`
 
 	// Height is the height of the image in pixels.
 	// This field is optional.
-	Height int `json:"height,omitempty"`
+	Height int `json:"height,omitempty" validate:"min=0"`
 
 	// Caption is the caption for the image.
 	// This field is optional.
-	Caption string `json:"caption,omitempty"`
+	Caption string `json:"caption,omitempty" validate:"max=500"`
+}
+
+// Normalize validates and trims the fields of the Image.
+func (i *Image) Normalize() {
+
+	i.URL = TrimToMaxLen(i.URL, 4096)
+	i.AltText = TrimToMaxLen(i.AltText, 255)
+	i.Caption = TrimToMaxLen(i.Caption, 500)
+
+	err := validate.Struct(i)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			slog.Debug("Validation error in Image", slog.String("field", err.Namespace()), slog.String("error", err.Tag()))
+			*i = Image{}
+		}
+	}
 }
 
 // Map converts the Image struct to a map[string]any.

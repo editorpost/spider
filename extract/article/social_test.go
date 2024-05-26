@@ -1,6 +1,8 @@
 package article_test
 
 import (
+	"github.com/brianvoe/gofakeit/v6"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,6 +10,19 @@ import (
 
 	"github.com/editorpost/spider/extract/article" // Замените на фактический путь к вашему пакету
 )
+
+func TestSocialProfileNormalize(t *testing.T) {
+	sp := &article.SocialProfile{
+		Platform: "  " + gofakeit.Word() + "  ",
+		URL:      "  " + gofakeit.URL() + "  ",
+	}
+
+	sp.Normalize()
+
+	assert.NotEmpty(t, sp.URL)
+	assert.Equal(t, strings.TrimSpace(sp.Platform), sp.Platform)
+	assert.Equal(t, strings.TrimSpace(sp.URL), sp.URL)
+}
 
 // TestSocialProfileConversions is a table-driven test for the SocialProfile struct.
 // It verifies the conversion of map data to SocialProfile struct, the validation process, and handling of zero-value fields.

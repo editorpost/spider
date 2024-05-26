@@ -1,12 +1,29 @@
 package article_test
 
 import (
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/editorpost/spider/extract/article"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestVideoNormalize(t *testing.T) {
+	v := &article.Video{
+		URL:       "  " + gofakeit.URL() + "  ",
+		EmbedCode: "  " + gofakeit.Sentence(100) + "  ",
+		Caption:   "  " + gofakeit.Sentence(10) + "  ",
+	}
+
+	v.Normalize()
+
+	assert.NotEmpty(t, v.URL)
+	assert.Equal(t, strings.TrimSpace(v.URL), v.URL)
+	assert.Equal(t, strings.TrimSpace(v.EmbedCode), v.EmbedCode)
+	assert.Equal(t, strings.TrimSpace(v.Caption), v.Caption)
+}
 
 // TestVideoConversions is a table-driven test for the Video struct.
 // It verifies the conversion of map data to Video struct, the validation process, and handling of zero-value fields.

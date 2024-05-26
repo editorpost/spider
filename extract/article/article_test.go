@@ -223,7 +223,7 @@ func TestArticleNormalizeFieldClearing(t *testing.T) {
 	invalid.Byline = gofakeit.Name()
 	invalid.Excerpt = gofakeit.Sentence(10)
 	invalid.Source = "invalid-url"
-	invalid.Language = "english" // should be a valid ISO 639-1 language code
+	invalid.Language = "inglese" // should be a valid ISO 639-1 language code
 	invalid.Category = gofakeit.Sentence(2)
 	invalid.SiteName = gofakeit.Sentence(2)
 
@@ -235,7 +235,7 @@ func TestArticleNormalizeFieldClearing(t *testing.T) {
 	assert.Equal(t, invalid.Byline, valid.Byline)   // should not be cleared since it's not required
 	assert.Equal(t, invalid.Excerpt, valid.Excerpt) // should not be cleared since it's not required
 	assert.Equal(t, "", valid.Source)
-	assert.Equal(t, "", valid.Language)
+	assert.Equal(t, "inglese", valid.Language)
 	assert.Equal(t, invalid.Category, valid.Category)
 	assert.Equal(t, invalid.SiteName, valid.SiteName)
 }
@@ -246,3 +246,23 @@ func TestGetStringSlice(t *testing.T) {
 	key := "key"
 	assert.Equal(t, []string{}, article.GetStringSlice(m, key))
 }
+
+func TestTrimToMaxLen(t *testing.T) {
+	s := "This is a test string with more than twenty characters."
+	trimmed := article.TrimToMaxLen(s, 20)
+	assert.Equal(t, "This is a test strin", trimmed)
+
+	s = "Short string"
+	trimmed = article.TrimToMaxLen(s, 20)
+	assert.Equal(t, s, trimmed)
+}
+
+//Напиши `readme.md` o пакете `Article` для разработчиков и пользователей.
+//
+//Из документа должны быть понятны принятые архитектурные решения, ограничения и их причины. Стоит отдельно рассмотреть лимиты наложенные валидацией, так чтобы это было удобно и для проектировщика БД и для редактора материалов.
+//
+//Покажи минимальный инвариант в виде json.
+//
+//Подчеркни, что рекомендуется использовать `article.NewArticle`, чтобы иметь структуру близкую к инварианту. Перечили поля, которые необходимо добавить для достижения минимального инварианта.
+//
+// Создай сводку для "тех, кто спешит". Добавь оглавление со ссылками.

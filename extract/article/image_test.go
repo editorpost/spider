@@ -1,7 +1,9 @@
 package article_test
 
 import (
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/editorpost/spider/extract/article"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,7 +58,11 @@ func TestImageConversions(t *testing.T) {
 		{
 			name: "Missing Required Fields",
 			inputMap: map[string]any{
-				"url": "https://example.com/image.jpg",
+				"url":      "",
+				"alt_text": "An example image",
+				"width":    800,
+				"height":   600,
+				"caption":  "An example caption",
 			},
 			expectedImage: nil,
 			expectError:   true,
@@ -93,4 +99,21 @@ func TestImageConversions(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestImageNormalize(t *testing.T) {
+	img := &article.Image{
+		URL:     "  " + gofakeit.URL() + "  ",
+		AltText: "  " + gofakeit.Sentence(5) + "  ",
+		Width:   gofakeit.Number(800, 1920),
+		Height:  gofakeit.Number(600, 1080),
+		Caption: "  " + gofakeit.Sentence(10) + "  ",
+	}
+
+	img.Normalize()
+
+	assert.NotEmpty(t, img.URL)
+	assert.Equal(t, strings.TrimSpace(img.URL), img.URL)
+	assert.Equal(t, strings.TrimSpace(img.AltText), img.AltText)
+	assert.Equal(t, strings.TrimSpace(img.Caption), img.Caption)
 }

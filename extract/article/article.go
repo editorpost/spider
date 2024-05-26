@@ -4,7 +4,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"log/slog"
+	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // init go validator instance
@@ -31,11 +33,11 @@ func NewArticle() *Article {
 // This structure provides a flexible and universal foundation for storing and working with various types of content,
 // allowing for easy creation and modification of articles, as well as integration of media and social elements.
 type Article struct {
-	ID                   string          `json:"article__id" validate:"required,uuid4"`
+	ID                   string          `json:"article__id" validate:"required,uuid4,max=36"`
 	Title                string          `json:"article__title" validate:"required,max=255"`
 	Byline               string          `json:"article__byline" validate:"max=255"`
-	Content              string          `json:"article__content" validate:"required"`
-	TextContent          string          `json:"article__text_content" validate:"required"`
+	Content              string          `json:"article__content" validate:"required,max=65000"`
+	TextContent          string          `json:"article__text_content" validate:"required,max=65000"`
 	Excerpt              string          `json:"article__excerpt" validate:"max=500"`
 	PublishDate          time.Time       `json:"article__publish_date" validate:"required"`
 	ModifiedDate         time.Time       `json:"article__modified_date"`
@@ -43,8 +45,8 @@ type Article struct {
 	Videos               []Video         `json:"article__videos"`
 	Quotes               []Quote         `json:"article__quotes"`
 	Tags                 []string        `json:"article__tags"`
-	Source               string          `json:"article__source" validate:"omitempty,url"`
-	Language             string          `json:"article__language" validate:"required,len=2"`
+	Source               string          `json:"article__source" validate:"omitempty,url,max=4096"`
+	Language             string          `json:"article__language" validate:"max=255"`
 	Category             string          `json:"article__category" validate:"max=255"`
 	SiteName             string          `json:"article__site_name" validate:"max=255"`
 	AuthorSocialProfiles []SocialProfile `json:"article__author_social_profiles"`
@@ -52,12 +54,22 @@ type Article struct {
 
 // Normalize validates the Article and its nested structures, logs any validation errors, and clears invalid fields.
 func (a *Article) Normalize() {
-	validate := validator.New()
+
+	a.ID = TrimToMaxLen(a.ID, 36)
+	a.Title = TrimToMaxLen(a.Title, 255)
+	a.Byline = TrimToMaxLen(a.Byline, 255)
+	a.Content = TrimToMaxLen(a.Content, 65000)
+	a.TextContent = TrimToMaxLen(a.TextContent, 65000)
+	a.Excerpt = TrimToMaxLen(a.Excerpt, 500)
+	a.Source = TrimToMaxLen(a.Source, 4096)
+	a.Language = TrimToMaxLen(a.Language, 255)
+	a.Category = TrimToMaxLen(a.Category, 255)
+	a.SiteName = TrimToMaxLen(a.SiteName, 255)
 
 	err := validate.Struct(a)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			slog.Info("Validation error", slog.String("field", err.Namespace()), slog.String("error", err.Tag()))
+			slog.Debug("Validation error", slog.String("field", err.Namespace()), slog.String("error", err.Tag()))
 
 			// Clear invalid fields
 			switch err.Namespace() {
@@ -89,45 +101,18 @@ func (a *Article) Normalize() {
 		}
 	}
 
-	// Validate nested structures
-	for i, image := range a.Images {
-		err := validate.Struct(image)
-		if err != nil {
-			for _, err := range err.(validator.ValidationErrors) {
-				slog.Info("Validation error in Image", slog.String("field", err.Namespace()), slog.String("error", err.Tag()))
-				a.Images[i] = Image{}
-			}
-		}
+	// Normalize nested structures
+	for i := range a.Images {
+		a.Images[i].Normalize()
 	}
-
-	for i, video := range a.Videos {
-		err := validate.Struct(video)
-		if err != nil {
-			for _, err := range err.(validator.ValidationErrors) {
-				slog.Info("Validation error in Video", slog.String("field", err.Namespace()), slog.String("error", err.Tag()))
-				a.Videos[i] = Video{}
-			}
-		}
+	for i := range a.Videos {
+		a.Videos[i].Normalize()
 	}
-
-	for i, quote := range a.Quotes {
-		err := validate.Struct(quote)
-		if err != nil {
-			for _, err := range err.(validator.ValidationErrors) {
-				slog.Info("Validation error in Quote", slog.String("field", err.Namespace()), slog.String("error", err.Tag()))
-				a.Quotes[i] = Quote{}
-			}
-		}
+	for i := range a.Quotes {
+		a.Quotes[i].Normalize()
 	}
-
-	for i, profile := range a.AuthorSocialProfiles {
-		err := validate.Struct(profile)
-		if err != nil {
-			for _, err := range err.(validator.ValidationErrors) {
-				slog.Info("Validation error in SocialProfile", slog.String("field", err.Namespace()), slog.String("error", err.Tag()))
-				a.AuthorSocialProfiles[i] = SocialProfile{}
-			}
-		}
+	for i := range a.AuthorSocialProfiles {
+		a.AuthorSocialProfiles[i].Normalize()
 	}
 }
 
@@ -251,4 +236,14 @@ func GetStringSlice(m map[string]any, key string) []string {
 		}
 	}
 	return []string{}
+}
+
+// TrimToMaxLen trims the input string to the specified maximum length, ensuring that it doesn't exceed the length in runes.
+func TrimToMaxLen(s string, maxLen int) string {
+	s = strings.TrimSpace(s)
+	if utf8.RuneCountInString(s) > maxLen {
+		runeStr := []rune(s)
+		return string(runeStr[:maxLen])
+	}
+	return s
 }

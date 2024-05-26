@@ -1,6 +1,8 @@
 package article_test
 
 import (
+	"github.com/brianvoe/gofakeit/v6"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,6 +10,23 @@ import (
 
 	"github.com/editorpost/spider/extract/article"
 )
+
+func TestQuoteNormalize(t *testing.T) {
+	q := &article.Quote{
+		Text:     "  " + gofakeit.Sentence(15) + "  ",
+		Author:   "  " + gofakeit.Name() + "  ",
+		Source:   "  " + gofakeit.URL() + "  ",
+		Platform: "  " + gofakeit.Word() + "  ",
+	}
+
+	q.Normalize()
+
+	assert.NotEmpty(t, q.Text)
+	assert.Equal(t, strings.TrimSpace(q.Text), q.Text)
+	assert.Equal(t, strings.TrimSpace(q.Author), q.Author)
+	assert.Equal(t, strings.TrimSpace(q.Source), q.Source)
+	assert.Equal(t, strings.TrimSpace(q.Platform), q.Platform)
+}
 
 // TestQuoteConversions is a table-driven test for the Quote struct.
 // It verifies the conversion of map data to Quote struct, the validation process, and handling of zero-value fields.
