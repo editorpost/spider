@@ -90,7 +90,7 @@ func TestMarkdown(t *testing.T) {
 	}
 
 	// save to file `extract_test.md`
-	f, err := os.Create("extract_test.md")
+	f, err := os.Create("article_test.md")
 	require.NoError(t, err)
 	defer f.Close()
 
