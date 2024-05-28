@@ -31,7 +31,7 @@ type Crawler struct {
 	// Depth if is 1, so only the links on the scraped page
 	// is visited, and no further links are followed
 	Depth int
-	// UserAgent is the user agent string used by the collector
+	// UserAgent is the user agent string used by the setup
 	UserAgent string
 	// ProxyFn is the function to return the proxy for the request
 	ProxyFn func(*http.Request) (*url.URL, error)
@@ -39,8 +39,8 @@ type Crawler struct {
 	RoundTripper http.RoundTripper
 	// Extractor is the function to process matched the data, e.g. html tag node
 	Extractor func(*colly.HTMLElement, *goquery.Selection) error
-	// Collector is the storage backend for the collector
-	Collector storage.Storage
+	// Storage is the storage backend for the setup
+	Storage storage.Storage
 
 	// jsLoadSuccess count the number of successful fallback JS loads
 	jsFallbackSuccess *atomic.Int32
@@ -66,7 +66,7 @@ func (crawler *Crawler) Start() error {
 		slog.Int("depth", crawler.Depth),
 	)
 
-	crawler.collector()
+	crawler.setup()
 
 	if crawler.UseBrowser {
 		// create chrome allocator context

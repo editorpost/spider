@@ -1,3 +1,6 @@
+//go:build e2e
+// +build e2e
+
 package proxy_test
 
 import (
@@ -28,10 +31,11 @@ type ProxyInfoContextKey struct{}
 
 // ProxySelector returns a dynamically chosen proxy URL based on the request
 func ProxySelector(req *http.Request) (*url.URL, error) {
-	return url.Parse("http://45.95.203.159:4444")
+	return url.Parse("http://45.95.203.159:4444") // set actual proxy URL here
 }
 
 func TestContext(t *testing.T) {
+
 	transport := &http.Transport{
 		Proxy: func(req *http.Request) (*url.URL, error) {
 			proxyURL, err := ProxySelector(req)

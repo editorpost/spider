@@ -51,15 +51,15 @@ func PlaceholdersToRegex(pattern string) string {
 	return str
 }
 
-// MustHost from url
-func MustHost(fromURL string) string {
+// MustHostname from url
+func MustHostname(fromURL string) string {
 
 	uri, err := url.Parse(fromURL)
 	if err != nil {
 		panic(err)
 	}
 
-	return uri.Host
+	return uri.Hostname()
 }
 
 // MustRootUrl return the root url

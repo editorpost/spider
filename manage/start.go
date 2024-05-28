@@ -49,7 +49,7 @@ func Start(args *Args) error {
 		EntitySelector: args.EntitySelector,
 		UserAgent:      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
 		Extractor:      MustExtractor(args.Name, mongoCfg, extractor),
-		Collector:      MustCollector(args.Name, mongoCfg),
+		Storage:        MustCollector(args.Name, mongoCfg),
 		RoundTripper:   proxies.Transport(),
 	}
 

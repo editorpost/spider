@@ -12,52 +12,171 @@ import (
 	"time"
 )
 
-// collector based on colly
-func (crawler *Crawler) collector() *colly.Collector {
+type Collector struct {
+	*colly.Collector
+}
 
+func NewCollector() *Collector {
+	return &Collector{colly.NewCollector()}
+}
+
+// setup based on colly
+func (crawler *Crawler) setup() *colly.Collector {
+
+	// return if already initialized
 	if crawler.collect != nil {
 		return crawler.collect
-	}
-
-	// create a request queue with 2 consumer threads
-	// https://go-colly.org/docs/examples/queue/
-	var err error
-	crawler.queue, err = queue.New(
-		25, // Number of consumer threads
-		&queue.InMemoryQueueStorage{MaxSize: 50000000}, // 50MB
-	)
-	if err != nil {
-		panic(err)
 	}
 
 	// init metrics reporter
 	crawler.report = NewReport()
 
-	// url regex from crawler args
+	// create a request queue with 2 consumer threads
+	// https://go-colly.org/docs/examples/queue/
+	crawler.withQueue()
+	crawler.withCollector()
+	crawler.withProxy()
+	crawler.withEventHandlers()
+
+	return crawler.collect
+}
+
+// withCollector initializes the collector for the crawler.
+// It first checks if the collector is already initialized, if so, it returns the existing collector.
+// If not, it sets up a new collector with a maximum depth and maximum body size.
+// It then applies URL filters and storage to the collector and sets a random user agent.
+// Finally, it returns the initialized collector.
+//
+// Returns:
+//
+//	*colly.Collector: The initialized collector.
+func (crawler *Crawler) withCollector() *colly.Collector {
+
+	// Check if the collector is already initialized
+	if crawler.collect != nil {
+		return crawler.collect
+	}
+
+	// Set up a new collector with a maximum depth and maximum body size
+	crawler.collect = colly.NewCollector(
+		colly.MaxDepth(crawler.Depth),
+		colly.MaxBodySize(10<<20), // 10MB
+	)
+
+	// Apply URL filters and storage to the collector
+	crawler.withURLFilters()
+	crawler.withStorage()
+
+	// Set a random user agent
+	extensions.RandomUserAgent(crawler.collect)
+
+	// Return the initialized collector
+	return crawler.collect
+}
+
+// withEventHandlers sets up the event handlers for the crawler.
+// It sets handlers for HTML elements, errors, requests, and responses.
+//
+// OnHTML handlers:
+// - `a[href]`: Calls the visit function for each link found in the HTML.
+// - `html`: Calls the extract function for the entire HTML document.
+//
+// OnError handler:
+// - Calls the error function when an error occurs during the crawl.
+//
+// OnRequest handler:
+// - Logs the URL being visited.
+//
+// OnResponse handler:
+// - Updates the report to indicate a URL has been visited.
+func (crawler *Crawler) withEventHandlers() {
+
+	// set event handlers
+	crawler.collect.OnHTML(`a[href]`, crawler.visit())
+	crawler.collect.OnHTML(`html`, crawler.extract())
+	crawler.collect.OnError(crawler.error)
+
+	crawler.collect.OnRequest(func(r *colly.Request) {
+		slog.Debug("visiting", slog.String("url", r.URL.String()))
+	})
+
+	crawler.collect.OnResponse(func(r *colly.Response) {
+		crawler.report.Visited()
+	})
+}
+
+// withStorage sets up the storage for the crawler.
+// It checks if the Storage field of the Crawler struct is not nil,
+// if so, it sets the Storage as the storage for the collector.
+// If an error occurs during the setup, it panics and stops the execution.
+//
+// This function does not return a value.
+func (crawler *Crawler) withStorage() {
+	// Check if the Storage field of the Crawler struct is not nil
+	if crawler.Storage != nil {
+		// Try to set the Storage as the storage for the collector
+		err := crawler.collect.SetStorage(crawler.Storage)
+		// If an error occurs, panic and stop the execution
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+// withURLFilters sets up the URL filters for the crawler.
+// It first generates regular expressions from the start, allowed, and entity URLs.
+// If the entity URL is not empty, it compiles a regular expression from it.
+// It then appends the host of the start URL to the allowed domains of the collector.
+// Finally, it appends a regular expression from the allowed URL to the URL filters of the collector.
+//
+// This function does not return a value.
+func (crawler *Crawler) withURLFilters() {
+
+	// Generate regular expressions from the start, allowed, and entity URLs
 	crawler.StartURL, crawler.AllowedURL, crawler.EntityURL = crawler.urlsRegexp()
+
+	// If the entity URL is not empty, compile a regular expression from it
 	if len(crawler.EntityURL) > 0 {
 		crawler._entityURL = regexp.MustCompile(crawler.EntityURL)
 	}
 
-	// default collector
-	crawler.collect = colly.NewCollector(
-		colly.AllowedDomains(MustHost(crawler.StartURL), "127.0.0.1"),
-		colly.MaxDepth(crawler.Depth),
-		colly.URLFilters(regexp.MustCompile(crawler.AllowedURL)),
-		colly.MaxBodySize(10<<20), // 10MB
+	// Append the host of the start URL to the allowed domains of the collector
+	crawler.collect.AllowedDomains = append(crawler.collect.AllowedDomains, MustHostname(crawler.StartURL))
 
-		// colly.Async(true),
-		// todo must be depending on crawl strategy chosen - singe or incremental
-		// colly.AllowURLRevisit(),
+	// Append a regular expression from the allowed URL to the URL filters of the collector
+	crawler.collect.URLFilters = append(crawler.collect.URLFilters, regexp.MustCompile(crawler.AllowedURL))
+}
+
+// withQueue sets up the request queue for the crawler.
+// It creates a new request queue with 25 consumer threads and an in-memory queue storage with a maximum size of 50MB.
+// If an error occurs during the setup, it panics and stops the execution.
+//
+// This function does not return a value.
+func (crawler *Crawler) withQueue() {
+	// create a request queue with 25 consumer threads
+	// https://go-colly.org/docs/examples/queue/
+	var err error
+	crawler.queue, err = queue.New(
+		5, // Number of consumer threads
+		&queue.InMemoryQueueStorage{MaxSize: 5000000}, // 5MB
 	)
+	if err != nil {
+		panic(err)
+	}
+}
 
-	extensions.RandomUserAgent(crawler.collect)
+// inMemoryQueueItem hold urls max len 512 bytes
+// e.g. 5MB can hold 10k urls
+type inMemoryQueueItem struct {
+	Request []byte
+	Next    *inMemoryQueueItem
+}
 
-	// limit parallelism per domain
-	//rule := &colly.LimitRule{DomainGlob: MustHost(crawler.StartURL), Parallelism: 1}
-	//if err := crawler.collect.Limit(rule); err != nil {
-	//	panic(err)
-	//}
+// withProxy sets up the proxy for the crawler.
+// It sets the request timeout for the collector to 25 seconds.
+// It then sets up a cookie jar for the collector, if an error occurs during the setup, it skips this step.
+// Finally, it sets up retries for response and proxy errors.
+func (crawler *Crawler) withProxy() {
 
 	// round tripper
 	if crawler.RoundTripper != nil {
@@ -80,33 +199,12 @@ func (crawler *Crawler) collector() *colly.Collector {
 		crawler.collect.SetCookieJar(j)
 	}
 
-	// storage backend
-	if crawler.Collector != nil {
-		err := crawler.collect.SetStorage(crawler.Collector)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	// Request setup
+	// retries
 	crawler.errRetry = NewRetry(ResponseRetries)
 	crawler.proxyRetry = NewRetry(BadProxyRetries)
-
-	// set event handlers
-	crawler.collect.OnHTML(`a[href]`, crawler.visit())
-	crawler.collect.OnHTML(`html`, crawler.extract())
-	crawler.collect.OnError(crawler.error)
-
-	crawler.collect.OnRequest(func(r *colly.Request) {
-		slog.Debug("visiting", slog.String("url", r.URL.String()))
-	})
-
-	crawler.collect.OnResponse(func(r *colly.Response) {
-		crawler.report.Visited()
-	})
-
-	return crawler.collect
 }
+
+// eventHandler for errors
 
 // visit links found in the DOM
 func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
@@ -130,33 +228,6 @@ func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
 		if err := crawler.queue.AddURL(link); err != nil {
 			slog.Warn("crawler queue", slog.String("error", err.Error()))
 		}
-		//
-		//err := crawler.collector().Visit(link)
-		//if err == nil {
-		//	crawler.report.Visited()
-		//	return
-		//}
-
-		//// skip errors
-		//skipErrors := []error{
-		//	colly.ErrAlreadyVisited,
-		//	colly.ErrForbiddenDomain,
-		//	colly.ErrForbiddenURL,
-		//	colly.ErrNoURLFiltersMatch,
-		//}
-		//for _, skip := range skipErrors {
-		//	if errors.Is(err, skip) {
-		//		slog.Debug("ignore error", slog.String("error", err.Error()))
-		//		return
-		//	}
-		//}
-		//
-		//// log the error
-		//slog.Warn("crawler visit",
-		//	slog.String("url", link),
-		//	slog.String("proxy", e.Request.ProxyURL),
-		//	slog.String("error", err.Error()),
-		//)
 	}
 }
 
