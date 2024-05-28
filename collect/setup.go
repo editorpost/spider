@@ -4,6 +4,7 @@ import (
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
 	"github.com/gocolly/colly/v2/queue"
+	"github.com/gocolly/colly/v2/storage"
 	"log/slog"
 	"net/http/cookiejar"
 	"net/url"
@@ -97,21 +98,20 @@ func (crawler *Crawler) withEventHandlers() {
 	})
 }
 
-// withStorage sets up the storage for the crawler.
-// It checks if the Storage field of the Crawler struct is not nil,
-// if so, it sets the Storage as the storage for the collector.
-// If an error occurs during the setup, it panics and stops the execution.
-//
-// This function does not return a value.
+// withStorage sets up the storage for the crawler
+// or creates an in-memory storage if not provided.
 func (crawler *Crawler) withStorage() {
+
 	// Check if the Storage field of the Crawler struct is not nil
 	if crawler.Storage != nil {
-		// Try to set the Storage as the storage for the collector
-		err := crawler.collect.SetStorage(crawler.Storage)
-		// If an error occurs, panic and stop the execution
-		if err != nil {
-			panic(err)
-		}
+		crawler.Storage = &storage.InMemoryStorage{}
+	}
+
+	// Try to set the Storage as the storage for the collector
+	err := crawler.collect.SetStorage(crawler.Storage)
+	// If an error occurs, panic and stop the execution
+	if err != nil {
+		panic(err)
 	}
 }
 

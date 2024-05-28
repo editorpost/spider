@@ -64,8 +64,8 @@ func MustMongoConfig(resource string) *mongodb.Config {
 
 	cfg, err := mongodb.GetResource(resource)
 	if err != nil {
-		slog.Error("failed to get mongo resource", slog.String("error", err.Error()))
-		panic(err)
+		slog.Warn("failed to get mongo resource", slog.String("error", err.Error()))
+		return nil
 	}
 
 	return cfg
