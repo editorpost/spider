@@ -26,12 +26,18 @@ func (crawler *Crawler) collector() *colly.Collector {
 		25, // Number of consumer threads
 		&queue.InMemoryQueueStorage{MaxSize: 50000000}, // 50MB
 	)
+	if err != nil {
+		panic(err)
+	}
 
 	// init metrics reporter
 	crawler.report = NewReport()
 
 	// url regex from crawler args
 	crawler.StartURL, crawler.AllowedURL, crawler.EntityURL = crawler.urlsRegexp()
+	if len(crawler.EntityURL) > 0 {
+		crawler._entityURL = regexp.MustCompile(crawler.EntityURL)
+	}
 
 	// default collector
 	crawler.collect = colly.NewCollector(
@@ -80,11 +86,6 @@ func (crawler *Crawler) collector() *colly.Collector {
 		if err != nil {
 			panic(err)
 		}
-	}
-
-	// entity url regex
-	if len(crawler.EntityURL) > 0 {
-		crawler._entityURL = regexp.MustCompile(crawler.EntityURL)
 	}
 
 	// Request setup
