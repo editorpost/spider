@@ -12,14 +12,6 @@ import (
 	"time"
 )
 
-type Collector struct {
-	*colly.Collector
-}
-
-func NewCollector() *Collector {
-	return &Collector{colly.NewCollector()}
-}
-
 // setup based on colly
 func (crawler *Crawler) setup() *colly.Collector {
 
