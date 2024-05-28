@@ -1,109 +1,126 @@
-package extract
+package extract_test
 
 import (
+	"fmt"
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/editorpost/spider/extract"
+	"github.com/go-shiori/dom"
+	"github.com/go-shiori/go-readability"
+	distiller "github.com/markusmobius/go-domdistiller"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io"
+	"log"
+	"net/url"
+	"os"
 	"strings"
 	"testing"
 )
 
-func TestArticle(t *testing.T) {
+func TestFromHTML(t *testing.T) {
 
-	htmlStr, err := LoadHTMLFromFile("article_test.html")
-	if err != nil {
-		t.Fatalf("failed to load HTML from file: %v", err)
-	}
+	a, err := extract.ArticleFromHTML(GetArticleHTML(t), GetArticleURL(t))
+	require.NoError(t, err)
 
-	payload, err := CreatePayload(htmlStr, "https://example.com")
-	if err != nil {
-		t.Fatalf("failed to create payload: %v", err)
-	}
+	// custom fallback with css selector
+	assert.Equal(t, "2024-03-13", a.Published.Format("2006-01-02"))
+	assert.Equal(t, "Egor Denisov", a.Author)
+	assert.Equal(t, "Пхукет в стиле вашего отдыха", a.Title)
+	assert.Equal(t, "https://thailand-news.ru/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/", a.SourceURL)
+	assert.Equal(t, "", a.SourceName)
 
-	err = Article(payload)
-	if err != nil {
-		t.Fatalf("Article function returned an error: %v", err)
-	}
+	// validation
+	assert.NoError(t, a.Normalize())
 
-	if payload.Data["entity__title"] != "Test Title" {
-		t.Errorf("expected title 'Test Title', got '%v'", payload.Data["entity__title"])
-	}
-
-	if payload.Data["entity__byline"] != "Test Byline" {
-		t.Errorf("expected byline 'Test Byline', got '%v'", payload.Data["entity__byline"])
-	}
-
-	if payload.Data["entity__content"] == nil || !strings.Contains(payload.Data["entity__content"].(string), "This is the content of the article.") {
-		t.Errorf("expected content to contain 'This is the content of the article.', got '%v'", payload.Data["entity__content"])
-	}
-
-	if strings.Contains(payload.Data["entity__content"].(string), "Ad content") {
-		t.Errorf("expected content to not contain 'Ad content', but it does")
-	}
-
-	if strings.Contains(payload.Data["entity__content"].(string), "alert('test')") {
-		t.Errorf("expected content to not contain 'alert('test')', but it does")
-	}
-
-	if strings.Contains(payload.Data["entity__content"].(string), "<iframe") {
-		t.Errorf("expected content to not contain '<iframe', but it does")
-	}
+	m := a.Map()
+	_ = m
+	fmt.Println(m)
 }
 
-func TestArticles(t *testing.T) {
-	tests := []struct {
-		name        string
-		htmlFile    string
-		url         string
-		expected    map[string]any
-		shouldError bool
-	}{
-		{
-			name:     "Valid Article",
-			htmlFile: "article_test.html",
-			url:      "https://thailand-news.ru",
-			expected: map[string]any{
-				"entity__title":  "Пхукет в стиле вашего отдыха",
-				"entity__byline": "",
-			},
-			shouldError: false,
-		},
-		{
-			name:        "Invalid URL",
-			htmlFile:    "article_test.html",
-			url:         "://example.com",
-			expected:    nil,
-			shouldError: true,
-		},
+func TestDistiller(t *testing.T) {
+
+	markup := GetArticleHTML(t)
+
+	// Start distiller
+	result, err := distiller.ApplyForReader(strings.NewReader(markup), &distiller.Options{
+		OriginalURL: GetArticleURL(t),
+	})
+	if err != nil {
+		panic(err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			htmlStr, err := LoadHTMLFromFile(tt.htmlFile)
-			require.NoError(t, err, "failed to load HTML from file")
+	rawHTML := dom.OuterHTML(result.Node)
+	fmt.Println(rawHTML)
+}
 
-			payload, err := CreatePayload(htmlStr, tt.url)
-			if tt.shouldError {
-				require.Error(t, err)
-				return
-			}
+func TestReadability(t *testing.T) {
 
-			require.NoError(t, err, "failed to create payload")
+	markup := GetArticleHTML(t)
+	article, err := readability.FromReader(strings.NewReader(markup), GetArticleURL(t))
+	require.NoError(t, err)
 
-			err = Article(payload)
-			require.NoError(t, err, "Article function returned an error")
+	fmt.Printf("Title   : %s\n", article.Title)
+	fmt.Printf("Date    : %s\n", article.PublishedTime)
+	fmt.Printf("Author  : %s\n", article.Byline)
+	fmt.Printf("Length  : %d\n", article.Length)
+	fmt.Printf("Genre : %s\n", article.Excerpt)
+	fmt.Printf("SourceName: %s\n", article.SiteName)
+	fmt.Printf("Image   : %s\n", article.Image)
+	fmt.Printf("Favicon : %s\n", article.Favicon)
+	fmt.Printf("ContentText:\n %s \n", article.TextContent)
+	fmt.Printf("Content:\n %s \n", article.Content)
+}
 
-			for key, expectedValue := range tt.expected {
-				assert.Contains(t, payload.Data, key)
-				if key == "entity__content" {
-					assert.Contains(t, payload.Data[key].(string), expectedValue.(string))
-				} else {
-					assert.Equal(t, expectedValue, payload.Data[key])
-				}
-			}
+func TestMarkdown(t *testing.T) {
 
-			assert.NotContains(t, payload.Data["entity__content"].(string), "Ad content")
-			assert.NotContains(t, payload.Data["entity__content"].(string), "alert('test')")
-			assert.NotContains(t, payload.Data["entity__content"].(string), "<iframe")
-		})
+	markup := GetArticleHTML(t)
+	u := &url.URL{
+		Scheme: "https",
+		Host:   "thailand-news.ru",
+		Path:   "/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/",
+	}
+	article, err := readability.FromReader(strings.NewReader(markup), u)
+	require.NoError(t, err)
+
+	converter := md.NewConverter("", true, nil)
+
+	markdown, err := converter.ConvertString(article.Content)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// save to file `extract_test.md`
+	f, err := os.Create("extract_test.md")
+	require.NoError(t, err)
+	defer f.Close()
+
+	_, err = f.WriteString(markdown)
+	require.NoError(t, err)
+}
+
+func GetArticleHTML(t *testing.T) string {
+
+	t.Helper()
+
+	// open file `article_test.html` return as string
+	f, err := os.Open("article_test.html")
+	require.NoError(t, err)
+	defer f.Close()
+
+	// read file as a string
+	buf := new(strings.Builder)
+	_, err = io.Copy(buf, f)
+	require.NoError(t, err)
+
+	return buf.String()
+}
+
+func GetArticleURL(t *testing.T) *url.URL {
+
+	t.Helper()
+	return &url.URL{
+		Scheme: "https",
+		Host:   "thailand-news.ru",
+		Path:   "/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/",
 	}
 }

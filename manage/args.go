@@ -10,6 +10,12 @@ import (
 const (
 	// DefaultMongoResource is the name of the mongo resource
 	DefaultMongoResource = "f/spider/resource/mongodb"
+	// WindmillJobID is the key for the job ID
+	WindmillJobID = "windmill__job_id"
+	// WindmillFlowPath is the key for the flow path
+	WindmillFlowPath = "windmill__flow_path"
+	// WindmillFlowJobID is the key for the flow job ID
+	WindmillFlowJobID = "windmill__flow_job_id"
 )
 
 // Args is a minimal required input arguments for the spider
@@ -63,15 +69,4 @@ func MustMongoConfig(resource string) *mongodb.Config {
 	}
 
 	return cfg
-}
-
-// WindmillMeta is a meta data extractor
-func WindmillMeta(p *extract.Payload) error {
-
-	// windmill flow
-	p.Data["job_id"] = Env().GetRootFlowJobID()
-	p.Data["flow_path"] = Env().GetFlowPath()
-	p.Data["flow_job_id"] = Env().GetFlowJobID()
-
-	return nil
 }

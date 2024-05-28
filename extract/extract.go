@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	EntityArticle = "article"
-	UrlField      = "url"
-	HtmlField     = "html"
+	UrlField  = "spider__url"
+	HostField = "spider__host"
+	HtmlField = "spider__html"
 )
 
 type (
@@ -18,10 +18,14 @@ type (
 	ExtractFn func(doc *colly.HTMLElement, s *goquery.Selection) error
 
 	Payload struct {
-		Doc       *colly.HTMLElement
+		// Doc is full document
+		Doc *colly.HTMLElement
+		// Selection of entity in document
 		Selection *goquery.Selection
-		URL       *url.URL
-		Data      map[string]any
+		// URL of the document
+		URL *url.URL
+		// Data is a map of extracted data
+		Data map[string]any
 	}
 )
 
@@ -40,7 +44,8 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 			Selection: s,
 			URL:       doc.Request.URL,
 			Data: map[string]any{
-				UrlField: doc.Request.URL.String(),
+				UrlField:  doc.Request.URL.String(),
+				HostField: doc.Request.URL.Host,
 			},
 		}
 

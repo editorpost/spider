@@ -103,7 +103,7 @@ func TestSave(t *testing.T) {
 		AllowedURL:     ".*",
 		Depth:          1,
 		EntitySelector: ".article--ssr",
-		Extractor:      extract.Pipe(manage.WindmillMeta, extract.Html, extract.Article, dispatcher, extractor.Save),
+		Extractor:      extract.Pipe(manage.WindmillMeta, extract.Html, dispatcher, extractor.Save),
 		Collector:      collector,
 	}
 

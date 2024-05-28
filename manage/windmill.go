@@ -2,6 +2,7 @@ package manage
 
 import (
 	"github.com/caarlos0/env/v10"
+	"github.com/editorpost/spider/extract"
 	"os"
 	"sync"
 )
@@ -22,6 +23,17 @@ func Env() *Windmill {
 	})
 
 	return _env
+}
+
+// WindmillMeta is a meta data extractor
+func WindmillMeta(p *extract.Payload) error {
+
+	// windmill flow
+	p.Data[WindmillJobID] = Env().GetRootFlowJobID()
+	p.Data[WindmillFlowPath] = Env().GetFlowPath()
+	p.Data[WindmillFlowJobID] = Env().GetFlowJobID()
+
+	return nil
 }
 
 // Windmill represents configuration settings for a Windmill application.
