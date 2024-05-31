@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/debug"
 	"github.com/gocolly/colly/v2/queue"
 	"github.com/gocolly/colly/v2/storage"
 	"log/slog"
@@ -41,6 +42,12 @@ type Crawler struct {
 	Extractor func(*colly.HTMLElement, *goquery.Selection) error
 	// Storage is the storage backend for the setup
 	Storage storage.Storage
+	// Debugger is the function to debug/monitor spider
+	Debugger debug.Debugger
+	// JobID is the unique identifier for the job
+	JobID string
+	// SpiderID is the unique identifier for the spider
+	SpiderID string
 
 	// jsLoadSuccess count the number of successful fallback JS loads
 	jsFallbackSuccess *atomic.Int32
@@ -52,6 +59,7 @@ type Crawler struct {
 	proxyRetry        *Retry
 	report            *Report
 	queue             *queue.Queue
+	monitor           *Metrics
 }
 
 // Start the scraping Crawler.

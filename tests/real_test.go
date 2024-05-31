@@ -41,6 +41,27 @@ func TestStart(t *testing.T) {
 	require.NoError(t, err)
 }
 
+//goland:noinspection GoUnusedFunction
+func TestStartNoDatabase(t *testing.T) {
+
+	pool := proxy.NewPool("https://thailand-news.ru")
+	require.NoError(t, pool.Start())
+
+	task := collect.Crawler{
+		StartURL:       "https://thailand-news.ru",
+		AllowedURL:     "https://thailand-news.ru{any}",
+		EntityURL:      "https://thailand-news.ru/news/{dir}/{some}",
+		Depth:          3,
+		EntitySelector: ".node-article--full",
+		Extractor:      extract.Pipe(manage.WindmillMeta),
+		Storage:        nil,
+		RoundTripper:   pool.Transport(),
+	}
+
+	err = task.Start()
+	require.NoError(t, err)
+}
+
 func TestDatabaseSave(t *testing.T) {
 
 	srv := ServeFile(t, "local_data.html")

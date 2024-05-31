@@ -51,6 +51,8 @@ func Start(args *Args) error {
 		Extractor:      MustExtractor(args.Name, mongoCfgOrNil, extractor),
 		Storage:        MustCollector(args.Name, mongoCfgOrNil),
 		RoundTripper:   proxies.Transport(),
+		JobID:          Env().JobID,
+		SpiderID:       args.Name,
 	}
 
 	return crawler.Start()

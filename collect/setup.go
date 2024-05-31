@@ -5,7 +5,6 @@ import (
 	"github.com/gocolly/colly/v2/extensions"
 	"github.com/gocolly/colly/v2/queue"
 	"github.com/gocolly/colly/v2/storage"
-	"log/slog"
 	"net/http/cookiejar"
 	"net/url"
 	"regexp"
@@ -23,6 +22,7 @@ func (crawler *Crawler) setup() *colly.Collector {
 
 	// init metrics reporter
 	crawler.report = NewReport()
+	crawler.monitor = NewMetrics(crawler.JobID, crawler.SpiderID)
 
 	// create a request queue with 2 consumer threads
 	// https://go-colly.org/docs/examples/queue/
@@ -67,47 +67,17 @@ func (crawler *Crawler) withCollector() *colly.Collector {
 	return crawler.collect
 }
 
-// withEventHandlers sets up the event handlers for the crawler.
-// It sets handlers for HTML elements, errors, requests, and responses.
-//
-// OnHTML handlers:
-// - `a[href]`: Calls the visit function for each link found in the HTML.
-// - `html`: Calls the extract function for the entire HTML document.
-//
-// OnError handler:
-// - Calls the error function when an error occurs during the crawl.
-//
-// OnRequest handler:
-// - Logs the URL being visited.
-//
-// OnResponse handler:
-// - Updates the report to indicate a URL has been visited.
-func (crawler *Crawler) withEventHandlers() {
-
-	// set event handlers
-	crawler.collect.OnHTML(`a[href]`, crawler.visit())
-	crawler.collect.OnHTML(`html`, crawler.extract())
-	crawler.collect.OnError(crawler.error)
-
-	crawler.collect.OnRequest(func(r *colly.Request) {
-		slog.Debug("visiting", slog.String("url", r.URL.String()))
-	})
-
-	crawler.collect.OnResponse(func(r *colly.Response) {
-		crawler.report.Visited()
-	})
-}
-
 // withStorage sets up the storage for the crawler
 // or creates an in-memory storage if not provided.
 func (crawler *Crawler) withStorage() {
 
 	// Check if the Storage field of the Crawler struct is not nil
-	if crawler.Storage != nil {
+	if crawler.Storage == nil {
 		crawler.Storage = &storage.InMemoryStorage{}
+		return
 	}
 
-	// Try to set the Storage as the storage for the collector
+	// Retry to set the Storage as the storage for the collector
 	err := crawler.collect.SetStorage(crawler.Storage)
 	// If an error occurs, panic and stop the execution
 	if err != nil {
@@ -196,56 +166,14 @@ func (crawler *Crawler) withProxy() {
 	crawler.proxyRetry = NewRetry(BadProxyRetries)
 }
 
-// eventHandler for errors
+func (crawler *Crawler) withDebug() {
 
-// visit links found in the DOM
-func (crawler *Crawler) visit() func(e *colly.HTMLElement) {
-
-	return func(e *colly.HTMLElement) {
-
-		// absolute url
-		link := e.Request.AbsoluteURL(e.Attr("href"))
-
-		// skip empty and anchor links
-		if link == "" || strings.HasPrefix(link, "#") {
-			return
-		}
-
-		// skip images, scripts, etc.
-		if !isValidURLExtension(link) {
-			return
-		}
-
-		// visit the link
-		if err := crawler.queue.AddURL(link); err != nil {
-			slog.Warn("crawler queue", slog.String("error", err.Error()))
-		}
+	if crawler.Debugger == nil {
+		return
 	}
-}
 
-// extract entries from html selections
-func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
-	return func(doc *colly.HTMLElement) {
-
-		// entity url regex
-		if crawler._entityURL != nil {
-			if !crawler._entityURL.MatchString(doc.Request.URL.String()) {
-				return
-			}
-		}
-
-		// selected html selections matching the query
-		// might be empty if the query is not found
-		for _, selected := range crawler.selections(doc) {
-			err := crawler.Extractor(doc, selected)
-			if err != nil {
-				crawler.report.ExtractFailed()
-				continue
-			}
-
-			crawler.report.Extracted()
-		}
-	}
+	// colly event dispatcher for logging, monitoring and debugging
+	crawler.collect.SetDebugger(crawler.Debugger)
 }
 
 func (crawler *Crawler) urlsRegexp() (start, allowed, entity string) {
