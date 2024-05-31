@@ -3,6 +3,7 @@ package collect
 import (
 	"github.com/gocolly/colly/v2"
 	"log/slog"
+	"strconv"
 	"sync"
 	"sync/atomic"
 )
@@ -14,6 +15,8 @@ const (
 	// ResponseRetries is the number of retries for response errors from crawler.visit handler.
 	// it handler http status codes, anti-scraping, captcha, etc.
 	ResponseRetries = 3
+	// RetryCountCtx is the context key for the retry count
+	RetryCountCtx = "RequestRetriesCount"
 )
 
 type Retry struct {
@@ -43,6 +46,11 @@ func (r *Retry) Request(resp *colly.Response) bool {
 	for {
 
 		tries.Add(1)
+
+		// add count to request context
+		resp.Request.Ctx.Put(RetryCountCtx, strconv.Itoa(int(tries.Load())))
+
+		// do request (all event lifecycle starts again)
 		err := resp.Request.Retry()
 
 		// not actual response error, since request might be executed in async mode
