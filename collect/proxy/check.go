@@ -3,7 +3,6 @@ package proxy
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -33,7 +32,7 @@ func Check(proxyURL, testURL, contains string, timeout time.Duration) error {
 
 	req, err := http.NewRequest("GET", testURL, nil)
 	if err != nil {
-		log.Fatalln(err)
+		return fmt.Errorf("невозможно создать запрос: %w", err)
 	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
