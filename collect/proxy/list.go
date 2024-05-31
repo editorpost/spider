@@ -100,7 +100,8 @@ func (lst *List) Exists(proxy *Proxy) bool {
 	return lst.existsUnsafe(proxy)
 }
 
-// Exists check if the valid exists in the list. Unsafe to use in concurrent environment.
+// existsUnsafes check if the valid exists in the list.
+// Use only after locking the list.
 func (lst *List) existsUnsafe(proxy *Proxy) bool {
 
 	for _, p := range lst.proxies {
