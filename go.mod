@@ -14,7 +14,7 @@ require (
 	github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834
 	github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76
 	github.com/editorpost/donq/pkg/vars v0.0.0-20240602015150-a3bfa995d453
-	github.com/editorpost/donq/pkg/vlog v0.0.0-20240602015150-a3bfa995d453
+	github.com/editorpost/donq/pkg/vlog v0.0.0-20240602165338-32524dec77da
 	github.com/go-shiori/dom v0.0.0-20230515143342-73569d674e1c
 	github.com/go-shiori/go-readability v0.0.0-20240204090920-819593fddc6b
 	github.com/gocolly/colly/v2 v2.1.1-0.20240327170223-5224b972e22b

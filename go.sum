@@ -87,6 +87,10 @@ github.com/editorpost/donq/pkg/vars v0.0.0-20240602015150-a3bfa995d453 h1:T1f6OX
 github.com/editorpost/donq/pkg/vars v0.0.0-20240602015150-a3bfa995d453/go.mod h1:jMNMjfR4q4cObCRQO9MFKEsNDwMozo9sAJNw6Dh776A=
 github.com/editorpost/donq/pkg/vlog v0.0.0-20240602015150-a3bfa995d453 h1:AVbK9aS023McaeALSwST13fhKUTrXEJ0FzoBTE/7s4Q=
 github.com/editorpost/donq/pkg/vlog v0.0.0-20240602015150-a3bfa995d453/go.mod h1:O59O2rWEletRTJWP458yCIl8G+/VjDXxr7slYuVS8JQ=
+github.com/editorpost/donq/pkg/vlog v0.0.0-20240602030118-e15c13f68980 h1:wzoLnh4Z5r2w7fUEFzPrt6e1zY1vxo2GQSSUBb06Unc=
+github.com/editorpost/donq/pkg/vlog v0.0.0-20240602030118-e15c13f68980/go.mod h1:O59O2rWEletRTJWP458yCIl8G+/VjDXxr7slYuVS8JQ=
+github.com/editorpost/donq/pkg/vlog v0.0.0-20240602165338-32524dec77da h1:xDCbWvFo2mPlABL5utuVty2cKTyhVawtlQiP+XrFplQ=
+github.com/editorpost/donq/pkg/vlog v0.0.0-20240602165338-32524dec77da/go.mod h1:O59O2rWEletRTJWP458yCIl8G+/VjDXxr7slYuVS8JQ=
 github.com/elastic/elastic-transport-go/v8 v8.5.0 h1:v5membAl7lvQgBTexPRDBO/RdnlQX+FM9fUVDyXxvH0=
 github.com/elastic/elastic-transport-go/v8 v8.5.0/go.mod h1:YLHer5cj0csTzNFXoNQ8qhtGY1GTvSqPnKWKaqQE3Hk=
 github.com/elastic/go-elasticsearch/v8 v8.13.1 h1:du5F8IzUUyCkzxyHdrO9AtopcG95I/qwi2WK8Kf1xlg=
