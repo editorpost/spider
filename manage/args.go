@@ -41,6 +41,10 @@ type Args struct {
 	ProxySources []string `json:"ProxySources"`
 	// MongoDbResource is the name of the mongo resource, e.g. "u/spider/mongodb"
 	MongoDbResource string `json:"MongoDbResource" validate:"trim,required"`
+	// VictoriaMetricsUrl // todo move to resource
+	VictoriaMetricsUrl string `json:"VictoriaMetricsUrl" validate:"trim,required"`
+	// VictoriaLogsUrl // todo move to resource
+	VictoriaLogsUrl string `json:"VictoriaLogsUrl" validate:"trim,required"`
 }
 
 // MetricStore creates a new metric store
