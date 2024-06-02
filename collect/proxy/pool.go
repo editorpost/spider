@@ -32,6 +32,27 @@ type Pool struct {
 	rtp     *http.Transport
 }
 
+// StartPool initializes a new pool with the given start URL and proxy sources.
+func StartPool(startURL string, proxySources ...string) (*Pool, error) {
+
+	// start the proxy pool
+	pool := NewPool(startURL)
+
+	// provide user defined proxy sources
+	// or used default public sources
+	if len(proxySources) > 0 {
+		pool.Loader = func() ([]string, error) {
+			return LoadStringLists(proxySources)
+		}
+	}
+
+	if err := pool.Start(); err != nil {
+		return nil, err
+	}
+
+	return pool, nil
+}
+
 func NewPool(testURL string) *Pool {
 
 	pool := &Pool{
