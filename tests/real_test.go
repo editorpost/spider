@@ -7,7 +7,6 @@ import (
 	"github.com/editorpost/spider/collect"
 	"github.com/editorpost/spider/collect/proxy"
 	"github.com/editorpost/spider/extract"
-	"github.com/editorpost/spider/manage"
 	"github.com/editorpost/spider/store"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -28,7 +27,7 @@ func TestStart(t *testing.T) {
 		EntityURL:      "https://thailand-news.ru/news/{dir}/{some}",
 		Depth:          3,
 		EntitySelector: ".node-article--full",
-		Extractor: extract.Pipe(manage.WindmillMeta, extract.Html, func(p *extract.Payload) error {
+		Extractor: extract.Pipe(extract.WindmillMeta, extract.Html, func(p *extract.Payload) error {
 			println(p.URL.String())
 			return nil
 		}, storage.Save),
@@ -53,7 +52,7 @@ func TestStartNoDatabase(t *testing.T) {
 		EntityURL:      "https://thailand-news.ru/news/{dir}/{some}",
 		Depth:          3,
 		EntitySelector: ".node-article--full",
-		Extractor:      extract.Pipe(manage.WindmillMeta),
+		Extractor:      extract.Pipe(extract.WindmillMeta),
 		Storage:        nil,
 		RoundTripper:   pool.Transport(),
 	}
@@ -82,7 +81,7 @@ func TestDatabaseSave(t *testing.T) {
 		AllowedURL:     ".*",
 		Depth:          1,
 		EntitySelector: ".article--ssr",
-		Extractor:      extract.Pipe(manage.WindmillMeta, extract.Html, dispatcher, extractor.Save),
+		Extractor:      extract.Pipe(extract.WindmillMeta, extract.Html, dispatcher, extractor.Save),
 		Storage:        collector,
 	}
 
@@ -105,7 +104,7 @@ func TestRealForbidden(t *testing.T) {
 		EntityURL:      "https://thailand-news.ru/news/{dir}/{some}",
 		Depth:          3,
 		EntitySelector: ".node-article--full",
-		Extractor: extract.Pipe(manage.WindmillMeta, extract.Html, func(p *extract.Payload) error {
+		Extractor: extract.Pipe(extract.WindmillMeta, extract.Html, func(p *extract.Payload) error {
 			println(p.URL.String())
 			return nil
 		}, storage.Save),
