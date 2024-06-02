@@ -30,8 +30,10 @@ type Args struct {
 	UseBrowser bool `json:"UseBrowser"`
 	// Depth is the number of levels to follow the links
 	Depth int `json:"Depth"`
-	// ProxySourceURLs is the list of proxy sources, expected to return list of proxies URLs
-	// by default used public proxy sources
+	// ProxyEnabled is the flag to enable proxy or send requests directly
+	ProxyEnabled bool `json:"ProxyEnabled"`
+	// ProxySources is the list of proxy sources, expected to return list of proxies URLs.
+	// If empty, the default proxy sources is used.
 	ProxySources []string `json:"ProxySources"`
 	// MongoDbResource is the name of the mongo resource, e.g. "u/spider/mongodb"
 	MongoDbResource string `json:"MongoDbResource" validate:"trim,required"`
