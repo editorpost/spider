@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/editorpost/spider/collect"
+	"github.com/editorpost/spider/manage/setup"
 	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/assert"
 	"net/http"
