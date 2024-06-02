@@ -1,4 +1,4 @@
-package manage
+package setup
 
 import (
 	"github.com/editorpost/donq/mongodb"
@@ -12,8 +12,8 @@ const (
 	DefaultMongoResource = "f/spider/resource/mongodb"
 )
 
-// Args is a minimal required input arguments for the spider
-type Args struct {
+// Config is the setup with primitive types
+type Config struct {
 	// Name is the name of the spider and mongo collection
 	Name string `json:"Name" validate:"trim,required"`
 	// StartURL is the URL to start crawling, e.g. http://example.com

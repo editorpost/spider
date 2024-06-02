@@ -2,6 +2,7 @@ package manage
 
 import (
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/manage/setup"
 )
 
 // SingleTurn spider takes a single URL and extracts the data
@@ -10,7 +11,7 @@ func SingleTurn(uri, selector string, extractor extract.PipeFn) (*extract.Payloa
 
 	result := &extract.Payload{}
 
-	args := &Args{
+	args := &setup.Config{
 		// Any name since no data is stored
 		Name: "ready-check",
 		// All urls are the same for single turn

@@ -19,7 +19,7 @@ import (
 //goland:noinspection GoUnusedExportedFunction
 func StartWith(input any) error {
 
-	args := &Args{}
+	args := &setup.Config{}
 	if err := script.ParseArgs(input, args); err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func StartWith(input any) error {
 
 // Start is a code for running spider
 // as Windmill Script with extract.Article
-func Start(args *Args) error {
+func Start(args *setup.Config) error {
 
 	// defaults
 	var collectStore storage.Storage = &storage.InMemoryStorage{}
