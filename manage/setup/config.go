@@ -3,7 +3,6 @@ package setup
 import (
 	"github.com/editorpost/donq/mongodb"
 	"github.com/editorpost/spider/extract"
-	"github.com/editorpost/spider/store"
 	"log/slog"
 )
 
@@ -41,18 +40,6 @@ type Config struct {
 	VictoriaMetricsUrl string `json:"VictoriaMetricsUrl" validate:"trim,required"`
 	// VictoriaLogsUrl // todo move to resource
 	VictoriaLogsUrl string `json:"VictoriaLogsUrl" validate:"trim,required"`
-}
-
-// MetricStore creates a new metric store
-func MustMetricStore(cfg *mongodb.Config) *store.MetricStore {
-
-	s, err := store.NewMetricStore(cfg)
-	if err != nil {
-		slog.Error("failed to create metric store", slog.String("error", err.Error()))
-		panic(err)
-	}
-
-	return s
 }
 
 // MustMongoConfig returns the mongo config or panic
