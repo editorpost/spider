@@ -36,17 +36,17 @@ func (crawler *Crawler) withEventHandlers() {
 
 // request dispatcher
 func (crawler *Crawler) request(r *colly.Request) {
-	crawler.monitor.OnRequest(r)
+	crawler.Monitor.OnRequest(r)
 }
 
 // response dispatcher
 func (crawler *Crawler) response(r *colly.Response) {
-	crawler.monitor.OnResponse(r)
+	crawler.Monitor.OnResponse(r)
 }
 
 // scraped dispatcher
 func (crawler *Crawler) scraped(r *colly.Response) {
-	crawler.monitor.OnScraped(r)
+	crawler.Monitor.OnScraped(r)
 }
 
 // visit links found in the DOM
@@ -90,11 +90,11 @@ func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
 		for _, selected := range crawler.selections(doc) {
 
 			if err := crawler.Extractor(doc, selected); err != nil {
-				crawler.monitor.OnError(doc.Response, err)
+				crawler.Monitor.OnError(doc.Response, err)
 				continue
 			}
 
-			crawler.monitor.OnExtract(doc.Response)
+			crawler.Monitor.OnExtract(doc.Response)
 		}
 	}
 }
@@ -102,7 +102,7 @@ func (crawler *Crawler) extract() func(e *colly.HTMLElement) {
 // error logging
 func (crawler *Crawler) error(resp *colly.Response, err error) {
 
-	crawler.monitor.OnError(resp, err)
+	crawler.Monitor.OnError(resp, err)
 
 	if errors.Is(err, proxy.ErrBadProxy) {
 

@@ -20,8 +20,10 @@ func (crawler *Crawler) setup() *colly.Collector {
 		return crawler.collect
 	}
 
-	// init metrics reporter
-	crawler.report = NewReport()
+	// fallback metrics if not set
+	if crawler.Monitor == nil {
+		crawler.Monitor = &MetricsFallback{}
+	}
 
 	// create a request queue with 2 consumer threads
 	// https://go-colly.org/docs/examples/queue/

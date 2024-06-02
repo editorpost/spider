@@ -43,14 +43,14 @@ type Crawler struct {
 	Extractor func(*colly.HTMLElement, *goquery.Selection) error
 	// Storage is the storage backend for the setup
 	Storage storage.Storage
-	// Debugger is the function to debug/monitor spider
+	// Debugger is the function to debug/Monitor spider
 	Debugger debug.Debugger
 	// JobID is the unique identifier for the job
 	JobID string
 	// SpiderID is the unique identifier for the spider
 	SpiderID string
 	// Metrics is the spider event dispatcher and VictoriaMetrics
-	Metrics *Metrics
+	Monitor Metrics
 
 	// jsLoadSuccess count the number of successful fallback JS loads
 	jsFallbackSuccess *atomic.Int32
@@ -62,7 +62,6 @@ type Crawler struct {
 	proxyRetry        *Retry
 	report            *Report
 	queue             *queue.Queue
-	monitor           *Metrics
 }
 
 // Start the scraping Crawler.
