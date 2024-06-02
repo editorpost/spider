@@ -11,42 +11,17 @@ import (
 
 // withEventHandlers sets up the event handlers for the crawler.
 // It sets handlers for HTML elements, errors, requests, and responses.
-//
-// OnHTML handlers:
-// - `a[href]`: Calls the visit function for each link found in the HTML.
-// - `html`: Calls the extract function for the entire HTML document.
-//
-// OnError handler:
-// - Calls the error function when an error occurs during the crawl.
-//
-// OnRequest handler:
-// - Logs the URL being visited.
-//
-// OnResponse handler:
-// - Updates the report to indicate a URL has been visited.
 func (crawler *Crawler) withEventHandlers() {
-
+	// collect links
 	crawler.collect.OnHTML(`a[href]`, crawler.visit())
+	// extract data
 	crawler.collect.OnHTML(`html`, crawler.extract())
+	// catch errors, run retry
 	crawler.collect.OnError(crawler.error)
+	// rest for monitoring
 	crawler.collect.OnRequest(crawler.request)
 	crawler.collect.OnResponse(crawler.response)
 	crawler.collect.OnScraped(crawler.scraped)
-}
-
-// request dispatcher
-func (crawler *Crawler) request(r *colly.Request) {
-	crawler.Monitor.OnRequest(r)
-}
-
-// response dispatcher
-func (crawler *Crawler) response(r *colly.Response) {
-	crawler.Monitor.OnResponse(r)
-}
-
-// scraped dispatcher
-func (crawler *Crawler) scraped(r *colly.Response) {
-	crawler.Monitor.OnScraped(r)
 }
 
 // visit links found in the DOM
@@ -144,4 +119,19 @@ func (crawler *Crawler) error(resp *colly.Response, err error) {
 		slog.String("proxy", resp.Request.ProxyURL),
 		slog.Int("status", resp.StatusCode),
 	)
+}
+
+// request dispatcher
+func (crawler *Crawler) request(r *colly.Request) {
+	crawler.Monitor.OnRequest(r)
+}
+
+// response dispatcher
+func (crawler *Crawler) response(r *colly.Response) {
+	crawler.Monitor.OnResponse(r)
+}
+
+// scraped dispatcher
+func (crawler *Crawler) scraped(r *colly.Response) {
+	crawler.Monitor.OnScraped(r)
 }
