@@ -11,7 +11,7 @@ import (
 
 func TestSingleTurn_ExtractsDataFromURL(t *testing.T) {
 
-	uri := "https://www.bbc.com/news/uk-england-gloucestershire-69055101"
+	uri := "https://thailand-news.ru/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/"
 	selector := "article"
 
 	payload, err := manage.SingleTurn(uri, selector, extract.Article)
