@@ -60,7 +60,6 @@ type Crawler struct {
 	chromeCtx         context.Context
 	errRetry          *Retry
 	proxyRetry        *Retry
-	report            *Report
 	queue             *queue.Queue
 }
 
