@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"regexp"
 	"sync/atomic"
+	"time"
 )
 
 // Crawler for scraping a website
@@ -48,6 +49,8 @@ type Crawler struct {
 	JobID string
 	// SpiderID is the unique identifier for the spider
 	SpiderID string
+	// Metrics is the spider event dispatcher and VictoriaMetrics
+	Metrics *Metrics
 
 	// jsLoadSuccess count the number of successful fallback JS loads
 	jsFallbackSuccess *atomic.Int32
@@ -93,6 +96,10 @@ func (crawler *Crawler) Start() error {
 	}
 
 	crawler.collect.Wait()
+
+	// wait for the last log ingested
+	// todo provide flush method here
+	time.Sleep(5 * time.Second)
 
 	return nil
 }

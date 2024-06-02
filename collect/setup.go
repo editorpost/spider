@@ -22,7 +22,6 @@ func (crawler *Crawler) setup() *colly.Collector {
 
 	// init metrics reporter
 	crawler.report = NewReport()
-	crawler.monitor = NewMetrics(crawler.JobID, crawler.SpiderID)
 
 	// create a request queue with 2 consumer threads
 	// https://go-colly.org/docs/examples/queue/
