@@ -42,6 +42,10 @@ func (s *CollectStore) Init() error {
 
 func NewCollectStore(jobDbName string, cfg *mongodb.Config) (s *CollectStore, err error) {
 
+	if cfg == nil {
+		return nil, errors.New("collector store config is nil")
+	}
+
 	s = &CollectStore{}
 	uri := options.Client().ApplyURI(cfg.DSN)
 

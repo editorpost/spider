@@ -29,6 +29,10 @@ type (
 
 func NewExtractStore(jobDbName string, cfg *mongodb.Config) (s *ExtractStore, err error) {
 
+	if cfg == nil {
+		return nil, errors.New("collector store config is nil")
+	}
+
 	s = &ExtractStore{}
 	uri := options.Client().ApplyURI(cfg.DSN)
 
