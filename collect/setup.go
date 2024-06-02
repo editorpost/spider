@@ -5,11 +5,9 @@ import (
 	"github.com/gocolly/colly/v2/extensions"
 	"github.com/gocolly/colly/v2/queue"
 	"github.com/gocolly/colly/v2/storage"
-	"net/http/cookiejar"
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
 )
 
 // setup based on colly
@@ -133,38 +131,6 @@ func (crawler *Crawler) withQueue() {
 type inMemoryQueueItem struct {
 	Request []byte
 	Next    *inMemoryQueueItem
-}
-
-// withProxy sets up the proxy for the crawler.
-// It sets the request timeout for the collector to 25 seconds.
-// It then sets up a cookie jar for the collector, if an error occurs during the setup, it skips this step.
-// Finally, it sets up retries for response and proxy errors.
-func (crawler *Crawler) withProxy() {
-
-	// round tripper
-	if crawler.RoundTripper != nil {
-		crawler.collect.WithTransport(crawler.RoundTripper)
-	}
-
-	// proxy func, note this injects to transport
-	// it is better to call after transport init.
-	if crawler.ProxyFn != nil {
-		crawler.collect.SetProxyFunc(crawler.ProxyFn)
-	}
-
-	// timeouts
-	crawler.collect.SetRequestTimeout(25 * time.Second)
-
-	// cookie handling
-	// for turning off - crawler.collect.DisableCookies()
-	j, err := cookiejar.New(&cookiejar.Options{})
-	if err == nil {
-		crawler.collect.SetCookieJar(j)
-	}
-
-	// retries
-	crawler.errRetry = NewRetry(ResponseRetries)
-	crawler.proxyRetry = NewRetry(BadProxyRetries)
 }
 
 func (crawler *Crawler) withDebug() {
