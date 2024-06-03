@@ -9,7 +9,7 @@ import (
 // All spider related data will be erased.
 func Reset(name string, cfg *mongodb.Config) error {
 
-	collector, err := store.NewCollectStore(name, cfg)
+	collector, err := store.NewCollectStore(name, cfg.DSN)
 	if err != nil {
 		return err
 	}
@@ -19,7 +19,7 @@ func Reset(name string, cfg *mongodb.Config) error {
 		return err
 	}
 
-	extractor, err := store.NewExtractStore(name, cfg)
+	extractor, err := store.NewExtractStore(name, cfg.DSN)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func Reset(name string, cfg *mongodb.Config) error {
 // Crawler URL history will be erased.
 func ResetCollector(name string, cfg *mongodb.Config) error {
 
-	collector, err := store.NewCollectStore(name, cfg)
+	collector, err := store.NewCollectStore(name, cfg.DSN)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func ResetCollector(name string, cfg *mongodb.Config) error {
 // Extracted data will be erased. All temporary data/images will be lost.
 func ResetExtractor(name string, cfg *mongodb.Config) error {
 
-	extractor, err := store.NewExtractStore(name, cfg)
+	extractor, err := store.NewExtractStore(name, cfg.DSN)
 	if err != nil {
 		return err
 	}
