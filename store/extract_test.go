@@ -36,7 +36,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	collector, err = NewCollectStore(testDbName, mongoCfg)
+	collector, err = NewCollectStore(testDbName, mongoCfg.DSN)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestMain(m *testing.M) {
 //goland:noinspection GoUnusedFunction
 func TestStart(t *testing.T) {
 
-	storage, err := NewExtractStore("thailand-news_ru__full", mongoCfg)
+	storage, err := NewExtractStore("thailand-news_ru__full", mongoCfg.DSN)
 	require.NoError(t, err)
 
 	pool := proxy.NewPool("https://thailand-news.ru")
@@ -105,7 +105,7 @@ func TestDatabaseSave(t *testing.T) {
 		return nil
 	}
 
-	extractor, err := NewExtractStore(testDbName, mongoCfg)
+	extractor, err := NewExtractStore(testDbName, mongoCfg.DSN)
 	require.NoError(t, err)
 
 	task := collect.Crawler{
@@ -127,7 +127,7 @@ func TestDatabaseSave(t *testing.T) {
 //goland:noinspection GoUnusedFunction
 func TestRealForbidden(t *testing.T) {
 
-	storage, err := NewExtractStore("thailand-news_ru__full", mongoCfg)
+	storage, err := NewExtractStore("thailand-news_ru__full", mongoCfg.DSN)
 	require.NoError(t, err)
 
 	task := collect.Crawler{

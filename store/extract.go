@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/bits-and-blooms/bloom/v3"
-	"github.com/editorpost/donq/mongodb"
 	"github.com/editorpost/spider/extract"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,20 +26,20 @@ type (
 	}
 )
 
-func NewExtractStore(jobDbName string, cfg *mongodb.Config) (s *ExtractStore, err error) {
+func NewExtractStore(dbName, mongoDSN string) (s *ExtractStore, err error) {
 
-	if cfg == nil {
+	if mongoDSN == "" {
 		return nil, errors.New("collector store config is nil")
 	}
 
 	s = &ExtractStore{}
-	uri := options.Client().ApplyURI(cfg.DSN)
+	uri := options.Client().ApplyURI(mongoDSN)
 
 	if s.client, err = mongo.Connect(context.Background(), uri); err != nil {
 		return nil, err
 	}
 
-	s.db = s.client.Database(jobDbName)
+	s.db = s.client.Database(dbName)
 	s.col = s.db.Collection(ExtractorResults)
 	s.cache = bloom.NewWithEstimates(1000000, 0.01)
 

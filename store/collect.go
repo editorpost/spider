@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/bits-and-blooms/bloom/v3"
-	"github.com/editorpost/donq/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -40,20 +39,20 @@ func (s *CollectStore) Init() error {
 	return s.preload()
 }
 
-func NewCollectStore(jobDbName string, cfg *mongodb.Config) (s *CollectStore, err error) {
+func NewCollectStore(dbName, mongoURI string) (s *CollectStore, err error) {
 
-	if cfg == nil {
+	if mongoURI == "" {
 		return nil, errors.New("collector store config is nil")
 	}
 
 	s = &CollectStore{}
-	uri := options.Client().ApplyURI(cfg.DSN)
+	uri := options.Client().ApplyURI(mongoURI)
 
 	if s.client, err = mongo.Connect(context.Background(), uri); err != nil {
 		return
 	}
 
-	s.db = s.client.Database(jobDbName)
+	s.db = s.client.Database(dbName)
 	s.visited = s.db.Collection(CollectorVisited)
 	s.cookies = s.db.Collection(CollectorCookies)
 	s._cookies = &sync.Map{}
