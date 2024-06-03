@@ -16,7 +16,7 @@ func Trial(args *config.Args, extractor extract.PipeFn) ([]*extract.Payload, err
 
 	err := Start(args, deploy, extractor, func(payload *extract.Payload) error {
 
-		// the queue will stops automatically
+		// the queue will stop automatically
 		// after args.ExtractLimit is reached
 		if len(items) < args.ExtractLimit {
 			items = append(items, payload)
