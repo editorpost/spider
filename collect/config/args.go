@@ -16,6 +16,8 @@ type Args struct {
 
 	// required
 
+	// SpiderID is the unique identifier for the spider
+	SpiderID string `json:"SpiderID"`
 	// StartURL is the url to start the scraping
 	StartURL string `json:"StartURL"`
 
@@ -30,6 +32,9 @@ type Args struct {
 	// ExtractSelector is the css selector to match the elements
 	// use selector for extracting entities and filtering pages
 	ExtractSelector string `json:"ExtractSelector"`
+	// ExtractLimit is the limit of entities to extract
+	// Crawler gracefully stops after reaching the limit
+	ExtractLimit int `json:"ExtractLimit"`
 
 	// optional
 
