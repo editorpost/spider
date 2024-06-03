@@ -78,11 +78,10 @@ func (crawler *Crawler) VisitUrlFilter(args *config.Args) colly.CollectorOption 
 // It creates a new request queue with 25 consumer threads and an in-memory queue storage with a maximum size of 50MB.
 // If an error occurs during the collector, it panics and stops the execution.
 //
-// This function does not return a value.
-func (crawler *Crawler) withQueue() error {
-	// create a request queue with number of consumer threads
-	// https://go-colly.org/docs/examples/queue/
-	var err error
+// create a request queue with number of consumer threads
+// https://go-colly.org/docs/examples/queue/
+func (crawler *Crawler) withQueue() (err error) {
+
 	crawler.queue, err = queue.New(
 		5, // Number of consumer threads
 		&queue.InMemoryQueueStorage{MaxSize: 5000000}, // 5MB
