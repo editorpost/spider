@@ -8,10 +8,10 @@ import (
 
 // VictoriaLogs sets up slog ingester to VictoriaLogs server.
 // All slog messages will be sent to VictoriaLogs server.
-func VictoriaLogs(uri, lvl, spider string) {
+func VictoriaLogs(uri, lvl, spiderID string) {
 
 	// set windmill attributes to the logger
-	vlog.VictoriaLogger(uri, LevelParse(lvl), vars.LoggerAttr(spider)...)
+	vlog.VictoriaLogger(uri, LevelParse(lvl), vars.LoggerAttr(spiderID)...)
 
 	// log arguments on start
 	slog.Debug("start logging", slog.Any("vars", vars.FromEnv()))

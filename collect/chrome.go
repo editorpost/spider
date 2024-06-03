@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-// browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
-func (crawler *Crawler) browse(reqURL string) (*goquery.Selection, error) {
+// Browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
+func (crawler *Crawler) Browse(reqURL string) (*goquery.Selection, error) {
 
 	resp, err := crawler.browseChrome(reqURL)
 	if err != nil {
@@ -30,23 +30,24 @@ func (crawler *Crawler) browse(reqURL string) (*goquery.Selection, error) {
 		return nil, err
 	}
 
-	return doc.Find(crawler.EntitySelector), nil
+	return doc.Find(crawler.args.ExtractSelector), nil
 }
 
-// browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
+// Browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
 func (crawler *Crawler) browseChrome(reqURL string) (string, error) {
 
 	// Initialize a new browser context
 	ctx, cancel := chromedp.NewContext(crawler.chromeCtx)
 	defer cancel()
 
-	chromedp.UserAgent(crawler.UserAgent)
+	chromedp.UserAgent(crawler.args.UserAgent)
 
 	// Navigate to the URL and fetch the rendered HTML
 	var htmlContent string
 	err := chromedp.Run(ctx,
 		&emulation.SetUserAgentOverrideParams{
-			UserAgent:      crawler.UserAgent,
+			// todo: why UserAgent set twice?
+			UserAgent:      crawler.args.UserAgent,
 			AcceptLanguage: "en-US,en;q=0.9",
 		},
 		chromedp.Navigate(reqURL),
@@ -61,6 +62,8 @@ func (crawler *Crawler) browseChrome(reqURL string) (string, error) {
 }
 
 func (crawler *Crawler) setupChrome() context.CancelFunc {
+
+	slog.Info("chrome collector")
 
 	opts := []chromedp.ExecAllocatorOption{
 		chromedp.NoFirstRun,

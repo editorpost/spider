@@ -85,6 +85,8 @@ github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76 h1:ZMRW
 github.com/editorpost/donq/pkg/script v0.0.0-20240404081519-fe48d38f0b76/go.mod h1:ebV+Zh0ntN9GyVyahDGIJHlBIO1h4dpfG/nz2outoPU=
 github.com/editorpost/donq/pkg/vars v0.0.0-20240602015150-a3bfa995d453 h1:T1f6OX1fipDGmK6HkBVzy1Z8fKaaE4JRAmj3wkBt3tY=
 github.com/editorpost/donq/pkg/vars v0.0.0-20240602015150-a3bfa995d453/go.mod h1:jMNMjfR4q4cObCRQO9MFKEsNDwMozo9sAJNw6Dh776A=
+github.com/editorpost/donq/pkg/vars v0.0.0-20240602223741-2c72166c39ba h1:CI/EsKXpBTdzC1D/n+bNEKqJiTz4b2WW5XTz/CFsJMg=
+github.com/editorpost/donq/pkg/vars v0.0.0-20240602223741-2c72166c39ba/go.mod h1:jMNMjfR4q4cObCRQO9MFKEsNDwMozo9sAJNw6Dh776A=
 github.com/editorpost/donq/pkg/vlog v0.0.0-20240602015150-a3bfa995d453 h1:AVbK9aS023McaeALSwST13fhKUTrXEJ0FzoBTE/7s4Q=
 github.com/editorpost/donq/pkg/vlog v0.0.0-20240602015150-a3bfa995d453/go.mod h1:O59O2rWEletRTJWP458yCIl8G+/VjDXxr7slYuVS8JQ=
 github.com/editorpost/donq/pkg/vlog v0.0.0-20240602030118-e15c13f68980 h1:wzoLnh4Z5r2w7fUEFzPrt6e1zY1vxo2GQSSUBb06Unc=

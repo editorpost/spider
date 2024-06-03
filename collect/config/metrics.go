@@ -1,4 +1,4 @@
-package collect
+package config
 
 import (
 	"github.com/gocolly/colly/v2"

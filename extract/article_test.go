@@ -41,7 +41,7 @@ func TestDistiller(t *testing.T) {
 
 	markup := GetArticleHTML(t)
 
-	// Start distiller
+	// Run distiller
 	result, err := distiller.ApplyForReader(strings.NewReader(markup), &distiller.Options{
 		OriginalURL: GetArticleURL(t),
 	})

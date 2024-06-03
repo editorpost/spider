@@ -1,4 +1,4 @@
-package collect
+package events
 
 import (
 	"github.com/gocolly/colly/v2"

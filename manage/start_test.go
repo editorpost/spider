@@ -15,16 +15,16 @@ func TestStartNoDatabase(t *testing.T) {
 	require.NoError(t, pool.Start())
 
 	task := collect.Crawler{
-		StartURL:       "https://thailand-news.ru/news/turizm/",
-		AllowedURL:     "https://thailand-news.ru/news/{any}",
-		EntityURL:      "https://thailand-news.ru/news/{dir}/{some}",
-		Depth:          3,
-		EntitySelector: ".node-article--full",
-		Extractor:      extract.Pipe(extract.WindmillMeta),
-		Storage:        nil,
-		RoundTripper:   pool.Transport(),
+		StartURL:        "https://thailand-news.ru/news/turizm/",
+		AllowedURL:      "https://thailand-news.ru/news/{any}",
+		ExtractURL:      "https://thailand-news.ru/news/{dir}/{some}",
+		Depth:           3,
+		ExtractSelector: ".node-article--full",
+		Extractor:       extract.Pipe(extract.WindmillMeta),
+		Storage:         nil,
+		RoundTripper:    pool.Transport(),
 	}
 
-	err := task.Start()
+	err := task.Run()
 	require.NoError(t, err)
 }

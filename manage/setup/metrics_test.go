@@ -3,7 +3,7 @@ package setup_test
 import (
 	"fmt"
 	"github.com/VictoriaMetrics/metrics"
-	"github.com/editorpost/spider/collect"
+	"github.com/editorpost/spider/collect/events"
 	"github.com/editorpost/spider/manage/setup"
 	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ import (
 func NewMetrics() *setup.VictoriaMetrics {
 	m, err := setup.NewMetrics("job1", "spider1", "url")
 	assert.NoError(nil, err)
-	return m.(*setup.VictoriaMetrics)
+	return m
 }
 
 func TestMetrics_OnRequest(t *testing.T) {
@@ -30,11 +30,11 @@ func TestMetrics_OnRequest(t *testing.T) {
 	m.OnRequest(req)
 
 	startTime := req.Ctx.Get(setup.StartTimeCtx)
-	assert.NotEmpty(t, startTime, "Start time should be set in context")
+	assert.NotEmpty(t, startTime, "Run time should be set in context")
 	assert.NotNil(t, m.Counter(setup.RequestEvent), "Request counter should not be nil")
 
 	// Check retry logic
-	req.Ctx.Put(collect.RetryCountCtx, "1")
+	req.Ctx.Put(events.RetryCountCtx, "1")
 	m.OnRequest(req)
 	assert.NotNil(t, m.Counter(setup.RetryEvent), "Retry counter should not be nil")
 }

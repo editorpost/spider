@@ -128,7 +128,7 @@ func (pool *Pool) GetProxyURL(pr *http.Request) (*url.URL, error) {
 	reportAt := time.Time{}
 
 	// run 12 hours since start
-	for time.Since(start) < time.Hour*12 {
+	for time.Since(start) < time.Hour {
 
 		try++
 		time.Sleep(time.Second)

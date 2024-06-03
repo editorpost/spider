@@ -1,11 +1,13 @@
 package collect
 
 import (
-	"net/http/cookiejar"
+	"github.com/editorpost/spider/collect/config"
+	"github.com/editorpost/spider/collect/proxy"
+	"github.com/gocolly/colly/v2"
 	"time"
 )
 
-// withProxy sets up the proxy for the crawler.
+// WithProxyPool sets up the proxy for the crawler.
 //
 // Summary:
 // - use proxy.Pool as RoundTripper
@@ -13,38 +15,34 @@ import (
 // - default request timeout is 15 seconds
 // - enable cookies (on error - log and skip setting cookies)
 // - finally, it sets up retries for response and proxy errors.
-func (crawler *Crawler) withProxy() {
+func WithProxyPool(args *config.Args) (colly.CollectorOption, error) {
 
-	// round tripper
-	//
-	// the transport is used to make HTTP requests.
-	// with proxy.Pool it is used to rotate the proxy
-	// and collect metrics from good/bad proxy responses
-	if crawler.RoundTripper != nil {
-		crawler.collect.WithTransport(crawler.RoundTripper)
+	var (
+		err       error
+		poolReady bool
+		proxies   *proxy.Pool
+	)
+
+	if args.ProxyEnabled {
+		proxies, err = proxy.StartPool(args.StartURL, args.ProxySources...)
+		if err != nil {
+			return nil, err
+		}
+		poolReady = true
 	}
 
-	// inject proxy func to transport
-	//
-	// arg: in case of proxy pool, skip this step
-	// 	    as the transport is already set and have the proxy func.
-	// dev: order matters, call after transport already set
-	//      or default transport will be used
-	if crawler.ProxyFn != nil {
-		crawler.collect.SetProxyFunc(crawler.ProxyFn)
-	}
+	return func(c *colly.Collector) {
 
-	// timeouts
-	crawler.collect.SetRequestTimeout(15 * time.Second)
+		if poolReady {
+			// the transport is used to make HTTP requests.
+			// with proxy.Pool it is used to rotate the proxy
+			// and collect metrics from good/bad proxy responses
+			c.WithTransport(proxies.Transport())
+		}
 
-	// cookie handling
-	// for turning off - crawler.collect.DisableCookies()
-	j, err := cookiejar.New(&cookiejar.Options{})
-	if err == nil {
-		crawler.collect.SetCookieJar(j)
-	}
+		// increase timeouts due proxy rotation
+		c.SetRequestTimeout(15 * time.Second)
 
-	// retries
-	crawler.errRetry = NewRetry(ResponseRetries)
-	crawler.proxyRetry = NewRetry(BadProxyRetries)
+	}, nil
+
 }

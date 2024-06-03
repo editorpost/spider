@@ -60,7 +60,7 @@ func NewMetricStore(cfg *mongodb.Config) (*MetricStore, error) {
 		closeChan:   make(chan struct{}),
 	}
 
-	// Start the background flushing process
+	// Run the background flushing process
 	go ts.backgroundFlush()
 
 	return ts, nil

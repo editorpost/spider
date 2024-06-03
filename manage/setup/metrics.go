@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/avast/retry-go"
-	"github.com/editorpost/spider/collect"
+	"github.com/editorpost/spider/collect/events"
 	"github.com/gocolly/colly/v2"
 	"log/slog"
 	"net"
@@ -30,7 +30,7 @@ type VictoriaMetrics struct {
 }
 
 // NewMetrics creates a new Metrics instance
-func NewMetrics(job, spider, promUrl string) (collect.Metrics, error) {
+func NewMetrics(job, spider, promUrl string) (*VictoriaMetrics, error) {
 
 	// pusher
 	err := retry.Do(
@@ -71,7 +71,7 @@ func (m *VictoriaMetrics) OnRequest(req *colly.Request) {
 	m.Counter(RequestEvent).Inc()
 
 	// retry count
-	if req.Ctx.Get(collect.RetryCountCtx) != "" {
+	if req.Ctx.Get(events.RetryCountCtx) != "" {
 		m.OnRetry(req)
 	}
 }

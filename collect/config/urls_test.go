@@ -1,7 +1,7 @@
-package collect_test
+package config_test
 
 import (
-	"github.com/editorpost/spider/collect"
+	"github.com/editorpost/spider/collect/config"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -54,7 +54,7 @@ func TestCreateRegexpString(t *testing.T) {
 
 	for _, tt := range tc {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := collect.PlaceholdersToRegex(tt.pattern)
+			actual := config.RegexPattern(tt.pattern)
 			assert.Equal(t, tt.expected, actual)
 
 			for _, match := range tt.matches {

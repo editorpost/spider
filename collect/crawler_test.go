@@ -1,7 +1,4 @@
-//go:build e2e
-// +build e2e
-
-package tests
+package collect_test
 
 import (
 	"encoding/json"
@@ -10,7 +7,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/mongodb"
 	"github.com/editorpost/spider/collect"
-	"github.com/editorpost/spider/store"
+	"github.com/editorpost/spider/collect/config"
 	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,88 +19,60 @@ import (
 	"testing"
 )
 
-const (
-	testDbName = "test_test"
-)
-
-var (
-	mongoCfg  *mongodb.Config
-	collector *store.CollectStore
-)
-
-func TestMain(m *testing.M) {
-
-	res := map[string]any{
-		"db": "spider_meta",
-		"servers": []any{
-			map[string]any{
-				"host": "localhost",
-				"port": 27018,
-			},
-		},
-		"credential": map[string]any{
-			"username": "root",
-			"password": "nopass",
-		},
-	}
-
-	var err error
-	if mongoCfg, err = mongodb.ConfigFromResource(res); err != nil {
-		log.Fatal(err)
-	}
-
-	collector, err = store.NewCollectStore(testDbName, mongoCfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	os.Exit(m.Run())
-}
-
 func TestCollect(t *testing.T) {
 
-	srv := ServeFile(t, "local_data.html")
+	srv := ServeFile(t, "crawler_test.html")
 	defer srv.Close()
 
 	dispatched := false
 
-	task := collect.Crawler{
-		StartURL:       srv.URL,
-		AllowedURL:     ".*",
-		Depth:          1,
-		EntitySelector: ".article--ssr",
-		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
-			dispatched = true
-			return nil
+	crawler, err := collect.NewCrawler(
+		&config.Args{
+			StartURL:        srv.URL,
+			AllowedURL:      ".*",
+			Depth:           1,
+			ExtractSelector: ".article--ssr",
 		},
-		Storage: collector,
-	}
+		&config.Deps{
+			Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
+				dispatched = true
+				return nil
+			},
+		},
+	)
+	require.NoError(t, err)
 
-	err := task.Start()
+	err = crawler.Run()
+
 	require.NoError(t, err)
 	assert.True(t, dispatched)
 }
 
 func TestJSCollect(t *testing.T) {
 
-	srv := ServeFile(t, "local_data.html")
+	srv := ServeFile(t, "crawler_test.html")
 	defer srv.Close()
 
 	dispatched := false
 
-	task := collect.Crawler{
-		StartURL:       srv.URL,
-		AllowedURL:     ".*",
-		Depth:          1,
-		UseBrowser:     true,
-		EntitySelector: ".article--js",
-		Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
-			dispatched = true
-			return nil
+	crawler, err := collect.NewCrawler(
+		&config.Args{
+			StartURL:        srv.URL,
+			AllowedURL:      ".*",
+			Depth:           1,
+			ExtractSelector: ".article--js",
+			UseBrowser:      true,
 		},
-	}
+		&config.Deps{
+			Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
+				dispatched = true
+				return nil
+			},
+		},
+	)
 
-	require.NoError(t, task.Start())
+	require.NoError(t, err)
+	require.NoError(t, crawler.Run())
 	assert.True(t, dispatched)
 }
 
@@ -131,7 +100,7 @@ func TestMongoConfig(t *testing.T) {
 
 func TestServeFile(t *testing.T) {
 
-	srv := ServeFile(t, "local_data.html")
+	srv := ServeFile(t, "crawler_test.html")
 	defer srv.Close()
 
 	// create a new request
@@ -163,17 +132,6 @@ func TestServeFile(t *testing.T) {
 	require.Contains(t, body, "Hello, World!")
 }
 
-type Args struct {
-	// StartURL is the URL to start crawling, e.g. http://example.com
-	StartURL string `json:"StartURL"`
-	// AllowedURL is the regex to match the URLs, e.g. ".*"
-	MatchURL string `json:"AllowedURL"`
-	// Depth is the number of levels to follow the links
-	Depth int `json:"Depth"`
-	// EntitySelector CSS to match the entities to extract, e.g. ".article--ssr"
-	Selector string `json:"EntitySelector"`
-}
-
 func Parse[T any](from any, to *T) error {
 
 	m, ok := from.(map[string]interface{})
@@ -193,26 +151,6 @@ func Parse[T any](from any, to *T) error {
 	}
 
 	return nil
-}
-
-func TestParse(t *testing.T) {
-
-	args := Args{}
-	var input any = map[string]interface{}{
-		"StartURL":       "http://example.com",
-		"AllowedURL":     ".*",
-		"Depth":          1,
-		"EntitySelector": ".article--ssr",
-	}
-
-	// Test the Parse function
-	err := Parse(input, &args)
-
-	assert.NoError(t, err, "Expected no error")
-	assert.Equal(t, "http://example.com", args.StartURL)
-	assert.Equal(t, ".*", args.MatchURL)
-	assert.Equal(t, 1, args.Depth)
-	assert.Equal(t, ".article--ssr", args.Selector)
 }
 
 // ServeFile serves the file at the given path and returns the URL

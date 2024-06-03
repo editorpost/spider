@@ -1,197 +1,102 @@
 package collect
 
 import (
+	"github.com/editorpost/spider/collect/config"
+	"github.com/editorpost/spider/collect/events"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
 	"github.com/gocolly/colly/v2/queue"
-	"github.com/gocolly/colly/v2/storage"
-	"net/url"
+	"log/slog"
+	"net/http/cookiejar"
 	"regexp"
-	"strings"
 )
 
-// setup based on colly
-func (crawler *Crawler) setup() *colly.Collector {
+// collector based on colly
+func (crawler *Crawler) collector() (*colly.Collector, error) {
 
 	// return if already initialized
 	if crawler.collect != nil {
-		return crawler.collect
+		return crawler.collect, nil
 	}
 
-	// fallback metrics if not set
-	if crawler.Monitor == nil {
-		crawler.Monitor = &MetricsFallback{}
+	slog.Info("setup collector", crawler.args.Log())
+
+	if err := crawler.withQueue(); err != nil {
+		return nil, err
 	}
 
-	// create a request queue with 2 consumer threads
-	// https://go-colly.org/docs/examples/queue/
-	crawler.withQueue()
-	crawler.withCollector()
-	crawler.withProxy()
-	crawler.withEventHandlers()
-
-	return crawler.collect
-}
-
-// withCollector initializes the collector for the crawler.
-// It first checks if the collector is already initialized, if so, it returns the existing collector.
-// If not, it sets up a new collector with a maximum depth and maximum body size.
-// It then applies URL filters and storage to the collector and sets a random user agent.
-// Finally, it returns the initialized collector.
-//
-// Returns:
-//
-//	*colly.Collector: The initialized collector.
-func (crawler *Crawler) withCollector() *colly.Collector {
-
-	// Check if the collector is already initialized
-	if crawler.collect != nil {
-		return crawler.collect
+	withProxyPool, err := WithProxyPool(crawler.args)
+	if err != nil {
+		return nil, err
 	}
 
 	// Set up a new collector with a maximum depth and maximum body size
 	crawler.collect = colly.NewCollector(
-		colly.MaxDepth(crawler.Depth),
+		colly.MaxDepth(crawler.args.Depth),
 		colly.MaxBodySize(10<<20), // 10MB
+		crawler.VisitUrlFilter(crawler.args),
+		events.WithDispatcher(crawler.args, crawler.deps, events.Queue(crawler.queue), events.Browser(crawler)),
+		withProxyPool,
 	)
 
-	// Apply URL filters and storage to the collector
-	crawler.withURLFilters()
-	crawler.withStorage()
+	if err = crawler.collect.SetStorage(crawler.deps.Storage); err != nil {
+		return nil, err
+	}
 
 	// Set a random user agent
 	extensions.RandomUserAgent(crawler.collect)
 
-	// Return the initialized collector
-	return crawler.collect
+	// cookie handling
+	// for turning off - crawler.collect.DisableCookies()
+	j, err := cookiejar.New(&cookiejar.Options{})
+	if err == nil {
+		crawler.collect.SetCookieJar(j)
+	}
+
+	return crawler.collect, nil
 }
 
-// withStorage sets up the storage for the crawler
-// or creates an in-memory storage if not provided.
-func (crawler *Crawler) withStorage() {
+// VisitUrlFilter sets up the URL filters for the collector.
+// It applies a regular expression filter to the URLs visited by the collector.
+// Allowed URL pattern is used to extract links in hope to find entity URLs.
+// In other hand, ExtractURL is used to run extractors on the page.
+func (crawler *Crawler) VisitUrlFilter(args *config.Args) colly.CollectorOption {
+	return func(collector *colly.Collector) {
 
-	// Check if the Storage field of the Crawler struct is not nil
-	if crawler.Storage == nil {
-		crawler.Storage = &storage.InMemoryStorage{}
-		return
+		// Generate regular expressions from the start, allowed, and entity URLs
+		allowed := config.RegexPattern(args.AllowedURL)
+
+		// Append the host of the start URL to the allowed domains of the collector
+		collector.AllowedDomains = append(collector.AllowedDomains, config.MustHostname(args.StartURL))
+
+		// Append a regular expression from the allowed URL to the URL filters of the collector
+		collector.URLFilters = append(collector.URLFilters, regexp.MustCompile(allowed))
 	}
-
-	// Retry to set the Storage as the storage for the collector
-	err := crawler.collect.SetStorage(crawler.Storage)
-	// If an error occurs, panic and stop the execution
-	if err != nil {
-		panic(err)
-	}
-}
-
-// withURLFilters sets up the URL filters for the crawler.
-// It first generates regular expressions from the start, allowed, and entity URLs.
-// If the entity URL is not empty, it compiles a regular expression from it.
-// It then appends the host of the start URL to the allowed domains of the collector.
-// Finally, it appends a regular expression from the allowed URL to the URL filters of the collector.
-//
-// This function does not return a value.
-func (crawler *Crawler) withURLFilters() {
-
-	// Generate regular expressions from the start, allowed, and entity URLs
-	crawler.StartURL, crawler.AllowedURL, crawler.EntityURL = crawler.urlsRegexp()
-
-	// If the entity URL is not empty, compile a regular expression from it
-	if len(crawler.EntityURL) > 0 {
-		crawler._entityURL = regexp.MustCompile(crawler.EntityURL)
-	}
-
-	// Append the host of the start URL to the allowed domains of the collector
-	crawler.collect.AllowedDomains = append(crawler.collect.AllowedDomains, MustHostname(crawler.StartURL))
-
-	// Append a regular expression from the allowed URL to the URL filters of the collector
-	crawler.collect.URLFilters = append(crawler.collect.URLFilters, regexp.MustCompile(crawler.AllowedURL))
 }
 
 // withQueue sets up the request queue for the crawler.
 // It creates a new request queue with 25 consumer threads and an in-memory queue storage with a maximum size of 50MB.
-// If an error occurs during the setup, it panics and stops the execution.
+// If an error occurs during the collector, it panics and stops the execution.
 //
 // This function does not return a value.
-func (crawler *Crawler) withQueue() {
-	// create a request queue with 25 consumer threads
+func (crawler *Crawler) withQueue() error {
+	// create a request queue with number of consumer threads
 	// https://go-colly.org/docs/examples/queue/
 	var err error
 	crawler.queue, err = queue.New(
 		5, // Number of consumer threads
 		&queue.InMemoryQueueStorage{MaxSize: 5000000}, // 5MB
 	)
-	if err != nil {
-		panic(err)
-	}
-}
 
-// inMemoryQueueItem hold urls max len 512 bytes
-// e.g. 5MB can hold 10k urls
-type inMemoryQueueItem struct {
-	Request []byte
-	Next    *inMemoryQueueItem
+	return err
 }
 
 func (crawler *Crawler) withDebug() {
 
-	if crawler.Debugger == nil {
+	if crawler.deps.Debugger == nil {
 		return
 	}
 
 	// colly event dispatcher for logging, monitoring and debugging
-	crawler.collect.SetDebugger(crawler.Debugger)
-}
-
-func (crawler *Crawler) urlsRegexp() (start, allowed, entity string) {
-
-	start = strings.TrimSpace(crawler.StartURL)
-	if len(start) == 0 {
-		panic("crawler: start url is required")
-	}
-
-	allowed = strings.TrimSpace(crawler.AllowedURL)
-	if len(allowed) == 0 {
-		// get the host from the start url
-		allowed = MustRootUrl(start) + "{any}"
-	}
-
-	entityUrl := strings.TrimSpace(crawler.EntityURL)
-	if len(entityUrl) == 0 {
-		entityUrl = ""
-	}
-
-	return PlaceholdersToRegex(start), PlaceholdersToRegex(allowed), PlaceholdersToRegex(entityUrl)
-}
-
-func isValidURLExtension(urlStr string) bool {
-	allowedExtensions := map[string]bool{
-		".php":   true,
-		".xhtml": true,
-		".shtml": true,
-		".cfm":   true,
-		".html":  true,
-		".htm":   true,
-		".asp":   true,
-		".aspx":  true,
-		".jsp":   true,
-		".jspx":  true,
-	}
-
-	// Parse the URL to extract the path
-	parsedURL, err := url.Parse(urlStr)
-	if err != nil {
-		return false
-	}
-
-	// Extract the file extension if present
-	path := parsedURL.Path
-	if dotIndex := strings.LastIndex(path, "."); dotIndex != -1 {
-		ext := path[dotIndex:]
-		allowed := allowedExtensions[ext] // True if allowed, false otherwise
-		return allowed
-	}
-
-	// True if no file extension is present
-	return true
+	crawler.collect.SetDebugger(crawler.deps.Debugger)
 }

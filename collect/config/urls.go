@@ -1,11 +1,11 @@
-package collect
+package config
 
 import (
 	"net/url"
 	"strings"
 )
 
-// PlaceholdersToRegex transforms a given URL pattern into a regular expression string for matching URLs.
+// RegexPattern transforms a given URL pattern into a regular expression string for matching URLs.
 // The function supports specific placeholders within the pattern to capture dynamic parts of URLs:
 //
 //   - {dir}: Matches any sequence of characters except slashes (/), representing a directory name in the URL path.
@@ -24,9 +24,9 @@ import (
 // Example:
 //
 //	pattern := "https://example.com/articles/{dir}/{any}"
-//	regexStr := PlaceholdersToRegex(pattern)
+//	regexStr := RegexPattern(pattern)
 //	// regexStr is now a regular expression string that can be used to match URLs following the specified pattern.
-func PlaceholdersToRegex(pattern string) string {
+func RegexPattern(pattern string) string {
 
 	// no placeholders
 	// hope it is a ready-made regex pattern or nothing
@@ -49,6 +49,38 @@ func PlaceholdersToRegex(pattern string) string {
 	str = "^" + str + "$" // Match entire string
 
 	return str
+}
+
+func ContentLikeURL(urlStr string) bool {
+	allowedExtensions := map[string]bool{
+		".php":   true,
+		".xhtml": true,
+		".shtml": true,
+		".cfm":   true,
+		".html":  true,
+		".htm":   true,
+		".asp":   true,
+		".aspx":  true,
+		".jsp":   true,
+		".jspx":  true,
+	}
+
+	// Parse the URL to extract the path
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return false
+	}
+
+	// Extract the file extension if present
+	path := parsedURL.Path
+	if dotIndex := strings.LastIndex(path, "."); dotIndex != -1 {
+		ext := path[dotIndex:]
+		allowed := allowedExtensions[ext] // True if allowed, false otherwise
+		return allowed
+	}
+
+	// True if no file extension is present
+	return true
 }
 
 // MustHostname from url
