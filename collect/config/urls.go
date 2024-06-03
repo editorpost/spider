@@ -2,6 +2,7 @@ package config
 
 import (
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -45,6 +46,17 @@ func RegexPattern(pattern string) string {
 	str = strings.ReplaceAll(str, "{any}", "(.*)")
 	str = strings.ReplaceAll(str, "{some}", "(.+)")
 	str = strings.ReplaceAll(str, "{num}", "(\\d+)")
+
+	// find substrings with comma inside {one,two} or {one,two, three} or {one, two, three}
+	re := regexp.MustCompile(`\{([^}]+)\}`)
+	matches := re.FindAllStringSubmatch(str, -1)
+
+	for _, match := range matches {
+		// replace {one,two,three} with (one|two|three)
+		match[1] = strings.ReplaceAll(match[1], " ", "")
+		pat := "(" + strings.ReplaceAll(match[1], ",", "|") + ")"
+		str = strings.ReplaceAll(str, match[0], pat)
+	}
 
 	str = "^" + str + "$" // Match entire string
 

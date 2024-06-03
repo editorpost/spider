@@ -27,6 +27,48 @@ func TestCreateRegexpString(t *testing.T) {
 			},
 		},
 		{
+			name:     "or",
+			pattern:  "https://example.com/{one,two}{any}",
+			expected: "^https:\\/\\/example\\.com\\/(one|two)(.*)$",
+			matches: []string{
+				"https://example.com/one",
+				"https://example.com/one/",
+				"https://example.com/one/two/three",
+				"https://example.com/two",
+			},
+			invalid: []string{
+				"https://example.com/three/",
+			},
+		},
+		{
+			name:     "or_spaced",
+			pattern:  "https://example.com/{one, two}{any}",
+			expected: "^https:\\/\\/example\\.com\\/(one|two)(.*)$",
+			matches: []string{
+				"https://example.com/one",
+				"https://example.com/one/",
+				"https://example.com/one/two/three",
+				"https://example.com/two",
+			},
+			invalid: []string{
+				"https://example.com/three/",
+			},
+		},
+		{
+			name:     "or_strict",
+			pattern:  "https://example.com/{one,two}",
+			expected: "^https:\\/\\/example\\.com\\/(one|two)$",
+			matches: []string{
+				"https://example.com/one",
+				"https://example.com/two",
+			},
+			invalid: []string{
+				"https://example.com/one/",
+				"https://example.com/two/",
+				"https://example.com/three",
+			},
+		},
+		{
 			name:     "dir and any",
 			pattern:  "https://example.com/articles/{dir}/{any}",
 			expected: "^https:\\/\\/example\\.com\\/articles\\/([^/]+)\\/(.*)$",
