@@ -66,3 +66,8 @@ func (crawler *Crawler) Run() error {
 
 	return nil
 }
+
+// Stop the scraping Crawler (takes a while to finish).
+func (crawler *Crawler) Stop() {
+	crawler.queue.Stop()
+}
