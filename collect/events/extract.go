@@ -43,7 +43,21 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 			}
 
 			crawler.deps.Monitor.OnExtract(doc.Response)
+			crawler.WatchLimit()
 		}
+	}
+}
+
+// WatchLimit matching the query (with JS browse if Args.ExtractSelector is not found in GET response)
+func (crawler *Dispatch) WatchLimit() {
+
+	count := int(crawler.extractedCount.Add(1))
+	limit := crawler.args.ExtractLimit
+
+	// limit is set and reached
+	if limit > 0 && count >= limit {
+		// stop the new requests
+		crawler.queue.Stop()
 	}
 }
 

@@ -4,21 +4,18 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/collect/config"
 	"github.com/gocolly/colly/v2"
+	"sync/atomic"
 )
 
 type (
 	Dispatch struct {
-		args       *config.Args
-		deps       *config.Deps
-		queue      Queue
-		browser    Browser
-		proxyRetry *Retry
-		errorRetry *Retry
-
-		// extractor is the function to process matched the data, e.g. html tag node
-		extractor func(*colly.HTMLElement, *goquery.Selection) error
-		// Metrics is the spider event dispatcher and VictoriaMetrics
-		monitor config.Metrics
+		args           *config.Args
+		deps           *config.Deps
+		queue          Queue
+		browser        Browser
+		proxyRetry     *Retry
+		errorRetry     *Retry
+		extractedCount atomic.Int32
 	}
 
 	Browser interface {
@@ -27,17 +24,19 @@ type (
 
 	Queue interface {
 		AddURL(uri string) error
+		Stop()
 	}
 )
 
 func NewDispatcher(args *config.Args, deps *config.Deps, queue Queue, browser Browser) *Dispatch { // long miles away...
 	return &Dispatch{
-		args:       args,
-		deps:       deps,
-		queue:      queue,
-		browser:    browser,
-		proxyRetry: NewRetry(BadProxyRetries),
-		errorRetry: NewRetry(ResponseRetries),
+		args:           args,
+		deps:           deps,
+		queue:          queue,
+		browser:        browser,
+		proxyRetry:     NewRetry(BadProxyRetries),
+		errorRetry:     NewRetry(ResponseRetries),
+		extractedCount: atomic.Int32{},
 	}
 }
 
