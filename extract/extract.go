@@ -19,13 +19,13 @@ type (
 
 	Payload struct {
 		// Doc is full document
-		Doc *colly.HTMLElement
+		Doc *colly.HTMLElement `json:"-"`
 		// Selection of entity in document
-		Selection *goquery.Selection
+		Selection *goquery.Selection `json:"-"`
 		// URL of the document
-		URL *url.URL
+		URL *url.URL `json:"-"`
 		// Data is a map of extracted data
-		Data map[string]any
+		Data map[string]any `json:"Data"`
 	}
 )
 
