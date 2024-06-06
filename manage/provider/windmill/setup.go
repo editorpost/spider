@@ -28,8 +28,8 @@ func MongoConfig(resource string) (*mongodb.Config, error) {
 	return cfg, nil
 }
 
-// SetupDeploy returns the deploy config or panic
-func SetupDeploy(resource string) (*setup.Deploy, error) {
+// DeployConfig returns the deployment config or panic
+func DeployConfig(resource string) (*setup.Deploy, error) {
 
 	if len(resource) == 0 {
 		resource = DefaultSpiderDeploy

@@ -19,7 +19,7 @@ func Start(argsMap any, extractors ...extract.PipeFn) error {
 		return err
 	}
 
-	deploy, err := SetupDeploy(DefaultSpiderDeploy)
+	deploy, err := DeployConfig(DefaultSpiderDeploy)
 	if err != nil {
 		return err
 	}
