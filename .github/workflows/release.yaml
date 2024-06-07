@@ -16,11 +16,11 @@ permissions:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Run latest-tag
-        uses: 32teeth/action-github-tag@v1
-        with:
-          tag-name: latest
+        uses: EndBug/latest-tag@latest
       - name: Checkout
         uses: actions/checkout@v4
         with:
