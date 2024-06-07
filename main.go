@@ -1,19 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"github.com/editorpost/donq/pkg/vars"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"log/slog"
-	"os"
 )
 
 func main() {
-
-	// parse command and flags
-	flag.Parse()
 
 	cmd := flag.String("cmd", "", "Available commands: start, trial")
 	if cmd == nil {
@@ -32,6 +27,9 @@ func main() {
 		slog.Info("extract flag is not set, use default html extractor")
 	}
 
+	// parse command and flags
+	flag.Parse()
+
 	switch *cmd {
 	case "start":
 		if err := windmill.Start(*args); err != nil {
@@ -48,17 +46,4 @@ func main() {
 			slog.Error("write payloads", err)
 		}
 	}
-}
-
-func MarshalToFile(payloads []*extract.Payload, path string) error {
-	file, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	enc := json.NewEncoder(file)
-	enc.SetIndent("", "  ")
-
-	return enc.Encode(payloads)
 }
