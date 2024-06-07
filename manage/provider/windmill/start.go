@@ -14,10 +14,8 @@ import (
 //goland:noinspection GoUnusedExportedFunction
 func Start(argsJSON any, extractors ...extract.PipeFn) (err error) {
 
-	var (
-		args   *config.Args
-		deploy *setup.Config
-	)
+	args := &config.Args{}
+	deploy := &setup.Config{}
 
 	if err = vars.FromJSON(argsJSON, args); err != nil {
 		return err
