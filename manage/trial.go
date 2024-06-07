@@ -12,7 +12,7 @@ func Trial(args *config.Args, extractor extract.PipeFn) ([]*extract.Payload, err
 
 	args.SpiderID = "trial"
 	items := []*extract.Payload{}
-	deploy := &setup.Deploy{}
+	deploy := &setup.Config{}
 
 	err := Start(args, deploy, extractor, func(payload *extract.Payload) error {
 

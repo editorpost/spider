@@ -9,8 +9,17 @@ import (
 	"github.com/editorpost/spider/store"
 )
 
-type Deploy struct {
-	// MongoDSN is the name of the mongo resource, e.g. "u/spider/mongodb"
+// Config is the configuration for the spider
+// JSON:
+//
+//		{
+//		  "MongoDSN": "mongodb://localhost:27017",
+//		  "VictoriaMetricsUrl": "http://localhost:8428",
+//		  "VictoriaLogsUrl": "http://localhost:8429"
+//		}
+//	 db.updateUser("spider", {roles: [{ role: "readAnyDatabase", db: "admin"}
+type Config struct {
+	// MongoDSN is connection string to MongoDB
 	MongoDSN string `json:"MongoDSN" validate:"trim"`
 	// VictoriaMetricsUrl // todo move to resource
 	VictoriaMetricsUrl string `json:"VictoriaMetricsUrl" validate:"trim"`
@@ -18,7 +27,7 @@ type Deploy struct {
 	VictoriaLogsUrl string `json:"VictoriaLogsUrl" validate:"trim"`
 }
 
-func Deps(args *config.Args, deploy *Deploy, extractors ...extract.PipeFn) (*config.Deps, error) {
+func Deps(args *config.Args, deploy *Config, extractors ...extract.PipeFn) (*config.Deps, error) {
 
 	if err := args.Normalize(); err != nil {
 		return nil, err

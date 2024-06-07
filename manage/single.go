@@ -27,7 +27,7 @@ func Single(uri, selector string, extractor extract.PipeFn) (*extract.Payload, e
 	}
 
 	// empty deploy, since no data is stored
-	deploy := &setup.Deploy{}
+	deploy := &setup.Config{}
 
 	err := Start(args, deploy, extract.Article, extractor)
 
