@@ -1,10 +1,9 @@
 package windmill
 
 import (
-	"encoding/json"
 	"github.com/editorpost/donq/mongodb"
+	"github.com/editorpost/donq/pkg/vars"
 	"github.com/editorpost/spider/manage/setup"
-	wmill "github.com/windmill-labs/windmill-go-client"
 )
 
 const (
@@ -28,28 +27,21 @@ func MongoConfig(resource string) (*mongodb.Config, error) {
 	return cfg, nil
 }
 
-// SetupDeploy returns the deploy config or panic
-func SetupDeploy(resource string) (*setup.Deploy, error) {
+// SetupConfig returns the config or panic
+func SetupConfig(deploy *setup.Config) error {
 
-	if len(resource) == 0 {
-		resource = DefaultSpiderDeploy
+	if err := vars.FromResource(DefaultSpiderDeploy, deploy); err != nil {
+		return err
 	}
 
-	data, err := wmill.GetResource(resource)
-	if err != nil {
-		return nil, err
+	var mongo *mongodb.Config
+	if err := vars.FromResource(DefaultMongoResource, mongo); err != nil {
+		return err
 	}
 
-	b, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
+	// vars.FromResource guarantees that deploy is not nil or error
+	//goland:noinspection GoDfaNilDereference
+	deploy.MongoDSN = mongo.DSN
 
-	deploy := &setup.Deploy{}
-	err = json.Unmarshal(b, deploy)
-	if err != nil {
-		return nil, err
-	}
-
-	return deploy, nil
+	return nil
 }

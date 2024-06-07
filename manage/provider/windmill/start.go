@@ -1,35 +1,31 @@
 package windmill
 
 import (
-	"github.com/editorpost/donq/pkg/script"
+	"github.com/editorpost/donq/pkg/vars"
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/manage"
+	"github.com/editorpost/spider/manage/setup"
 )
 
 // Start is an example code for running spider
 // as Windmill Script with extract.Article
 //
 //goland:noinspection GoUnusedExportedFunction
-func Start(argsMap any, extractors ...extract.PipeFn) error {
+func Start(argsJSON any, extractors ...extract.PipeFn) (err error) {
 
-	args := &config.Args{}
-	err := script.ParseArgs(argsMap, args)
-	if err != nil {
+	var (
+		args   *config.Args
+		deploy *setup.Config
+	)
+
+	if err = vars.FromJSON(argsJSON, args); err != nil {
 		return err
 	}
 
-	deploy, err := SetupDeploy(DefaultSpiderDeploy)
-	if err != nil {
+	if err = SetupConfig(deploy); err != nil {
 		return err
 	}
-
-	mongo, err := MongoConfig(DefaultMongoResource)
-	if err != nil {
-		return err
-	}
-
-	deploy.MongoDSN = mongo.DSN
 
 	return manage.Start(args, deploy, extractors...)
 }
