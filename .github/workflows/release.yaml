@@ -5,18 +5,43 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write
-  packages: write
-
+env:
+  GO_VERSION: "~1.22.4"
 jobs:
-  release-linux-amd64:
-    name: release linux/amd64
+  build-test:
+    name: Package for Linux
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: wangyoucao577/go-release-action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          goos: linux
-          goarch: amd64
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: false
+          check-latest: true
+
+      - name: Get actual Go version
+        run: |
+          go version
+          echo "GO_VERSION=$(go version | sed 's#^.*go##;s# .*##')" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-package-${{ hashFiles('**/go.sum') }}
+
+      - name: Create package for amd64
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          go build -v -ldflags="-s -w" -o spider-linux-amd64
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: spider-linux-amd64
+          path: spider-linux-amd64
