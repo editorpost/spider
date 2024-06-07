@@ -55,6 +55,21 @@ type Args struct {
 	ProxySources []string `json:"ProxySources"`
 }
 
+// The Args JSON representation:
+// {
+// 	"SpiderID": "ready-check",
+// 	"StartURL": "https://example.com",
+// 	"AllowedURL": "https://example.com/{any}",
+// 	"ExtractURL": "https://example.com/articles/{any}",
+// 	"ExtractSelector": "article",
+// 	"ExtractLimit": 1,
+// 	"UseBrowser": true,
+// 	"Depth": 1,
+// 	"UserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+// 	"ProxyEnabled": true,
+// 	"ProxySources": []
+// }
+
 func (args *Args) Normalize() error {
 
 	if err := args.NormalizeURLs(); err != nil {
