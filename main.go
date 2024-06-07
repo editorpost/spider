@@ -19,13 +19,13 @@ func main() {
 		return
 	}
 
-	args := flag.String("args", "", "argsJSON")
+	args := flag.String("args", "", "Spider arguments JSON")
 	if args == nil {
 		slog.Error("args flag for spider binary is not set")
 		return
 	}
 
-	ext := flag.String("extract", "", "argsJSON")
+	ext := flag.String("extract", "", "Extractor function name")
 	if ext == nil {
 		slog.Info("extract flag is not set, use default html extractor")
 	}
