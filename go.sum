@@ -78,10 +78,10 @@ github.com/editorpost/article v0.0.0-20240528054021-bbb74abfc347 h1:nCy3KjGm7nIl
 github.com/editorpost/article v0.0.0-20240528054021-bbb74abfc347/go.mod h1:1Hseq34Qb352jQN8MHm1+dnk/QRfRhbboWMod8rL1ho=
 github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834 h1:3ZgQ6NG9Ron1i0kEGViHv5IlIesuyBrpQa0vt/WA2Tw=
 github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834/go.mod h1:b7GPVqbOqaA6iCxeVDZZpXRm1WTSYBp3rhG3gCMt0xs=
-github.com/editorpost/donq/pkg/valid v0.0.0-20240603050357-1364a35222ea h1:WOJ1QEgNECXGX8VtalzSXqn0uFas6cNZrparTKzgNPk=
-github.com/editorpost/donq/pkg/valid v0.0.0-20240603050357-1364a35222ea/go.mod h1:wJZrn7vyEXTcn1Fv6j9tCU4EhpTaclIX+DMZSQRUkpI=
-github.com/editorpost/donq/pkg/vars v0.0.0-20240607161540-d65b9c9c3129 h1:AXfBFvXcFcexHFFSdMxtvMcdT8PmI5nwpAA1QzHdCG4=
-github.com/editorpost/donq/pkg/vars v0.0.0-20240607161540-d65b9c9c3129/go.mod h1:0LTen9DuHc0l5vCf46MZQ8olRMDW9Pbm5h/gKj5xQdc=
+github.com/editorpost/donq/pkg/valid v0.0.0-20240607161540-d65b9c9c3129 h1:HDCQOmqBb9h0MXFVKxt1jNj5PN+oFGxH7OTtcJzTcKE=
+github.com/editorpost/donq/pkg/valid v0.0.0-20240607161540-d65b9c9c3129/go.mod h1:wJZrn7vyEXTcn1Fv6j9tCU4EhpTaclIX+DMZSQRUkpI=
+github.com/editorpost/donq/pkg/vars v0.0.0-20240607194324-029202268a3b h1:pGP6F59yGRKH1lK2nH8EOPuAhTMrnpKWmAIWvto+c4A=
+github.com/editorpost/donq/pkg/vars v0.0.0-20240607194324-029202268a3b/go.mod h1:0LTen9DuHc0l5vCf46MZQ8olRMDW9Pbm5h/gKj5xQdc=
 github.com/editorpost/donq/pkg/vlog v0.0.0-20240602165338-32524dec77da h1:xDCbWvFo2mPlABL5utuVty2cKTyhVawtlQiP+XrFplQ=
 github.com/editorpost/donq/pkg/vlog v0.0.0-20240602165338-32524dec77da/go.mod h1:O59O2rWEletRTJWP458yCIl8G+/VjDXxr7slYuVS8JQ=
 github.com/elastic/elastic-transport-go/v8 v8.5.0 h1:v5membAl7lvQgBTexPRDBO/RdnlQX+FM9fUVDyXxvH0=
@@ -274,8 +274,8 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/tdewolff/minify/v2 v2.20.32 h1:rk4THvBPLEU+gGDKaJxyvFhF5+quSwCk3HKv1GpSVyE=
-github.com/tdewolff/minify/v2 v2.20.32/go.mod h1:1TJni7+mATKu24cBQQpgwakrYRD27uC1/rdJOgdv8ns=
+github.com/tdewolff/minify/v2 v2.20.33 h1:lZFesDQagd+zGxyC3fEO/X2jZWB8CrahKi77lNrgAAQ=
+github.com/tdewolff/minify/v2 v2.20.33/go.mod h1:1TJni7+mATKu24cBQQpgwakrYRD27uC1/rdJOgdv8ns=
 github.com/tdewolff/parse/v2 v2.7.14 h1:100KJ+QAO3PpMb3uUjzEU/NpmCdbBYz6KPmCIAfWpR8=
 github.com/tdewolff/parse/v2 v2.7.14/go.mod h1:3FbJWZp3XT9OWVN3Hmfp0p/a08v4h8J9W1aghka0soA=
 github.com/tdewolff/test v1.0.11-0.20231101010635-f1265d231d52/go.mod h1:6DAvZliBAAnD7rhVgwaM7DE5/d9NMOAJ09SqYqeK4QE=

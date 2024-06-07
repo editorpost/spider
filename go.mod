@@ -14,7 +14,7 @@ require (
 	github.com/chromedp/chromedp v0.9.5
 	github.com/editorpost/article v0.0.0-20240528054021-bbb74abfc347
 	github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834
-	github.com/editorpost/donq/pkg/vars v0.0.0-20240607161540-d65b9c9c3129
+	github.com/editorpost/donq/pkg/vars v0.0.0-20240607194324-029202268a3b
 	github.com/editorpost/donq/pkg/vlog v0.0.0-20240602165338-32524dec77da
 	github.com/go-shiori/dom v0.0.0-20230515143342-73569d674e1c
 	github.com/go-shiori/go-readability v0.0.0-20240204090920-819593fddc6b
@@ -48,7 +48,7 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.16.3 // indirect
-	github.com/editorpost/donq/pkg/valid v0.0.0-20240603050357-1364a35222ea // indirect
+	github.com/editorpost/donq/pkg/valid v0.0.0-20240607161540-d65b9c9c3129 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.5.0 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.13.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -104,7 +104,7 @@ require (
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/tdewolff/minify/v2 v2.20.32 // indirect
+	github.com/tdewolff/minify/v2 v2.20.33 // indirect
 	github.com/tdewolff/parse/v2 v2.7.14 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

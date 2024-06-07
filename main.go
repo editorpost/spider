@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
-	"fmt"
+	"github.com/editorpost/donq/pkg/vars"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"log/slog"
+	"os"
 )
 
 func main() {
@@ -41,6 +43,22 @@ func main() {
 		if payloads, err = windmill.Trial(*args); err != nil {
 			slog.Error("trial", err)
 		}
-		fmt.Println(payloads)
+		// write extracted data to `./result.json` as windmill expects
+		if err = vars.WriteScriptResult(payloads, "./result.json"); err != nil {
+			slog.Error("write payloads", err)
+		}
 	}
+}
+
+func MarshalToFile(payloads []*extract.Payload, path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	enc := json.NewEncoder(file)
+	enc.SetIndent("", "  ")
+
+	return enc.Encode(payloads)
 }
