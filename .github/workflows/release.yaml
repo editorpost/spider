@@ -17,6 +17,8 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
+      - name: Run latest-tag
+        uses: EndBug/latest-tag@latest
       - name: Checkout
         uses: actions/checkout@v4
         with:
