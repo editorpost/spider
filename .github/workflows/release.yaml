@@ -1,40 +1,21 @@
 # .github/workflows/release.yaml
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [created]
 
-env:
-  GO_VERSION: "~1.22.4"
+permissions:
+  contents: write
+  packages: write
+
 jobs:
-  build-test:
-    name: Package for Linux
+  release-linux-amd64:
+    name: release linux/amd64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: wangyoucao577/go-release-action@v1
         with:
-          fetch-depth: 0
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: false
-          check-latest: true
-
-      - name: Get actual Go version
-        run: |
-          go version
-          echo "GO_VERSION=$(go version | sed 's#^.*go##;s# .*##')" >> $GITHUB_ENV
-
-      - name: Create package for amd64
-        env:
-          CGO_ENABLED: "0"
-        run: |
-          go build -v -ldflags="-s -w" -o spider-linux-amd64
-
-      - name: Archive artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: spider-linux-amd64
-          path: spider-linux-amd64
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: linux
+          goarch: amd64
