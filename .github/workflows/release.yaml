@@ -41,7 +41,12 @@ jobs:
           args: release --clean --config .github/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Tag the release
-        uses: Actions-R-Us/actions-tagger@v2
-        with:
-          publish_latest_tag: true
+      - uses: actions/checkout@v3
+      - name: Get major version num and update tag
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          MAJOR=${VERSION%%.*}
+          git config --global user.name 'YOUR NAME'
+          git config --global user.email 'USERNAME@users.noreply.github.com'
+          git tag -fa ${MAJOR} -m "Update major version tag"
+          git push origin ${MAJOR} --force
