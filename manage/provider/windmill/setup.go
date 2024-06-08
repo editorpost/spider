@@ -34,7 +34,7 @@ func SetupConfig(deploy *setup.Config) error {
 		return err
 	}
 
-	var mongo *mongodb.Config
+	mongo := &mongodb.Config{}
 	if err := vars.FromResource(DefaultMongoResource, mongo); err != nil {
 		return err
 	}
