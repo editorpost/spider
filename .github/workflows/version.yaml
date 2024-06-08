@@ -4,10 +4,6 @@ on:
   release:
     types:
       - released
-      - edited
-  push:
-    tags:
-      - 'v*'
 
 jobs:
   actions-tagger:
