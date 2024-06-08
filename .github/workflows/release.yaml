@@ -41,3 +41,7 @@ jobs:
           args: release --clean --config .github/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag the release
+        uses: Actions-R-Us/actions-tagger@v2
+        with:
+          publish_latest_tag: true
