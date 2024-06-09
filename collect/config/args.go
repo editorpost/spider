@@ -53,11 +53,17 @@ type Args struct {
 	// ProxySources is the list of proxy sources, expected to return list of proxies URLs.
 	// If empty, the default proxy sources is used.
 	ProxySources []string `json:"ProxySources"`
+
+	// options
+
+	// Name is the name of the spider
+	Name string `json:"Name"`
 }
 
 // The Args JSON representation:
 // {
 // 	"SpiderID": "ready-check",
+//  "Name": "Ready Check",
 // 	"StartURL": "https://example.com",
 // 	"AllowedURL": "https://example.com/{any}",
 // 	"ExtractURL": "https://example.com/articles/{any}",
