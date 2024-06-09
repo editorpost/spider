@@ -69,6 +69,20 @@ func TestCreateRegexpString(t *testing.T) {
 			},
 		},
 		{
+			name:     "or_strict",
+			pattern:  "https://example.com/{one,two}/item",
+			expected: "^https:\\/\\/example\\.com\\/(one|two)\\/item$",
+			matches: []string{
+				"https://example.com/one/item",
+				"https://example.com/two/item",
+			},
+			invalid: []string{
+				"https://example.com/one",
+				"https://example.com/two/",
+				"https://example.com/three",
+			},
+		},
+		{
 			name:     "dir and any",
 			pattern:  "https://example.com/articles/{dir}/{any}",
 			expected: "^https:\\/\\/example\\.com\\/articles\\/([^/]+)\\/(.*)$",

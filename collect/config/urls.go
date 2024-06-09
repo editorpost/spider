@@ -13,6 +13,7 @@ import (
 //   - {any}: Matches any sequence of characters, including an empty sequence, allowing for the most flexibility.
 //   - {some}: Matches any non-empty sequence of characters, similar to {any} but requires at least one character.
 //   - {num}: Matches any sequence of digits, useful for numeric identifiers in URLs.
+//   - {one,two,three}: Matches any of the specified strings, separated by commas, allowing for multiple options.
 //
 // If the pattern does not contain any placeholders and is not empty, it is treated as a regular expression.
 // This allows for advanced matching scenarios where specific regular expression features are needed.
