@@ -5,6 +5,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 	"net/url"
+	"strings"
 )
 
 const (
@@ -58,4 +59,36 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 
 		return nil
 	}
+}
+
+// ExtractorsByName creates slice of extractors by name.
+// The string is a string like "html,article", e.g.: extract.Html, extract.Article
+func ExtractorsByName(seq string) []PipeFn {
+
+	seq = strings.ReplaceAll(seq, " ", "")
+
+	if seq == "" {
+		return []PipeFn{}
+	}
+
+	extractors := make([]PipeFn, 0)
+	for _, key := range strings.Split(seq, ",") {
+
+		switch key {
+		case "html":
+			extractors = append(extractors, Html)
+		case "article":
+			extractors = append(extractors, Article)
+		}
+	}
+
+	return extractors
+}
+
+// ExtractorsByJsonString creates slice of extractors by name.
+func ExtractorsByJsonString(js string) []PipeFn {
+	if js == "" {
+		return []PipeFn{}
+	}
+	return []PipeFn{}
 }
