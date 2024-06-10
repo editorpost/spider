@@ -3,6 +3,7 @@ package extract
 import (
 	"errors"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/editorpost/spider/extract/fields"
 	"github.com/gocolly/colly/v2"
 	"net/url"
 	"strings"
@@ -52,6 +53,14 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 
 		for _, pipe := range pipes {
 			err := pipe(payload)
+
+			if errors.Is(err, fields.ErrRequiredFieldMissing) {
+				// expected error, stops the pipe chain
+				// used by extractors to quickly skip the pipe chain
+				// if data is not satisfied or exists
+				return nil
+			}
+
 			if err != nil {
 				return err
 			}
