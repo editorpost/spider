@@ -31,6 +31,7 @@ type Args struct {
 	ExtractURL string `json:"ExtractURL"`
 	// ExtractSelector is the css selector to match the elements
 	// use selector for extracting entities and filtering pages
+	// def: html
 	ExtractSelector string `json:"ExtractSelector"`
 	// ExtractLimit is the limit of entities to extract
 	// Crawler gracefully stops after reaching the limit
@@ -86,9 +87,7 @@ func (args *Args) Normalize() error {
 		return err
 	}
 
-	if args.Depth < 1 {
-		args.Depth = 1
-	}
+	args.NormalizeExtractSelector()
 
 	return nil
 }
@@ -103,6 +102,13 @@ func (args *Args) Log() slog.Attr {
 		slog.Int("depth", args.Depth),
 		slog.String("user_agent", args.UserAgent),
 	)
+}
+
+func (args *Args) NormalizeExtractSelector() {
+	args.ExtractSelector = strings.TrimSpace(args.ExtractSelector)
+	if len(args.ExtractSelector) == 0 {
+		args.ExtractSelector = "html"
+	}
 }
 
 func (args *Args) NormalizeURLs() error {
