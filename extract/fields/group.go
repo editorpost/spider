@@ -5,6 +5,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/pkg/valid"
 	"github.com/editorpost/donq/pkg/vars"
+	"log/slog"
 )
 
 // Group provides data describing custom data extraction for grouped
@@ -25,6 +26,40 @@ type Group struct {
 	// Fields is a map of sub-field names to their corresponding Field configurations.
 	// required
 	Fields map[string]*Field `json:"Fields" validate:"required,dive,required"`
+
+	extract map[string]ExtractFn `json:"-"`
+}
+
+func NewGroup(name, selector string, cardinality int, required bool, fields map[string]*Field) (*Group, error) {
+
+	extract := map[string]ExtractFn{}
+
+	for fieldName, field := range fields {
+		extractor, err := field.Extractor()
+		if err != nil {
+			slog.Error("failed to build extractor", slog.String("error", err.Error()))
+		}
+		extract[fieldName] = extractor
+	}
+
+	return &Group{
+		Name:     name,
+		Limit:    cardinality,
+		Selector: selector,
+		Required: required,
+		Fields:   fields,
+		extract:  extract,
+	}, nil
+}
+
+func NewGroupFromMap(m map[string]any) (*Group, error) {
+
+	e := &Group{}
+	if err := vars.FromJSON(m, e); err != nil {
+		return nil, err
+	}
+
+	return e, nil
 }
 
 // Extractor in case of group, fields extracted by selection
@@ -96,13 +131,19 @@ func (group *Group) Map() map[string]any {
 		"Fields":   group.Fields,
 	}
 }
+func Extractors(fields ...*Field) map[string]ExtractFn {
 
-func GroupFromMap(m map[string]any) (*Group, error) {
+	extractFn := map[string]ExtractFn{}
 
-	e := &Group{}
-	if err := vars.FromJSON(m, e); err != nil {
-		return nil, err
+	for _, field := range fields {
+
+		extractor, err := field.Extractor()
+		if err != nil {
+			slog.Error("failed to build extractor", slog.String("error", err.Error()))
+		}
+
+		extractFn[field.FieldName] = extractor
 	}
 
-	return e, nil
+	return extractFn
 }

@@ -197,6 +197,13 @@ func TestBuildExtractor(t *testing.T) {
 
 }
 
+func NewGroup(t *testing.T, group *fields.Group) *fields.Group {
+	t.Helper()
+	group, err := fields.NewGroup(group.Name, group.Selector, group.Limit, group.Required, group.Fields)
+	assert.NoError(t, err)
+	return group
+}
+
 func TestBuildGroup(t *testing.T) {
 
 	tc := []struct {
@@ -208,7 +215,7 @@ func TestBuildGroup(t *testing.T) {
 	}{
 		{
 			"single",
-			&fields.Group{
+			NewGroup(t, &fields.Group{
 				Name:     "product",
 				Selector: ".product--full",
 				Limit:    1,
@@ -229,7 +236,7 @@ func TestBuildGroup(t *testing.T) {
 						Selector:     ".product__price--amount",
 					},
 				},
-			},
+			}),
 			map[string]any{
 				"title": "Main Product Title",
 				"price": "99.99",
@@ -239,7 +246,7 @@ func TestBuildGroup(t *testing.T) {
 		},
 		{
 			"multiple",
-			&fields.Group{
+			NewGroup(t, &fields.Group{
 				Name:     "products",
 				Selector: ".product",
 				Limit:    1,
@@ -260,7 +267,7 @@ func TestBuildGroup(t *testing.T) {
 						Selector:     ".product__price--amount",
 					},
 				},
-			},
+			}),
 			map[string]any{
 				"title": "Main Product Title",
 				"price": "99.99",
@@ -360,7 +367,7 @@ func TestGroupFromMap(t *testing.T) {
 		},
 	}
 
-	e, err := fields.GroupFromMap(m)
+	e, err := fields.NewGroupFromMap(m)
 	require.NoError(t, err)
 
 	assert.Equal(t, "product", e.Name)
@@ -404,7 +411,7 @@ func TestExtractorMap(t *testing.T) {
 
 func TestGroupExtractorMap(t *testing.T) {
 
-	e := &fields.Group{
+	e := NewGroup(t, &fields.Group{
 		Name:     "product",
 		Selector: ".product--full",
 		Required: true,
@@ -424,7 +431,7 @@ func TestGroupExtractorMap(t *testing.T) {
 				Selector:     ".product__price--amount",
 			},
 		},
-	}
+	})
 
 	m := e.Map()
 
@@ -463,7 +470,7 @@ func GetTestFieldsHTML(t *testing.T) string {
 	t.Helper()
 
 	// open file `article_test.html` return as string
-	f, err := os.Open("fields_test.html")
+	f, err := os.Open("field_test.html")
 	require.NoError(t, err)
 	defer f.Close()
 
