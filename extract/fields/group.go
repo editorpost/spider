@@ -1,9 +1,12 @@
 package fields
 
 import (
+	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/pkg/valid"
 	"github.com/editorpost/donq/pkg/vars"
+	"github.com/samber/lo"
+	"log/slog"
 )
 
 // Group provides data describing custom data extraction for grouped
@@ -24,6 +27,8 @@ type Group struct {
 	// Fields is a map of sub-field names to their corresponding Field configurations.
 	// required
 	Fields []*Field `json:"Fields" validate:"required,dive,required"`
+
+	extract map[string]ExtractFn
 }
 
 // Extractor in case of group, fields extracted by selection
@@ -31,53 +36,82 @@ type Group struct {
 // Result is a slice of maps with extracted
 func (group *Group) Extractor() (ExtractFn, error) {
 
-	if err := valid.Struct(group); err != nil {
-		return nil, err
+	var e error
+
+	if e = valid.Struct(group); e != nil {
+		return nil, e
 	}
 
-	extract, err := ExtractorMap(group.Fields...)
-	if err != nil {
-		return nil, err
+	if group.extract, e = ExtractorMap(group.Fields...); e != nil {
+		return nil, e
 	}
 
-	return func(sel *goquery.Selection) (any, error) {
+	// selection might be entity selection or whole document
+	return func(selection *goquery.Selection) (any, error) {
 
-		var values []map[string]any
+		// entries/deltas of the group
+		var entries []map[string]any
 
-		// in case of group, fields extracted by selection
-		// every extractor has own limited selection area (OuterHtml)
-
-		sel.Find(group.Selector).Each(func(i int, s *goquery.Selection) {
-			groupData := make(map[string]any)
-
-			for _, field := range group.Fields {
-
-				// clean, unique entries
-				entries, err := extract[field.FieldName](s)
-				if err != nil {
-					continue
-				}
-
-				groupData[field.FieldName] = entries
-
+		// select each group entry
+		selection.Find(group.Selector).Each(func(i int, groupSelection *goquery.Selection) {
+			// entry is a map of field names to their extracted values
+			if entry, err := group.EntryFromSelection(groupSelection); err == nil {
+				entries = append(entries, entry)
 			}
-			values = append(values, groupData)
 		})
 
-		if group.Required && len(values) == 0 {
+		if group.Required && len(entries) == 0 {
 			return nil, ErrRequiredFieldMissing
 		}
 
-		if group.Limit > 0 && len(values) > group.Limit {
-			values = values[:group.Limit]
-		}
-
-		if group.Limit == 1 {
-			return values[0], nil
-		}
-
-		return values, nil
+		return ApplyCardinality(group.Limit, lo.ToAnySlice(entries)), nil
 	}, nil
+}
+
+func (group *Group) EntryFromSelection(selection *goquery.Selection) (map[string]any, error) {
+
+	// entry is a map of field names to their extracted values
+	// max entries for group based on Group.Cardinality
+	entry := make(map[string]any)
+
+	// in group selection extract each field
+	for _, field := range group.Fields {
+
+		// nil, string, []string, map[string]any
+		fieldValue, err := group.extract[field.FieldName](selection)
+
+		// skip group selection if required field is missing
+		if errors.Is(err, ErrRequiredFieldMissing) {
+			return nil, err
+		}
+
+		// log extraction errors
+		if err != nil {
+			slog.Warn("group field extraction error", "field", field.FieldName, "error", err.Error())
+			continue
+		}
+
+		if fieldValue == nil {
+			continue
+		}
+
+		entry[field.FieldName] = fieldValue
+	}
+
+	return entry, nil
+}
+
+func (group *Group) NormalizeEntries(entries []map[string]any) any {
+
+	if group.Limit > 0 && len(entries) > group.Limit {
+		entries = entries[:group.Limit]
+	}
+
+	if group.Limit == 1 {
+		return entries[0]
+	}
+
+	return entries
 }
 
 func (group *Group) Map() map[string]any {

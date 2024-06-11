@@ -5,6 +5,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/pkg/valid"
 	"github.com/editorpost/donq/pkg/vars"
+	"github.com/samber/lo"
 )
 
 var (
@@ -111,46 +112,20 @@ func (field *Field) Extractor() (ExtractFn, error) {
 
 	return func(sel *goquery.Selection) (any, error) {
 
-		// css selector selection
-		// most time is a single element
-		// except cases of parsing listings)
 		entries := EntriesAsString(field, sel)
 
 		if hasRegex {
-			// most time it is not used
-			// but can be useful for complex cases
-			//
-			// like parsing a list of items
-			// it might multiply count of entries
 			entries = RegexPipes(entries, between, final)
 		}
 
-		// apply output transformers
 		entries = EntriesTransform(field, entries)
-
-		// remove duplicates and empty entries
 		entries = EntriesClean(entries)
 
-		// if empty field is required
-		// skip entire entity extraction
-		if len(entries) == 0 {
-			if field.Required {
-				return nil, ErrRequiredFieldMissing
-			}
-			return nil, nil
+		if field.Required && len(entries) == 0 {
+			return nil, ErrRequiredFieldMissing
 		}
 
-		// final cut to limit len or return all
-		if field.Limit > 0 && len(entries) > field.Limit {
-			entries = entries[:field.Limit]
-		}
-
-		// if limit is 1 return single value
-		if field.Limit == 1 {
-			return entries[0], nil
-		}
-
-		return entries, nil
+		return ApplyCardinality(field.Limit, lo.ToAnySlice(entries)), nil
 	}, nil
 }
 
@@ -177,4 +152,25 @@ func (field *Field) Map() map[string]any {
 		"FinalRegex":   field.FinalRegex,
 		"Multiline":    field.Multiline,
 	}
+}
+
+// ApplyCardinality applies cardinality limits to the input entries.
+// It used as a final step in the extraction process to convert entries to actual value or field or group.
+func ApplyCardinality(cardinality int, entries []any) any {
+
+	if len(entries) == 0 {
+		return nil
+	}
+
+	// cut to limit len or return all
+	if cardinality > 0 && len(entries) > cardinality {
+		entries = entries[:cardinality]
+	}
+
+	// if limit is 1 return single value
+	if cardinality == 1 {
+		return entries[0]
+	}
+
+	return entries
 }
