@@ -31,7 +31,7 @@ func TestField(t *testing.T) {
 			"simple",
 			&fields.Field{
 				Name:         "title",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "text",
 				OutputFormat: []string{"text"},
 				Selector:     ".product--full .product__title",
@@ -44,7 +44,7 @@ func TestField(t *testing.T) {
 			"between",
 			&fields.Field{
 				Name:         "image",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "text",
 				OutputFormat: []string{"text"},
 				Selector:     ".product--full .product__price",
@@ -59,7 +59,7 @@ func TestField(t *testing.T) {
 			"between image from item prop",
 			&fields.Field{
 				Name:         "image",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "html",
 				OutputFormat: []string{"text"},
 				Selector:     "head", // multiple selection
@@ -74,7 +74,7 @@ func TestField(t *testing.T) {
 			"between multiple selections",
 			&fields.Field{
 				Name:         "muliple image",
-				Limit:        2,
+				Cardinality:  2,
 				InputFormat:  "html",
 				OutputFormat: []string{"html"},
 				Selector:     "meta", // multiple selection
@@ -89,7 +89,7 @@ func TestField(t *testing.T) {
 			"regex",
 			&fields.Field{
 				Name:         "category",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "html",
 				OutputFormat: []string{"text"},
 				Selector:     ".product--full",
@@ -104,7 +104,7 @@ func TestField(t *testing.T) {
 			"regex image from item prop",
 			&fields.Field{
 				Name:         "category",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "html",
 				OutputFormat: []string{"text"},
 				Selector:     "head",
@@ -117,9 +117,9 @@ func TestField(t *testing.T) {
 		{
 			"all prices",
 			&fields.Field{
-				Name:     "prices",
-				Limit:    0,
-				Selector: ".product__price--amount",
+				Name:        "prices",
+				Cardinality: 0,
+				Selector:    ".product__price--amount",
 			},
 			[]any{"99.99", "49.99", "0.99"},
 			false,
@@ -128,9 +128,9 @@ func TestField(t *testing.T) {
 		{
 			"all prices with limit",
 			&fields.Field{
-				Name:     "prices",
-				Limit:    2,
-				Selector: ".product__price--amount",
+				Name:        "prices",
+				Cardinality: 2,
+				Selector:    ".product__price--amount",
 			},
 			[]any{"99.99", "49.99"},
 			false,
@@ -139,10 +139,10 @@ func TestField(t *testing.T) {
 		{
 			"required field are empty",
 			&fields.Field{
-				Name:     "not-exists",
-				Limit:    0,
-				Selector: ".product__not-exists-element",
-				Required: true,
+				Name:        "not-exists",
+				Cardinality: 0,
+				Selector:    ".product__not-exists-element",
+				Required:    true,
 			},
 			nil,
 			true,
@@ -201,7 +201,7 @@ func TestFieldFromMap(t *testing.T) {
 
 	m := map[string]any{
 		"Name":         "title",
-		"Limit":        1,
+		"Cardinality":  1,
 		"InputFormat":  "html",
 		"OutputFormat": []string{"text"},
 		"Selector":     ".product__title",
@@ -211,7 +211,7 @@ func TestFieldFromMap(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "title", e.Name)
-	assert.Equal(t, 1, e.Limit)
+	assert.Equal(t, 1, e.Cardinality)
 	assert.Equal(t, "html", e.InputFormat)
 	assert.Equal(t, []string{"text"}, e.OutputFormat)
 	assert.Equal(t, ".product__title", e.Selector)
@@ -221,7 +221,7 @@ func TestFieldToMap(t *testing.T) {
 
 	e := &fields.Field{
 		Name:         "title",
-		Limit:        1,
+		Cardinality:  1,
 		InputFormat:  "html",
 		OutputFormat: []string{"text"},
 		Selector:     ".product__title",
@@ -230,7 +230,7 @@ func TestFieldToMap(t *testing.T) {
 	m := e.Map()
 
 	assert.Equal(t, "title", m["Name"])
-	assert.Equal(t, 1, m["Limit"])
+	assert.Equal(t, 1, m["Cardinality"])
 	assert.Equal(t, "html", m["InputFormat"])
 	assert.Equal(t, []string{"text"}, m["OutputFormat"])
 	assert.Equal(t, ".product__title", m["Selector"])

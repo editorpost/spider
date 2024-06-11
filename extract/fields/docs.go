@@ -62,7 +62,7 @@ Simple configuration for extracting data from HTML or text content:
     InputFormat:  "html",
     OutputFormat: []string{"text"},
     Selector:     "p",
-    Limit:        2,
+    Cardinality:        2,
     Required:     true,
     }
 

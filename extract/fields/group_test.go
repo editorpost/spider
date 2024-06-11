@@ -28,14 +28,14 @@ func TestGroup(t *testing.T) {
 				Fields: []*fields.Field{
 					{
 						Name:         "title",
-						Limit:        1,
+						Cardinality:  1,
 						InputFormat:  "html",
 						OutputFormat: []string{"text"},
 						Selector:     ".product__title",
 					},
 					{
 						Name:         "price",
-						Limit:        1,
+						Cardinality:  1,
 						InputFormat:  "html",
 						OutputFormat: []string{"text"},
 						Selector:     ".product__price--amount",
@@ -59,14 +59,14 @@ func TestGroup(t *testing.T) {
 				Fields: []*fields.Field{
 					{
 						Name:         "title",
-						Limit:        1,
+						Cardinality:  1,
 						InputFormat:  "html",
 						OutputFormat: []string{"text"},
 						Selector:     ".product__title",
 					},
 					{
 						Name:         "price",
-						Limit:        1,
+						Cardinality:  1,
 						InputFormat:  "html",
 						OutputFormat: []string{"text"},
 						Selector:     ".product__price--amount",
@@ -137,14 +137,14 @@ func TestGroupFromMap(t *testing.T) {
 		"Fields": []*fields.Field{
 			{
 				Name:         "title",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "html",
 				OutputFormat: []string{"text"},
 				Selector:     ".product__title",
 			},
 			{
 				Name:         "price",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "html",
 				OutputFormat: []string{"text"},
 				Selector:     ".product__price--amount",
@@ -162,14 +162,14 @@ func TestGroupFromMap(t *testing.T) {
 
 	title := e.Fields[0]
 	assert.Equal(t, "title", title.Name)
-	assert.Equal(t, 1, title.Limit)
+	assert.Equal(t, 1, title.Cardinality)
 	assert.Equal(t, "html", title.InputFormat)
 	assert.Equal(t, []string{"text"}, title.OutputFormat)
 	assert.Equal(t, ".product__title", title.Selector)
 
 	price := e.Fields[1]
 	assert.Equal(t, "price", price.Name)
-	assert.Equal(t, 1, price.Limit)
+	assert.Equal(t, 1, price.Cardinality)
 	assert.Equal(t, "html", price.InputFormat)
 	assert.Equal(t, []string{"text"}, price.OutputFormat)
 	assert.Equal(t, ".product__price--amount", price.Selector)
@@ -184,14 +184,14 @@ func TestGroupExtractorMap(t *testing.T) {
 		Fields: []*fields.Field{
 			{
 				Name:         "title",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "html",
 				OutputFormat: []string{"text"},
 				Selector:     ".product__title",
 			},
 			{
 				Name:         "price",
-				Limit:        1,
+				Cardinality:  1,
 				InputFormat:  "html",
 				OutputFormat: []string{"text"},
 				Selector:     ".product__price--amount",
@@ -208,14 +208,14 @@ func TestGroupExtractorMap(t *testing.T) {
 
 	title := m["Fields"].([]*fields.Field)[0]
 	assert.Equal(t, "title", title.Name)
-	assert.Equal(t, 1, title.Limit)
+	assert.Equal(t, 1, title.Cardinality)
 	assert.Equal(t, "html", title.InputFormat)
 	assert.Equal(t, []string{"text"}, title.OutputFormat)
 	assert.Equal(t, ".product__title", title.Selector)
 
 	price := m["Fields"].([]*fields.Field)[1]
 	assert.Equal(t, "price", price.Name)
-	assert.Equal(t, 1, price.Limit)
+	assert.Equal(t, 1, price.Cardinality)
 	assert.Equal(t, "html", price.InputFormat)
 	assert.Equal(t, []string{"text"}, price.OutputFormat)
 	assert.Equal(t, ".product__price--amount", price.Selector)

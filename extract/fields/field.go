@@ -21,10 +21,10 @@ type Field struct {
 	// required
 	Name string `json:"Name" validate:"required"`
 
-	// Limit is a number of elements to extract.
+	// Cardinality is a number of elements to extract.
 	// Zero means no limit, data stored as a list.
 	// def: 1
-	Limit int `json:"Limit"`
+	Cardinality int `json:"Cardinality"`
 
 	// Required is a flag to check if the field is required.
 	// If value is falsy then pipeline skips entire entity extraction.
@@ -85,7 +85,7 @@ type Field struct {
 //	    Name:   "example",
 //	    InputFormat: "html",
 //	    Selector:    "p",
-//	    Limit:       2,
+//	    Cardinality:       2,
 //	}
 //	extractFn, err := Builder(extractor)
 //	if err != nil {
@@ -125,7 +125,7 @@ func (field *Field) Extractor() (ExtractFn, error) {
 			return nil, ErrRequiredFieldMissing
 		}
 
-		return ApplyCardinality(field.Limit, lo.ToAnySlice(entries)), nil
+		return ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)), nil
 	}, nil
 }
 
@@ -142,7 +142,7 @@ func FieldFromMap(m map[string]any) (*Field, error) {
 func (field *Field) Map() map[string]any {
 	return map[string]any{
 		"Name":         field.Name,
-		"Limit":        field.Limit,
+		"Cardinality":  field.Cardinality,
 		"Required":     field.Required,
 		"InputFormat":  field.InputFormat,
 		"OutputFormat": field.OutputFormat,

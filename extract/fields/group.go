@@ -15,7 +15,7 @@ type Group struct {
 	// required
 	Name string `json:"Name" validate:"required"`
 
-	Limit int `json:"Limit"`
+	Limit int `json:"Cardinality"`
 
 	// Selector is a CSS selector to find the element for the group.
 	// required
