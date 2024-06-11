@@ -448,6 +448,16 @@ func TestGroupExtractorMap(t *testing.T) {
 	assert.Equal(t, ".product__price--amount", price.Selector)
 }
 
+func TestEntityTransformNewDocumentFromReaderError(t *testing.T) {
+	extractor := &fields.Extractor{
+		InputFormat:  "html",
+		OutputFormat: []string{"text"},
+	}
+	input := "<div>Hello  world!</div>"
+	output := fields.EntryTransform(extractor, input)
+	assert.Equal(t, "Hello world!", output)
+}
+
 func GetTestFieldsHTML(t *testing.T) string {
 
 	t.Helper()
@@ -463,16 +473,6 @@ func GetTestFieldsHTML(t *testing.T) string {
 	require.NoError(t, err)
 
 	return buf.String()
-}
-
-func TestEntityTransformNewDocumentFromReaderError(t *testing.T) {
-	extractor := &fields.Extractor{
-		InputFormat:  "html",
-		OutputFormat: []string{"text"},
-	}
-	input := "<div>Hello  world!</div>"
-	output := fields.EntryTransform(extractor, input)
-	assert.Equal(t, "Hello world!", output)
 }
 
 //
