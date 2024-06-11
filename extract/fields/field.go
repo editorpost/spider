@@ -154,6 +154,10 @@ func (field *Field) Map() map[string]any {
 	}
 }
 
+func (field *Field) GetName() string {
+	return field.Name
+}
+
 // ApplyCardinality applies cardinality limits to the input entries.
 // It used as a final step in the extraction process to convert entries to actual value or field or group.
 func ApplyCardinality(cardinality int, entries []any) any {

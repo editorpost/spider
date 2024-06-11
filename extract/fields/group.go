@@ -42,7 +42,7 @@ func (group *Group) Extractor() (ExtractFn, error) {
 		return nil, e
 	}
 
-	if group.extractors, e = ExtractorMap(group.Fields...); e != nil {
+	if group.extractors, e = Build(group.Fields...); e != nil {
 		return nil, e
 	}
 
@@ -110,6 +110,10 @@ func (group *Group) Map() map[string]any {
 	}
 }
 
+func (group *Group) GetName() string {
+	return group.Name
+}
+
 func GroupFromMap(m map[string]any) (*Group, error) {
 
 	e := &Group{}
@@ -118,21 +122,4 @@ func GroupFromMap(m map[string]any) (*Group, error) {
 	}
 
 	return e, nil
-}
-
-func ExtractorMap(fields ...*Field) (map[string]ExtractFn, error) {
-
-	fns := map[string]ExtractFn{}
-
-	for _, field := range fields {
-
-		fn, err := field.Extractor()
-		if err != nil {
-			return nil, err
-		}
-
-		fns[field.Name] = fn
-	}
-
-	return fns, nil
 }
