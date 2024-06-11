@@ -1,5 +1,5 @@
 /*
-Package fields provides fields.Extractor to extract custom entity fields.
+Package fields provides fields.Field to extract custom entity fields.
 
 Simple configuration for extracting data from HTML or text content:
 1. **CSS Selectors with goquery**:
@@ -20,7 +20,7 @@ Simple configuration for extracting data from HTML or text content:
   - Capable of extracting multiple entries from the input.
   - Handles lists, repeated elements, and other multi-entry scenarios seamlessly.
 
-5. **Entry Limiting**:
+5. **Builder Limiting**:
   - Configurable limit on the number of entries to extract.
   - Zero means no limit, and entries are stored as a list.
 
@@ -57,7 +57,7 @@ Simple configuration for extracting data from HTML or text content:
     )
 
     func main() {
-    extractor := &Extractor{
+    extractor := &Field{
     FieldName:    "example",
     InputFormat:  "html",
     OutputFormat: []string{"text"},
@@ -66,7 +66,7 @@ Simple configuration for extracting data from HTML or text content:
     Required:     true,
     }
 
-    extractFn, err := Build(extractor)
+    extractFn, err := extractor.Builder()
     if err != nil {
     log.Fatalf("Failed to build extractor: %v", err)
     }

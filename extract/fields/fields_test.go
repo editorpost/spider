@@ -15,21 +15,21 @@ func TestBuildExtractor(t *testing.T) {
 
 	tc := []struct {
 		name      string
-		extractor *fields.Extractor
+		extractor *fields.Field
 		expected  any
 		hasErr    bool
 		err       error
 	}{
 		{
 			"empty",
-			&fields.Extractor{},
+			&fields.Field{},
 			nil,
 			true, // field name is required
 			nil,
 		},
 		{
 			"simple",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName:    "title",
 				Limit:        1,
 				InputFormat:  "text",
@@ -42,7 +42,7 @@ func TestBuildExtractor(t *testing.T) {
 		},
 		{
 			"between",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName:    "image",
 				Limit:        1,
 				InputFormat:  "text",
@@ -57,7 +57,7 @@ func TestBuildExtractor(t *testing.T) {
 		},
 		{
 			"between image from item prop",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName:    "image",
 				Limit:        1,
 				InputFormat:  "html",
@@ -72,7 +72,7 @@ func TestBuildExtractor(t *testing.T) {
 		},
 		{
 			"between multiple selections",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName:    "muliple image",
 				Limit:        2,
 				InputFormat:  "html",
@@ -87,7 +87,7 @@ func TestBuildExtractor(t *testing.T) {
 		},
 		{
 			"regex",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName:    "category",
 				Limit:        1,
 				InputFormat:  "html",
@@ -102,7 +102,7 @@ func TestBuildExtractor(t *testing.T) {
 		},
 		{
 			"regex image from item prop",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName:    "category",
 				Limit:        1,
 				InputFormat:  "html",
@@ -116,7 +116,7 @@ func TestBuildExtractor(t *testing.T) {
 		},
 		{
 			"all prices",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName: "prices",
 				Limit:     0,
 				Selector:  ".product__price--amount",
@@ -127,7 +127,7 @@ func TestBuildExtractor(t *testing.T) {
 		},
 		{
 			"all prices with limit",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName: "prices",
 				Limit:     2,
 				Selector:  ".product__price--amount",
@@ -138,7 +138,7 @@ func TestBuildExtractor(t *testing.T) {
 		},
 		{
 			"required field are empty",
-			&fields.Extractor{
+			&fields.Field{
 				FieldName: "not-exists",
 				Limit:     0,
 				Selector:  ".product__not-exists-element",
@@ -176,7 +176,7 @@ func TestBuildExtractor(t *testing.T) {
 				return true
 			}
 
-			fn, err := fields.BuildExtractor(c.extractor)
+			fn, err := c.extractor.Extractor()
 			if skip := skipExpectedErr(err); skip {
 				return
 			}
@@ -201,19 +201,19 @@ func TestBuildGroup(t *testing.T) {
 
 	tc := []struct {
 		name     string
-		group    *fields.GroupExtractor
+		group    *fields.Group
 		expected any
 		hasErr   bool
 		err      error
 	}{
 		{
 			"single",
-			&fields.GroupExtractor{
+			&fields.Group{
 				Name:     "product",
 				Selector: ".product--full",
 				Limit:    1,
 				Required: true,
-				Extractors: map[string]*fields.Extractor{
+				Fields: map[string]*fields.Field{
 					"title": {
 						FieldName:    "title",
 						Limit:        1,
@@ -239,12 +239,12 @@ func TestBuildGroup(t *testing.T) {
 		},
 		{
 			"multiple",
-			&fields.GroupExtractor{
+			&fields.Group{
 				Name:     "products",
 				Selector: ".product",
 				Limit:    1,
 				Required: true,
-				Extractors: map[string]*fields.Extractor{
+				Fields: map[string]*fields.Field{
 					"title": {
 						FieldName:    "title",
 						Limit:        1,
@@ -296,7 +296,7 @@ func TestBuildGroup(t *testing.T) {
 				return true
 			}
 
-			fn, err := fields.BuildGroup(c.group)
+			fn, err := c.group.Extractor()
 			if skip := skipExpectedErr(err); skip {
 				return
 			}
@@ -342,7 +342,7 @@ func TestGroupFromMap(t *testing.T) {
 		"Name":     "product",
 		"Selector": ".product--full",
 		"Required": true,
-		"Extractors": map[string]*fields.Extractor{
+		"Fields": map[string]*fields.Field{
 			"title": {
 				FieldName:    "title",
 				Limit:        1,
@@ -366,16 +366,16 @@ func TestGroupFromMap(t *testing.T) {
 	assert.Equal(t, "product", e.Name)
 	assert.Equal(t, ".product--full", e.Selector)
 	assert.True(t, e.Required)
-	assert.Len(t, e.Extractors, 2)
+	assert.Len(t, e.Fields, 2)
 
-	title := e.Extractors["title"]
+	title := e.Fields["title"]
 	assert.Equal(t, "title", title.FieldName)
 	assert.Equal(t, 1, title.Limit)
 	assert.Equal(t, "html", title.InputFormat)
 	assert.Equal(t, []string{"text"}, title.OutputFormat)
 	assert.Equal(t, ".product__title", title.Selector)
 
-	price := e.Extractors["price"]
+	price := e.Fields["price"]
 	assert.Equal(t, "price", price.FieldName)
 	assert.Equal(t, 1, price.Limit)
 	assert.Equal(t, "html", price.InputFormat)
@@ -385,7 +385,7 @@ func TestGroupFromMap(t *testing.T) {
 
 func TestExtractorMap(t *testing.T) {
 
-	e := &fields.Extractor{
+	e := &fields.Field{
 		FieldName:    "title",
 		Limit:        1,
 		InputFormat:  "html",
@@ -404,11 +404,11 @@ func TestExtractorMap(t *testing.T) {
 
 func TestGroupExtractorMap(t *testing.T) {
 
-	e := &fields.GroupExtractor{
+	e := &fields.Group{
 		Name:     "product",
 		Selector: ".product--full",
 		Required: true,
-		Extractors: map[string]*fields.Extractor{
+		Fields: map[string]*fields.Field{
 			"title": {
 				FieldName:    "title",
 				Limit:        1,
@@ -431,16 +431,16 @@ func TestGroupExtractorMap(t *testing.T) {
 	assert.Equal(t, "product", m["Name"])
 	assert.Equal(t, ".product--full", m["Selector"])
 	assert.True(t, m["Required"].(bool))
-	assert.Len(t, m["Extractors"].(map[string]*fields.Extractor), 2)
+	assert.Len(t, m["Fields"].(map[string]*fields.Field), 2)
 
-	title := m["Extractors"].(map[string]*fields.Extractor)["title"]
+	title := m["Fields"].(map[string]*fields.Field)["title"]
 	assert.Equal(t, "title", title.FieldName)
 	assert.Equal(t, 1, title.Limit)
 	assert.Equal(t, "html", title.InputFormat)
 	assert.Equal(t, []string{"text"}, title.OutputFormat)
 	assert.Equal(t, ".product__title", title.Selector)
 
-	price := m["Extractors"].(map[string]*fields.Extractor)["price"]
+	price := m["Fields"].(map[string]*fields.Field)["price"]
 	assert.Equal(t, "price", price.FieldName)
 	assert.Equal(t, 1, price.Limit)
 	assert.Equal(t, "html", price.InputFormat)
@@ -449,7 +449,7 @@ func TestGroupExtractorMap(t *testing.T) {
 }
 
 func TestEntityTransformNewDocumentFromReaderError(t *testing.T) {
-	extractor := &fields.Extractor{
+	extractor := &fields.Field{
 		InputFormat:  "html",
 		OutputFormat: []string{"text"},
 	}
