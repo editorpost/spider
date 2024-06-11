@@ -78,7 +78,7 @@ func (group *Group) extract(selection *goquery.Selection) (map[string]any, error
 	for _, field := range group.Fields {
 
 		// nil, string, []string, map[string]any
-		fieldValue, err := group.extractors[field.FieldName](selection)
+		fieldValue, err := group.extractors[field.Name](selection)
 
 		// skip group selection if required field is missing
 		if errors.Is(err, ErrRequiredFieldMissing) {
@@ -87,7 +87,7 @@ func (group *Group) extract(selection *goquery.Selection) (map[string]any, error
 
 		// log extraction errors
 		if err != nil {
-			slog.Warn("group field extraction error", "field", field.FieldName, "error", err.Error())
+			slog.Warn("group field extraction error", "field", field.Name, "error", err.Error())
 			continue
 		}
 
@@ -95,7 +95,7 @@ func (group *Group) extract(selection *goquery.Selection) (map[string]any, error
 			continue
 		}
 
-		entry[field.FieldName] = fieldValue
+		entry[field.Name] = fieldValue
 	}
 
 	return entry, nil
@@ -131,7 +131,7 @@ func ExtractorMap(fields ...*Field) (map[string]ExtractFn, error) {
 			return nil, err
 		}
 
-		fns[field.FieldName] = fn
+		fns[field.Name] = fn
 	}
 
 	return fns, nil

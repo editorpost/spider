@@ -17,9 +17,9 @@ var (
 // Field provides data describing custom data extraction from text or html.
 type Field struct {
 
-	// FieldName is a key to store the extracted data.
+	// Name is a key to store the extracted data.
 	// required
-	FieldName string `json:"FieldName" validate:"required"`
+	Name string `json:"Name" validate:"required"`
 
 	// Limit is a number of elements to extract.
 	// Zero means no limit, data stored as a list.
@@ -82,7 +82,7 @@ type Field struct {
 // Example:
 //
 //	extractor := &Field{
-//	    FieldName:   "example",
+//	    Name:   "example",
 //	    InputFormat: "html",
 //	    Selector:    "p",
 //	    Limit:       2,
@@ -141,7 +141,7 @@ func FieldFromMap(m map[string]any) (*Field, error) {
 
 func (field *Field) Map() map[string]any {
 	return map[string]any{
-		"FieldName":    field.FieldName,
+		"Name":         field.Name,
 		"Limit":        field.Limit,
 		"Required":     field.Required,
 		"InputFormat":  field.InputFormat,

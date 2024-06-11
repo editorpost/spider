@@ -58,7 +58,7 @@ Simple configuration for extracting data from HTML or text content:
 
     func main() {
     extractor := &Field{
-    FieldName:    "example",
+    Name:    "example",
     InputFormat:  "html",
     OutputFormat: []string{"text"},
     Selector:     "p",
