@@ -28,7 +28,7 @@ type Group struct {
 	// required
 	Fields []*Field `json:"Fields" validate:"required,dive,required"`
 
-	extract map[string]ExtractFn
+	extractors map[string]ExtractFn
 }
 
 // Extractor in case of group, fields extracted by selection
@@ -42,7 +42,7 @@ func (group *Group) Extractor() (ExtractFn, error) {
 		return nil, e
 	}
 
-	if group.extract, e = ExtractorMap(group.Fields...); e != nil {
+	if group.extractors, e = ExtractorMap(group.Fields...); e != nil {
 		return nil, e
 	}
 
@@ -55,7 +55,7 @@ func (group *Group) Extractor() (ExtractFn, error) {
 		// select each group entry
 		selection.Find(group.Selector).Each(func(i int, groupSelection *goquery.Selection) {
 			// entry is a map of field names to their extracted values
-			if entry, err := group.EntryFromSelection(groupSelection); err == nil {
+			if entry, err := group.extract(groupSelection); err == nil {
 				entries = append(entries, entry)
 			}
 		})
@@ -68,17 +68,17 @@ func (group *Group) Extractor() (ExtractFn, error) {
 	}, nil
 }
 
-func (group *Group) EntryFromSelection(selection *goquery.Selection) (map[string]any, error) {
+func (group *Group) extract(selection *goquery.Selection) (map[string]any, error) {
 
 	// entry is a map of field names to their extracted values
 	// max entries for group based on Group.Cardinality
 	entry := make(map[string]any)
 
-	// in group selection extract each field
+	// in group selection extractors each field
 	for _, field := range group.Fields {
 
 		// nil, string, []string, map[string]any
-		fieldValue, err := group.extract[field.FieldName](selection)
+		fieldValue, err := group.extractors[field.FieldName](selection)
 
 		// skip group selection if required field is missing
 		if errors.Is(err, ErrRequiredFieldMissing) {
