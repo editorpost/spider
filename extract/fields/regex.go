@@ -113,8 +113,8 @@ func RegexExtract(re *regexp.Regexp, data string) []string {
 	}
 
 	matches := re.FindAllStringSubmatch(data, -1)
-	values := make([]string, 0, len(matches))
 
+	var values []string
 	for _, match := range matches {
 		if len(match) > 1 {
 			values = append(values, match[1])
