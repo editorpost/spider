@@ -326,7 +326,7 @@ func TestExtractorFromMap(t *testing.T) {
 		"Selector":     ".product__title",
 	}
 
-	e, err := fields.ExtractorFromMap(m)
+	e, err := fields.FieldFromMap(m)
 	require.NoError(t, err)
 
 	assert.Equal(t, "title", e.FieldName)
