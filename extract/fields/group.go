@@ -101,19 +101,6 @@ func (group *Group) extract(selection *goquery.Selection) (map[string]any, error
 	return entry, nil
 }
 
-func (group *Group) NormalizeEntries(entries []map[string]any) any {
-
-	if group.Limit > 0 && len(entries) > group.Limit {
-		entries = entries[:group.Limit]
-	}
-
-	if group.Limit == 1 {
-		return entries[0]
-	}
-
-	return entries
-}
-
 func (group *Group) Map() map[string]any {
 	return map[string]any{
 		"Name":     group.Name,
