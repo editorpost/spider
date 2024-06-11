@@ -1,11 +1,9 @@
 package fields
 
 import (
-	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/pkg/valid"
 	"github.com/editorpost/donq/pkg/vars"
-	"log/slog"
 )
 
 // Group provides data describing custom data extraction for grouped
@@ -25,41 +23,7 @@ type Group struct {
 
 	// Fields is a map of sub-field names to their corresponding Field configurations.
 	// required
-	Fields map[string]*Field `json:"Fields" validate:"required,dive,required"`
-
-	extract map[string]ExtractFn `json:"-"`
-}
-
-func NewGroup(name, selector string, cardinality int, required bool, fields map[string]*Field) (*Group, error) {
-
-	extract := map[string]ExtractFn{}
-
-	for fieldName, field := range fields {
-		extractor, err := field.Extractor()
-		if err != nil {
-			slog.Error("failed to build extractor", slog.String("error", err.Error()))
-		}
-		extract[fieldName] = extractor
-	}
-
-	return &Group{
-		Name:     name,
-		Limit:    cardinality,
-		Selector: selector,
-		Required: required,
-		Fields:   fields,
-		extract:  extract,
-	}, nil
-}
-
-func NewGroupFromMap(m map[string]any) (*Group, error) {
-
-	e := &Group{}
-	if err := vars.FromJSON(m, e); err != nil {
-		return nil, err
-	}
-
-	return e, nil
+	Fields []*Field `json:"Fields" validate:"required,dive,required"`
 }
 
 // Extractor in case of group, fields extracted by selection
@@ -68,6 +32,11 @@ func NewGroupFromMap(m map[string]any) (*Group, error) {
 func (group *Group) Extractor() (ExtractFn, error) {
 
 	if err := valid.Struct(group); err != nil {
+		return nil, err
+	}
+
+	extract, err := ExtractorMap(group.Fields...)
+	if err != nil {
 		return nil, err
 	}
 
@@ -81,27 +50,15 @@ func (group *Group) Extractor() (ExtractFn, error) {
 		sel.Find(group.Selector).Each(func(i int, s *goquery.Selection) {
 			groupData := make(map[string]any)
 
-			for fieldName, extractor := range group.Fields {
-
-				extractFn, err := extractor.Extractor()
-
-				// stop group extraction
-				// error catch under extract.Pipe handler
-				if errors.Is(err, ErrRequiredFieldMissing) {
-					return
-				}
-
-				if err != nil {
-					continue
-				}
+			for _, field := range group.Fields {
 
 				// clean, unique entries
-				entries, err := extractFn(s)
+				entries, err := extract[field.FieldName](s)
 				if err != nil {
 					continue
 				}
 
-				groupData[fieldName] = entries
+				groupData[field.FieldName] = entries
 
 			}
 			values = append(values, groupData)
@@ -131,19 +88,30 @@ func (group *Group) Map() map[string]any {
 		"Fields":   group.Fields,
 	}
 }
-func Extractors(fields ...*Field) map[string]ExtractFn {
 
-	extractFn := map[string]ExtractFn{}
+func GroupFromMap(m map[string]any) (*Group, error) {
+
+	e := &Group{}
+	if err := vars.FromJSON(m, e); err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+
+func ExtractorMap(fields ...*Field) (map[string]ExtractFn, error) {
+
+	fns := map[string]ExtractFn{}
 
 	for _, field := range fields {
 
-		extractor, err := field.Extractor()
+		fn, err := field.Extractor()
 		if err != nil {
-			slog.Error("failed to build extractor", slog.String("error", err.Error()))
+			return nil, err
 		}
 
-		extractFn[field.FieldName] = extractor
+		fns[field.FieldName] = fn
 	}
 
-	return extractFn
+	return fns, nil
 }
