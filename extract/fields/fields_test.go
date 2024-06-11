@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestBuild(t *testing.T) {
+func TestBuildExtractor(t *testing.T) {
 
 	tc := []struct {
 		name      string
@@ -176,7 +176,7 @@ func TestBuild(t *testing.T) {
 				return true
 			}
 
-			fn, err := fields.Build(c.extractor)
+			fn, err := fields.BuildExtractor(c.extractor)
 			if skip := skipExpectedErr(err); skip {
 				return
 			}
@@ -195,6 +195,294 @@ func TestBuild(t *testing.T) {
 		})
 	}
 
+}
+
+func TestBuildGroup(t *testing.T) {
+
+	tc := []struct {
+		name     string
+		group    *fields.GroupExtractor
+		expected any
+		hasErr   bool
+		err      error
+	}{
+		{
+			"single",
+			&fields.GroupExtractor{
+				Name:     "product",
+				Selector: ".product--full",
+				Required: true,
+				Extractors: map[string]*fields.Extractor{
+					"title": {
+						FieldName:    "title",
+						Limit:        1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__title",
+					},
+					"price": {
+						FieldName:    "price",
+						Limit:        1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--amount",
+					},
+				},
+			},
+			[]any{
+				map[string]any{
+					"title": []any{"Main Product Title"},
+					"price": []any{"99.99"},
+				},
+			},
+			false,
+			nil,
+		},
+		//{
+		//	"multiple",
+		//	&fields.GroupExtractor{
+		//		Name:     "product",
+		//		Selector: ".product",
+		//		Required: true,
+		//		Extractors: map[string]*fields.Extractor{
+		//			"title": {
+		//				FieldName:    "title",
+		//				Limit:        1,
+		//				InputFormat:  "html",
+		//				OutputFormat: []string{"text"},
+		//				Selector:     ".product__title",
+		//			},
+		//			"price": {
+		//				FieldName:    "price",
+		//				Limit:        1,
+		//				InputFormat:  "html",
+		//				OutputFormat: []string{"text"},
+		//				Selector:     ".product__price--amount",
+		//			},
+		//		},
+		//	},
+		//	[]map[string]any{
+		//		{
+		//			"title": []any{"Main Product Title"},
+		//			"price": []any{"99.99"},
+		//		},
+		//		{
+		//			"title": []any{"Another Product Title"},
+		//			"price": []any{"49.99"},
+		//		},
+		//		{
+		//			"title": []any{"Third Product Title"},
+		//			"price": []any{"0.99"},
+		//		},
+		//	},
+		//	false,
+		//	nil,
+		//},
+		//{
+		//	"required field are empty",
+		//	&fields.GroupExtractor{
+		//		Name:     "product",
+		//		Selector: ".product--not-exists",
+		//		Required: true,
+		//		Extractors: map[string]*fields.Extractor{
+		//			"title": {
+		//				FieldName:    "title",
+		//				Limit:        1,
+		//				InputFormat:  "html",
+		//				OutputFormat: []string{"text"},
+		//				Selector:     ".product__title",
+		//			},
+		//			"price": {
+		//				FieldName:    "price",
+		//				Limit:        1,
+		//				InputFormat:  "html",
+		//				OutputFormat: []string{"text"},
+		//				Selector:     ".product__price--amount",
+		//			},
+		//		},
+		//	},
+		//	nil,
+		//	true,
+		//	fields.ErrRequiredFieldMissing,
+		//},
+	}
+
+	// use testify assert
+	for _, c := range tc {
+		t.Run(c.name, func(t *testing.T) {
+
+			// check error
+			skipExpectedErr := func(actual error) bool {
+
+				if actual == nil {
+					// continue test case execution
+					return false
+				}
+
+				// force error if not expected
+				if !c.hasErr {
+					assert.NoError(t, actual)
+				}
+
+				// check error instance
+				if c.err != nil {
+					assert.ErrorIs(t, c.err, actual)
+				}
+
+				// stops test case execution
+				return true
+			}
+
+			fn, err := fields.BuildGroup(c.group)
+			if skip := skipExpectedErr(err); skip {
+				return
+			}
+
+			// compare values
+			read := strings.NewReader(GetTestFieldsHTML(t))
+			dom, err := goquery.NewDocumentFromReader(read)
+			require.NoError(t, err)
+
+			values, err := fn(dom.Selection)
+			if skip := skipExpectedErr(err); skip {
+				return
+			}
+
+			assert.Equal(t, c.expected, values)
+		})
+	}
+}
+
+func TestExtractorFromMap(t *testing.T) {
+
+	m := map[string]any{
+		"FieldName":    "title",
+		"Limit":        1,
+		"InputFormat":  "html",
+		"OutputFormat": []string{"text"},
+		"Selector":     ".product__title",
+	}
+
+	e, err := fields.ExtractorFromMap(m)
+	require.NoError(t, err)
+
+	assert.Equal(t, "title", e.FieldName)
+	assert.Equal(t, 1, e.Limit)
+	assert.Equal(t, "html", e.InputFormat)
+	assert.Equal(t, []string{"text"}, e.OutputFormat)
+	assert.Equal(t, ".product__title", e.Selector)
+}
+
+func TestGroupFromMap(t *testing.T) {
+
+	m := map[string]any{
+		"Name":     "product",
+		"Selector": ".product--full",
+		"Required": true,
+		"Extractors": map[string]*fields.Extractor{
+			"title": {
+				FieldName:    "title",
+				Limit:        1,
+				InputFormat:  "html",
+				OutputFormat: []string{"text"},
+				Selector:     ".product__title",
+			},
+			"price": {
+				FieldName:    "price",
+				Limit:        1,
+				InputFormat:  "html",
+				OutputFormat: []string{"text"},
+				Selector:     ".product__price--amount",
+			},
+		},
+	}
+
+	e, err := fields.GroupFromMap(m)
+	require.NoError(t, err)
+
+	assert.Equal(t, "product", e.Name)
+	assert.Equal(t, ".product--full", e.Selector)
+	assert.True(t, e.Required)
+	assert.Len(t, e.Extractors, 2)
+
+	title := e.Extractors["title"]
+	assert.Equal(t, "title", title.FieldName)
+	assert.Equal(t, 1, title.Limit)
+	assert.Equal(t, "html", title.InputFormat)
+	assert.Equal(t, []string{"text"}, title.OutputFormat)
+	assert.Equal(t, ".product__title", title.Selector)
+
+	price := e.Extractors["price"]
+	assert.Equal(t, "price", price.FieldName)
+	assert.Equal(t, 1, price.Limit)
+	assert.Equal(t, "html", price.InputFormat)
+	assert.Equal(t, []string{"text"}, price.OutputFormat)
+	assert.Equal(t, ".product__price--amount", price.Selector)
+}
+
+func TestExtractorMap(t *testing.T) {
+
+	e := &fields.Extractor{
+		FieldName:    "title",
+		Limit:        1,
+		InputFormat:  "html",
+		OutputFormat: []string{"text"},
+		Selector:     ".product__title",
+	}
+
+	m := e.Map()
+
+	assert.Equal(t, "title", m["FieldName"])
+	assert.Equal(t, 1, m["Limit"])
+	assert.Equal(t, "html", m["InputFormat"])
+	assert.Equal(t, []string{"text"}, m["OutputFormat"])
+	assert.Equal(t, ".product__title", m["Selector"])
+}
+
+func TestGroupExtractorMap(t *testing.T) {
+
+	e := &fields.GroupExtractor{
+		Name:     "product",
+		Selector: ".product--full",
+		Required: true,
+		Extractors: map[string]*fields.Extractor{
+			"title": {
+				FieldName:    "title",
+				Limit:        1,
+				InputFormat:  "html",
+				OutputFormat: []string{"text"},
+				Selector:     ".product__title",
+			},
+			"price": {
+				FieldName:    "price",
+				Limit:        1,
+				InputFormat:  "html",
+				OutputFormat: []string{"text"},
+				Selector:     ".product__price--amount",
+			},
+		},
+	}
+
+	m := e.Map()
+
+	assert.Equal(t, "product", m["Name"])
+	assert.Equal(t, ".product--full", m["Selector"])
+	assert.True(t, m["Required"].(bool))
+	assert.Len(t, m["Extractors"].(map[string]*fields.Extractor), 2)
+
+	title := m["Extractors"].(map[string]*fields.Extractor)["title"]
+	assert.Equal(t, "title", title.FieldName)
+	assert.Equal(t, 1, title.Limit)
+	assert.Equal(t, "html", title.InputFormat)
+	assert.Equal(t, []string{"text"}, title.OutputFormat)
+	assert.Equal(t, ".product__title", title.Selector)
+
+	price := m["Extractors"].(map[string]*fields.Extractor)["price"]
+	assert.Equal(t, "price", price.FieldName)
+	assert.Equal(t, 1, price.Limit)
+	assert.Equal(t, "html", price.InputFormat)
+	assert.Equal(t, []string{"text"}, price.OutputFormat)
+	assert.Equal(t, ".product__price--amount", price.Selector)
 }
 
 func GetTestFieldsHTML(t *testing.T) string {
