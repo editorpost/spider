@@ -9,7 +9,34 @@ import (
 // and sets the fields to the payload
 func Fields(extractors ...*fields.Extractor) func(*Payload) error {
 
-	callbacks := map[string]fields.ExtractFn{}
+	extractFn := FieldsExtractFn(extractors...)
+
+	return func(p *Payload) error {
+
+		// extract fields
+		for _, extractor := range extractors {
+
+			// todo part inside must be moved to the fields package
+			// todo may be in common Build function
+			// maybe group and field extractors must not be decoupled
+
+			values, err := extractFn[extractor.FieldName](p.Selection)
+			if err != nil {
+				return err
+			}
+
+			// todo ErrRequiredFieldMissing check required?
+
+			p.Data[extractor.FieldName] = values
+		}
+
+		return nil
+	}
+}
+
+func FieldsExtractFn(extractors ...*fields.Extractor) map[string]fields.ExtractFn {
+
+	extractFn := map[string]fields.ExtractFn{}
 
 	for _, d := range extractors {
 
@@ -18,31 +45,8 @@ func Fields(extractors ...*fields.Extractor) func(*Payload) error {
 			slog.Error("failed to build extractor", slog.String("error", err.Error()))
 		}
 
-		callbacks[d.FieldName] = extractor
+		extractFn[d.FieldName] = extractor
 	}
 
-	return func(p *Payload) error {
-
-		// extract fields
-		for _, extractor := range extractors {
-
-			values, err := callbacks[extractor.FieldName](p.Selection)
-			if err != nil {
-				return err
-			}
-
-			// single value
-			if extractor.Limit == 1 && len(values) > 0 {
-				p.Data[extractor.FieldName] = values[0]
-				return nil
-			}
-
-			// cut off values if limit is set
-			if extractor.Limit > 0 && len(values) > extractor.Limit {
-				values = values[:extractor.Limit]
-			}
-		}
-
-		return nil
-	}
+	return extractFn
 }

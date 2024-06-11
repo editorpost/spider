@@ -16,7 +16,7 @@ func TestBuildExtractor(t *testing.T) {
 	tc := []struct {
 		name      string
 		extractor *fields.Extractor
-		expected  []any
+		expected  any
 		hasErr    bool
 		err       error
 	}{
@@ -36,7 +36,7 @@ func TestBuildExtractor(t *testing.T) {
 				OutputFormat: []string{"text"},
 				Selector:     ".product--full .product__title",
 			},
-			[]any{"Main Product Title"},
+			"Main Product Title",
 			false,
 			nil,
 		},
@@ -51,7 +51,7 @@ func TestBuildExtractor(t *testing.T) {
 				BetweenStart: "Price:",
 				BetweenEnd:   "USD",
 			},
-			[]any{"99.99"},
+			"99.99",
 			false,
 			nil,
 		},
@@ -66,7 +66,7 @@ func TestBuildExtractor(t *testing.T) {
 				BetweenStart: "itemprop=\"image\" content=\"",
 				BetweenEnd:   "\"",
 			},
-			[]any{"product-image.jpg"},
+			"product-image.jpg",
 			false,
 			nil,
 		},
@@ -74,14 +74,14 @@ func TestBuildExtractor(t *testing.T) {
 			"between multiple selections",
 			&fields.Extractor{
 				FieldName:    "muliple image",
-				Limit:        10,
+				Limit:        2,
 				InputFormat:  "html",
 				OutputFormat: []string{"html"},
 				Selector:     "meta", // multiple selection
 				BetweenStart: "itemprop=\"image\" content=\"",
 				BetweenEnd:   "\"",
 			},
-			[]any{"product-image.jpg"},
+			[]string{"product-image.jpg"},
 			false,
 			nil,
 		},
@@ -96,7 +96,7 @@ func TestBuildExtractor(t *testing.T) {
 				// multiline regex
 				FinalRegex: "Category:(?s)(.*?)</p>",
 			},
-			[]any{"Magic wands"},
+			"Magic wands",
 			false,
 			nil,
 		},
@@ -110,7 +110,7 @@ func TestBuildExtractor(t *testing.T) {
 				Selector:     "head",
 				FinalRegex:   "meta itemprop=\"image\" content=\"(.+?)\"",
 			},
-			[]any{"product-image.jpg"},
+			"product-image.jpg",
 			false,
 			nil,
 		},
@@ -121,7 +121,7 @@ func TestBuildExtractor(t *testing.T) {
 				Limit:     0,
 				Selector:  ".product__price--amount",
 			},
-			[]any{"99.99", "49.99", "0.99"},
+			[]string{"99.99", "49.99", "0.99"},
 			false,
 			nil,
 		},
@@ -132,7 +132,7 @@ func TestBuildExtractor(t *testing.T) {
 				Limit:     2,
 				Selector:  ".product__price--amount",
 			},
-			[]any{"99.99", "49.99"},
+			[]string{"99.99", "49.99"},
 			false,
 			nil,
 		},
@@ -211,6 +211,7 @@ func TestBuildGroup(t *testing.T) {
 			&fields.GroupExtractor{
 				Name:     "product",
 				Selector: ".product--full",
+				Limit:    1,
 				Required: true,
 				Extractors: map[string]*fields.Extractor{
 					"title": {
@@ -229,82 +230,44 @@ func TestBuildGroup(t *testing.T) {
 					},
 				},
 			},
-			[]any{
-				map[string]any{
-					"title": []any{"Main Product Title"},
-					"price": []any{"99.99"},
-				},
+			map[string]any{
+				"title": "Main Product Title",
+				"price": "99.99",
 			},
 			false,
 			nil,
 		},
-		//{
-		//	"multiple",
-		//	&fields.GroupExtractor{
-		//		Name:     "product",
-		//		Selector: ".product",
-		//		Required: true,
-		//		Extractors: map[string]*fields.Extractor{
-		//			"title": {
-		//				FieldName:    "title",
-		//				Limit:        1,
-		//				InputFormat:  "html",
-		//				OutputFormat: []string{"text"},
-		//				Selector:     ".product__title",
-		//			},
-		//			"price": {
-		//				FieldName:    "price",
-		//				Limit:        1,
-		//				InputFormat:  "html",
-		//				OutputFormat: []string{"text"},
-		//				Selector:     ".product__price--amount",
-		//			},
-		//		},
-		//	},
-		//	[]map[string]any{
-		//		{
-		//			"title": []any{"Main Product Title"},
-		//			"price": []any{"99.99"},
-		//		},
-		//		{
-		//			"title": []any{"Another Product Title"},
-		//			"price": []any{"49.99"},
-		//		},
-		//		{
-		//			"title": []any{"Third Product Title"},
-		//			"price": []any{"0.99"},
-		//		},
-		//	},
-		//	false,
-		//	nil,
-		//},
-		//{
-		//	"required field are empty",
-		//	&fields.GroupExtractor{
-		//		Name:     "product",
-		//		Selector: ".product--not-exists",
-		//		Required: true,
-		//		Extractors: map[string]*fields.Extractor{
-		//			"title": {
-		//				FieldName:    "title",
-		//				Limit:        1,
-		//				InputFormat:  "html",
-		//				OutputFormat: []string{"text"},
-		//				Selector:     ".product__title",
-		//			},
-		//			"price": {
-		//				FieldName:    "price",
-		//				Limit:        1,
-		//				InputFormat:  "html",
-		//				OutputFormat: []string{"text"},
-		//				Selector:     ".product__price--amount",
-		//			},
-		//		},
-		//	},
-		//	nil,
-		//	true,
-		//	fields.ErrRequiredFieldMissing,
-		//},
+		{
+			"multiple",
+			&fields.GroupExtractor{
+				Name:     "products",
+				Selector: ".product",
+				Limit:    1,
+				Required: true,
+				Extractors: map[string]*fields.Extractor{
+					"title": {
+						FieldName:    "title",
+						Limit:        1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__title",
+					},
+					"price": {
+						FieldName:    "price",
+						Limit:        1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--amount",
+					},
+				},
+			},
+			map[string]any{
+				"title": "Main Product Title",
+				"price": "99.99",
+			},
+			false,
+			nil,
+		},
 	}
 
 	// use testify assert
