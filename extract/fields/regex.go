@@ -36,9 +36,6 @@ func RegexPipes(selections []string, expressions ...*regexp.Regexp) (entries []s
 
 	for _, selection := range selections {
 		for _, expr := range expressions {
-			if expr == nil {
-				continue
-			}
 			entries = append(entries, RegexExtract(expr, selection)...)
 		}
 	}
@@ -116,8 +113,8 @@ func RegexExtract(re *regexp.Regexp, data string) []string {
 	}
 
 	matches := re.FindAllStringSubmatch(data, -1)
+	values := make([]string, 0, len(matches))
 
-	var values []string
 	for _, match := range matches {
 		if len(match) > 1 {
 			values = append(values, match[1])
