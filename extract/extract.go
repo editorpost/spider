@@ -3,7 +3,6 @@ package extract
 import (
 	"errors"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/editorpost/spider/extract/fields"
 	"github.com/gocolly/colly/v2"
 	"net/url"
 	"strings"
@@ -31,6 +30,11 @@ type (
 	}
 )
 
+var (
+	// ErrDataNotFound expected error, stops the extraction pipeline.
+	ErrDataNotFound = errors.New("skip entity extraction, required data is missing")
+)
+
 // Pipe is a function to process the html node and url.
 // Order of the pipes is important.
 func Pipe(pipes ...PipeFn) ExtractFn {
@@ -54,10 +58,8 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 		for _, pipe := range pipes {
 			err := pipe(payload)
 
-			if errors.Is(err, fields.ErrRequiredFieldMissing) {
-				// expected error, stops the pipe chain
-				// used by extractors to quickly skip the pipe chain
-				// if data is not satisfied or exists
+			// stop the pipe chain if required data is missing
+			if errors.Is(err, ErrDataNotFound) {
 				return nil
 			}
 
