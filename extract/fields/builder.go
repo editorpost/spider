@@ -16,42 +16,6 @@ type (
 	}
 )
 
-// Build creates a map of group or fExtractor names to their corresponding ExtractFn.
-func Build(bb ...*Extractor) (map[string]ExtractFn, error) {
-
-	fns := map[string]ExtractFn{}
-
-	for _, b := range bb {
-
-		fn, err := b.Extractor()
-		if err != nil {
-			return nil, err
-		}
-
-		fns[b.GetName()] = fn
-	}
-
-	return fns, nil
-}
-
-// ExtractDEpricated is a function that extracts data from a selection.
-func ExtractDEpricated(name string, builders ...*Extractor) (ExtractFn, error) {
-
-	_, initErr := Build(builders...)
-	if initErr != nil {
-		return nil, initErr
-	}
-
-	return func(selection *goquery.Selection) (any, error) {
-
-		// data is a map of fExtractor names to their extracted values
-		// max entries for group based on Group or Extractor Cardinality
-		data := map[string]any{}
-
-		return map[string]any{name: data}, nil
-	}, nil
-}
-
 func Construct(extractor *Extractor) (err error) {
 
 	if err = valid.Struct(extractor); err != nil {
@@ -64,7 +28,7 @@ func Construct(extractor *Extractor) (err error) {
 	}
 
 	for _, child := range extractor.Children {
-		if err = construct(child); err != nil {
+		if err = Construct(child); err != nil {
 			return err
 		}
 	}
@@ -74,38 +38,40 @@ func Construct(extractor *Extractor) (err error) {
 
 func Extract(payload map[string]any, node *goquery.Selection, extractor *Extractor) error {
 
-	if extractor.Children == nil {
+	var data []any
 
-		data := lo.ToAnySlice(extractor.Fieldx(node))
-		// todo: remove FieldValue from extractor.Field and use FieldValue call below
-		var err error
-		payload[extractor.Name], err = FieldValue(data, extractor)
-		return err
-	}
+	if extractor.Children != nil {
 
-	scope := node
-	if extractor.Scoped && extractor.Selector != "" {
-		scope = node.Find(extractor.Selector)
-	}
+		scope := node
+		if extractor.Scoped && extractor.Selector != "" {
+			scope = node.Find(extractor.Selector)
+		}
 
-	deltas := make([]map[string]any, 0)
-	scope.Each(func(i int, selection *goquery.Selection) {
+		deltas := make([]map[string]any, 0)
+		scope.Each(func(i int, selection *goquery.Selection) {
 
-		delta := map[string]any{}
+			delta := map[string]any{}
 
-		for _, child := range extractor.Children {
-			if exErr := Extract(delta, selection, child); exErr != nil {
-				return
+			for _, child := range extractor.Children {
+				if exErr := Extract(delta, selection, child); exErr != nil {
+					return
+				}
 			}
-		}
 
-		if len(delta) > 0 {
-			deltas = append(deltas, delta)
-		}
-	})
+			if len(delta) > 0 {
+				deltas = append(deltas, delta)
+			}
+		})
+
+		data = lo.ToAnySlice(deltas)
+	} else {
+		data = lo.ToAnySlice(extractor.Value(node))
+	}
 
 	var err error
-	payload[extractor.Name], err = FieldValue(lo.ToAnySlice(deltas), extractor)
+	if payload[extractor.Name], err = FieldValue(data, extractor); err != nil {
+		return err
+	}
 
 	return err
 }
