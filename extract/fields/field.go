@@ -78,8 +78,6 @@ type Extractor struct {
 	// Children is a map of sub-field names to their corresponding Extractor configurations.
 	// required
 	Children []*Extractor `json:"Children" validate:"optional,dive"`
-
-	extract ExtractFn
 }
 
 func (field *Extractor) Value(sel *goquery.Selection) []string {

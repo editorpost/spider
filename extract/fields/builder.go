@@ -6,23 +6,12 @@ import (
 	"github.com/samber/lo"
 )
 
-type (
-	ExtractFn func(*goquery.Selection) (any, error)
-
-	Builder interface {
-		GetName() string
-		IsRequired() bool
-		Extractor() (ExtractFn, error)
-	}
-)
-
 func Construct(extractor *Extractor) (err error) {
 
 	if err = valid.Struct(extractor); err != nil {
 		return err
 	}
 
-	// regex
 	if extractor.Between, extractor.Final, err = RegexCompile(extractor); err != nil {
 		return err
 	}
