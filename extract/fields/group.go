@@ -44,13 +44,13 @@ func (group *Group) Extractor() (ExtractFn, error) {
 		return nil, e
 	}
 
-	extract, e := Extract(group.Fields...)
+	extract, e := Extract("", group.Fields...)
 	if e != nil {
 		return nil, e
 	}
 
 	// selection might be entity selection or whole document
-	return func(selection *goquery.Selection) (any, error) {
+	return func(selection *goquery.Selection) (map[string]any, error) {
 
 		// entries/deltas of the group
 		var entries []any
@@ -67,7 +67,10 @@ func (group *Group) Extractor() (ExtractFn, error) {
 			return nil, ErrRequiredFieldMissing
 		}
 
-		return ApplyCardinality(group.Limit, lo.ToAnySlice(entries)), nil
+		return map[string]any{
+			group.Name: ApplyCardinality(group.Limit, lo.ToAnySlice(entries)),
+		}, nil
+
 	}, nil
 }
 

@@ -118,7 +118,7 @@ func (field *Field) Extractor() (ExtractFn, error) {
 	return field.extract, nil
 }
 
-func (field *Field) extract(sel *goquery.Selection) (any, error) {
+func (field *Field) extract(sel *goquery.Selection) (map[string]any, error) {
 
 	entries := EntriesAsString(field, sel)
 
@@ -134,7 +134,9 @@ func (field *Field) extract(sel *goquery.Selection) (any, error) {
 		return nil, ErrRequiredFieldMissing
 	}
 
-	return ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)), nil
+	return map[string]any{
+		field.Name: ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)),
+	}, nil
 }
 
 func FieldFromMap(m map[string]any) (*Field, error) {

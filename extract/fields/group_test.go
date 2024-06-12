@@ -43,8 +43,10 @@ func TestGroup(t *testing.T) {
 				},
 			},
 			map[string]any{
-				"title": "Main Product Title",
-				"price": "99.99",
+				"product": map[string]any{
+					"title": "Main Product Title",
+					"price": "99.99",
+				},
 			},
 			false,
 			nil,
@@ -54,7 +56,7 @@ func TestGroup(t *testing.T) {
 			&fields.Group{
 				Name:     "products",
 				Selector: ".product",
-				Limit:    1,
+				Limit:    2,
 				Required: true,
 				Fields: []*fields.Field{
 					{
@@ -74,8 +76,16 @@ func TestGroup(t *testing.T) {
 				},
 			},
 			map[string]any{
-				"title": "Main Product Title",
-				"price": "99.99",
+				"products": []any{
+					map[string]any{
+						"title": "Main Product Title",
+						"price": "99.99",
+					},
+					map[string]any{
+						"title": "Another Product Title",
+						"price": "49.99",
+					},
+				},
 			},
 			false,
 			nil,

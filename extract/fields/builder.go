@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	ExtractFn func(*goquery.Selection) (any, error)
+	ExtractFn func(*goquery.Selection) (map[string]any, error)
 
 	Builder interface {
 		GetName() string
@@ -34,14 +34,14 @@ func Build[T Builder](bb ...T) (map[string]ExtractFn, error) {
 }
 
 // Extract is a function that extracts data from a selection.
-func Extract[T Builder](builders ...T) (ExtractFn, error) {
+func Extract[T Builder](name string, builders ...T) (ExtractFn, error) {
 
 	extractors, initErr := Build(builders...)
 	if initErr != nil {
 		return nil, initErr
 	}
 
-	return func(selection *goquery.Selection) (any, error) {
+	return func(selection *goquery.Selection) (map[string]any, error) {
 
 		// data is a map of field names to their extracted values
 		// max entries for group based on Group or Field Cardinality
@@ -66,9 +66,16 @@ func Extract[T Builder](builders ...T) (ExtractFn, error) {
 				continue
 			}
 
-			data[builder.GetName()] = values
+			for k, v := range values {
+				data[k] = v
+			}
 		}
 
-		return data, nil
+		if name == "" {
+			// root level fields
+			return data, nil
+		}
+
+		return map[string]any{name: data}, nil
 	}, nil
 }
