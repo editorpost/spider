@@ -13,19 +13,19 @@ func TestExtract(t *testing.T) {
 
 	tc := []struct {
 		name     string
-		builders []fields.Builder
+		builders []*fields.Field
 		expected any
 		hasErr   bool
 		err      error
 	}{
 		{
 			"single",
-			[]fields.Builder{
-				&fields.Group{
-					Name:     "product",
-					Selector: ".product--full",
-					Limit:    1,
-					Required: true,
+			[]*fields.Field{
+				&fields.Field{
+					Name:        "product",
+					Selector:    ".product--full",
+					Cardinality: 1,
+					Required:    true,
 					Fields: []*fields.Field{
 						{
 							Name:         "title",
@@ -55,21 +55,21 @@ func TestExtract(t *testing.T) {
 		},
 		{
 			"multiple",
-			[]fields.Builder{
-				&fields.Group{
-					Name:     "products",
-					Selector: ".product",
-					Limit:    2,
-					Required: true,
+			[]*fields.Field{
+				&fields.Field{
+					Name:        "products",
+					Selector:    ".product",
+					Cardinality: 2,
+					Required:    true,
 					Fields: []*fields.Field{
-						{
+						&fields.Field{
 							Name:         "title",
 							Cardinality:  1,
 							InputFormat:  "html",
 							OutputFormat: []string{"text"},
 							Selector:     ".product__title",
 						},
-						{
+						&fields.Field{
 							Name:         "price",
 							Cardinality:  1,
 							InputFormat:  "html",
@@ -96,14 +96,14 @@ func TestExtract(t *testing.T) {
 		},
 		{
 			"multiple, skip missing required",
-			[]fields.Builder{
-				&fields.Group{
-					Name:     "prices",
-					Selector: ".product__price",
-					Limit:    0,
-					Required: true,
+			[]*fields.Field{
+				&fields.Field{
+					Name:        "prices",
+					Selector:    ".product__price",
+					Cardinality: 0,
+					Required:    true,
 					Fields: []*fields.Field{
-						{
+						&fields.Field{
 							Name:         "amount",
 							Cardinality:  1,
 							Required:     true,
@@ -111,7 +111,7 @@ func TestExtract(t *testing.T) {
 							OutputFormat: []string{"text"},
 							Selector:     ".product__price--amount",
 						},
-						{
+						&fields.Field{
 							Name:         "currency",
 							Cardinality:  1,
 							InputFormat:  "html",
@@ -142,14 +142,14 @@ func TestExtract(t *testing.T) {
 		},
 		{
 			"multiple, skip missing required",
-			[]fields.Builder{
-				&fields.Group{
-					Name:     "buy",
-					Selector: ".product__price",
-					Limit:    1,
-					Required: true,
+			[]*fields.Field{
+				&fields.Field{
+					Name:        "buy",
+					Selector:    ".product__price",
+					Cardinality: 1,
+					Required:    true,
 					Fields: []*fields.Field{
-						{
+						&fields.Field{
 							Name:         "amount",
 							Cardinality:  1,
 							Required:     true,
@@ -157,7 +157,7 @@ func TestExtract(t *testing.T) {
 							OutputFormat: []string{"text"},
 							Selector:     ".product__price--amount",
 						},
-						{
+						&fields.Field{
 							Name:         "currency",
 							Cardinality:  1,
 							InputFormat:  "html",
@@ -166,13 +166,13 @@ func TestExtract(t *testing.T) {
 						},
 					},
 				},
-				&fields.Group{
-					Name:     "sell",
-					Selector: ".product__price",
-					Limit:    2,
-					Required: true,
+				&fields.Field{
+					Name:        "sell",
+					Selector:    ".product__price",
+					Cardinality: 2,
+					Required:    true,
 					Fields: []*fields.Field{
-						{
+						&fields.Field{
 							Name:         "amount",
 							Cardinality:  1,
 							Required:     true,
@@ -180,7 +180,7 @@ func TestExtract(t *testing.T) {
 							OutputFormat: []string{"text"},
 							Selector:     ".product__price--amount",
 						},
-						{
+						&fields.Field{
 							Name:         "currency",
 							Cardinality:  1,
 							InputFormat:  "html",
@@ -220,14 +220,14 @@ func TestExtract(t *testing.T) {
 		},
 		{
 			"nil result",
-			[]fields.Builder{
-				&fields.Group{
-					Name:     "prices",
-					Selector: ".product__price--amount",
-					Limit:    1,
-					Required: true,
+			[]*fields.Field{
+				&fields.Field{
+					Name:        "prices",
+					Selector:    ".product__price--amount",
+					Cardinality: 1,
+					Required:    true,
 					Fields: []*fields.Field{
-						{
+						&fields.Field{
 							Name:         "amount",
 							Cardinality:  1,
 							InputFormat:  "html",
@@ -235,7 +235,7 @@ func TestExtract(t *testing.T) {
 							OutputFormat: []string{"text"},
 							Selector:     ".product__price--amount",
 						},
-						{
+						&fields.Field{
 							Name:         "currency",
 							Cardinality:  1,
 							InputFormat:  "html",

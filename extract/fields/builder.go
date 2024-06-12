@@ -15,7 +15,7 @@ type (
 )
 
 // Build creates a map of group or field names to their corresponding ExtractFn.
-func Build[T Builder](bb ...T) (map[string]ExtractFn, error) {
+func Build(bb ...*Field) (map[string]ExtractFn, error) {
 
 	fns := map[string]ExtractFn{}
 
@@ -33,7 +33,7 @@ func Build[T Builder](bb ...T) (map[string]ExtractFn, error) {
 }
 
 // Extract is a function that extracts data from a selection.
-func Extract[T Builder](name string, builders ...T) (ExtractFn, error) {
+func Extract(name string, builders ...*Field) (ExtractFn, error) {
 
 	extractors, initErr := Build(builders...)
 	if initErr != nil {

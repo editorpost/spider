@@ -72,6 +72,12 @@ type Field struct {
 
 	between *regexp.Regexp
 	final   *regexp.Regexp
+
+	// Fields is a map of sub-field names to their corresponding Field configurations.
+	// required
+	Fields []*Field `json:"Fields" validate:"optional,dive"`
+
+	extractors map[string]ExtractFn
 }
 
 // Extractor constructs an extraction function based on the Field configuration.
@@ -105,6 +111,11 @@ type Field struct {
 //	fmt.Println(results) // Output: ["Hello", "world!"]
 func (field *Field) Extractor() (ExtractFn, error) {
 
+	if field.Fields != nil {
+		// todo diff methods
+		return field.gExtractor()
+	}
+
 	if err := valid.Struct(field); err != nil {
 		return nil, err
 	}
@@ -116,6 +127,51 @@ func (field *Field) Extractor() (ExtractFn, error) {
 	}
 
 	return field.extract, nil
+}
+
+// Extractor in case of group, fields extracted by selection
+// every extractor has own limited selection area (OuterHtml).
+// Result is a slice of maps with extracted
+func (field *Field) gExtractor() (ExtractFn, error) {
+
+	var e error
+
+	if e = valid.Struct(field); e != nil {
+		return nil, e
+	}
+
+	if field.extractors, e = Build(field.Fields...); e != nil {
+		return nil, e
+	}
+
+	extract, e := Extract("", field.Fields...)
+	if e != nil {
+		return nil, e
+	}
+
+	// selection might be entity selection or whole document
+	return func(selection *goquery.Selection) (map[string]any, error) {
+
+		// entries/deltas of the group
+		var entries []any
+
+		// select each group entry
+		selection.Find(field.Selector).Each(func(i int, groupSelection *goquery.Selection) {
+			// entry is a map of field names to their extracted values
+			if entry, err := extract(groupSelection); err == nil {
+				entries = append(entries, entry)
+			}
+		})
+
+		if field.Required && len(entries) == 0 {
+			return nil, ErrRequiredFieldMissing
+		}
+
+		return map[string]any{
+			field.Name: ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)),
+		}, nil
+
+	}, nil
 }
 
 func (field *Field) extract(sel *goquery.Selection) (map[string]any, error) {
@@ -161,6 +217,7 @@ func (field *Field) Map() map[string]any {
 		"BetweenEnd":   field.BetweenEnd,
 		"FinalRegex":   field.FinalRegex,
 		"Multiline":    field.Multiline,
+		"Fields":       field.Fields,
 	}
 }
 
