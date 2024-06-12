@@ -3,6 +3,7 @@ package fields_test
 import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
+	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -18,6 +19,44 @@ type Case struct {
 	name     string
 	field    *fields.Field
 	expected any
+}
+
+func TestConstructValidation(t *testing.T) {
+
+	err := fields.Construct(&fields.Field{})
+	assert.Error(t, err)
+
+	validationErr := err.(validator.ValidationErrors)
+	assert.Len(t, validationErr, 1)
+}
+
+func TestConstructRegex(t *testing.T) {
+
+	field := &fields.Field{
+		Name:       "product",
+		FinalRegex: "[a-z",
+		Required:   true,
+	}
+
+	err := fields.Construct(field)
+	assert.Error(t, err)
+}
+
+func TestConstructRecursive(t *testing.T) {
+
+	field := &fields.Field{
+		Name: "product",
+		Children: []*fields.Field{
+			{
+				Name:       "title",
+				FinalRegex: "[a-z",
+				Required:   true,
+			},
+		},
+	}
+
+	err := fields.Construct(field)
+	assert.Error(t, err)
 }
 
 func TestExtract(t *testing.T) {

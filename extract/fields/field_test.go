@@ -1,8 +1,6 @@
 package fields_test
 
 import (
-	"errors"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
 	"github.com/stretchr/testify/assert"
@@ -11,19 +9,6 @@ import (
 	"strings"
 	"testing"
 )
-
-func TestErrorIs(t *testing.T) {
-	var fail = errors.New("failed")
-	err := fmt.Errorf("chain: %w", fail)
-
-	assert.ErrorIs(t, err, fail)
-}
-
-func TestEmptyField(t *testing.T) {
-
-	f := &fields.Field{}
-	assert.Error(t, fields.Construct(f))
-}
 
 func TestField(t *testing.T) {
 

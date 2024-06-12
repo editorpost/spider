@@ -1,7 +1,6 @@
 package fields
 
 import (
-	"github.com/editorpost/donq/pkg/valid"
 	"github.com/samber/lo"
 	"regexp"
 )
@@ -69,23 +68,17 @@ func RegexPipes(selections []string, expressions ...*regexp.Regexp) (entries []s
 //	fmt.Println(regex)   // Output: regexp that matches one or more digits
 func RegexCompile(f *Field) (between *regexp.Regexp, regex *regexp.Regexp, err error) {
 
-	// validate the fExtractor
-	if err = valid.Struct(f); err != nil {
-		return
-	}
-
 	// regex retrieves the text between BetweenStart and next entry BetweenEnd
 	if f.BetweenStart != "" && f.BetweenEnd != "" {
 		between = regexp.MustCompile(regexp.QuoteMeta(f.BetweenStart) + "(?s)(.*?)" + regexp.QuoteMeta(f.BetweenEnd))
 	}
 
 	// compile the user defined regex, if provided
-	if f.FinalRegex != "" {
-		if regex, err = regexp.Compile(f.FinalRegex); err != nil {
-			return
-		}
+	if f.FinalRegex == "" {
+		return
 	}
 
+	regex, err = regexp.Compile(f.FinalRegex)
 	return
 }
 
