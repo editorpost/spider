@@ -266,7 +266,193 @@ func TestExtract(t *testing.T) {
 			},
 		},
 		{
-			"multiple, skip missing required",
+			"nested, deep invalid, not existing selector",
+			&fields.Field{
+				Name:        "offer",
+				Selector:    "",
+				Cardinality: 1,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Field{
+					{
+						Name:         "title",
+						Cardinality:  1,
+						Required:     false,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     "head title",
+					},
+					{
+						Name:        "sub-offer",
+						Selector:    "",
+						Cardinality: 1,
+						Required:    true,
+						Scoped:      true,
+						Children: []*fields.Field{
+							{
+								Name:         "title",
+								Cardinality:  1,
+								Required:     false,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     "head title",
+							},
+							{
+								Name:         "test-missing",
+								Cardinality:  1,
+								Required:     true,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     "not-a-selector-at-all",
+							},
+						},
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"nil result",
+			&fields.Field{
+				Name:        "prices",
+				Selector:    ".product__price--amount",
+				Cardinality: 1,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Field{
+					{
+						Name:         "amount",
+						Cardinality:  1,
+						InputFormat:  "html",
+						Required:     true,
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--amount",
+					},
+					{
+						Name:         "currency",
+						Cardinality:  1,
+						InputFormat:  "html",
+						Required:     true,
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--currency",
+					},
+				},
+			},
+			nil,
+		},
+	}
+
+	for _, c := range tc {
+		t.Run(c.name, CaseHandler(c))
+	}
+}
+
+func TestExtractNestedRequired(t *testing.T) {
+
+	tc := []Case{
+		{
+			"skip extraction, nested, deep invalid, not existing selector",
+			&fields.Field{
+				Name:        "offer",
+				Selector:    "",
+				Cardinality: 1,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Field{
+					{
+						Name:         "title",
+						Cardinality:  1,
+						Required:     false,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     "head title",
+					},
+					{
+						Name:        "sub-offer",
+						Selector:    "",
+						Cardinality: 1,
+						Required:    true,
+						Scoped:      true,
+						Children: []*fields.Field{
+							{
+								Name:         "title",
+								Cardinality:  1,
+								Required:     false,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     "head title",
+							},
+							{
+								Name:         "test-missing",
+								Cardinality:  1,
+								Required:     true,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     "not-a-selector-at-all",
+							},
+						},
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"nested, deep valid, fixed selector",
+			&fields.Field{
+				Name:        "offer",
+				Selector:    "",
+				Cardinality: 1,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Field{
+					{
+						Name:         "title",
+						Cardinality:  1,
+						Required:     false,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     "head title",
+					},
+					{
+						Name:        "sub-offer",
+						Selector:    "",
+						Cardinality: 1,
+						Required:    true,
+						Scoped:      true,
+						Children: []*fields.Field{
+							{
+								Name:         "title",
+								Cardinality:  1,
+								Required:     false,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     "head title",
+							},
+							{
+								Name:         "test-valid",
+								Cardinality:  1,
+								Required:     true,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     ".product--full .product__title",
+							},
+						},
+					},
+				},
+			},
+			map[string]any{
+				"offer": map[string]any{
+					"title": "Product Page Example",
+					"sub-offer": map[string]any{
+						"title":      "Product Page Example",
+						"test-valid": "Main Product Title",
+					},
+				},
+			},
+		},
+
+		{
+			"partial valid, deep",
 			&fields.Field{
 				Name:        "offer",
 				Selector:    "",
@@ -324,35 +510,6 @@ func TestExtract(t *testing.T) {
 				},
 			},
 		},
-		{
-			"nil result",
-			&fields.Field{
-				Name:        "prices",
-				Selector:    ".product__price--amount",
-				Cardinality: 1,
-				Required:    true,
-				Scoped:      true,
-				Children: []*fields.Field{
-					{
-						Name:         "amount",
-						Cardinality:  1,
-						InputFormat:  "html",
-						Required:     true,
-						OutputFormat: []string{"text"},
-						Selector:     ".product__price--amount",
-					},
-					{
-						Name:         "currency",
-						Cardinality:  1,
-						InputFormat:  "html",
-						Required:     true,
-						OutputFormat: []string{"text"},
-						Selector:     ".product__price--currency",
-					},
-				},
-			},
-			nil,
-		},
 	}
 
 	for _, c := range tc {
@@ -397,4 +554,37 @@ func AssertErrorIs(t *testing.T, expected bool, got error, want error) {
 
 	// stops test case execution
 	return
+}
+
+func BenchmarkExtract(b *testing.B) {
+
+	field := &fields.Field{
+		Name:        "product",
+		Selector:    ".product--full",
+		Cardinality: 1,
+		Required:    true,
+		Scoped:      true,
+		Children: []*fields.Field{
+			{
+				Name:         "title",
+				Cardinality:  1,
+				InputFormat:  "html",
+				OutputFormat: []string{"text"},
+				Selector:     ".product__title",
+			},
+			{
+				Name:         "price",
+				Cardinality:  1,
+				InputFormat:  "html",
+				OutputFormat: []string{"text"},
+				Selector:     ".product__price--amount",
+			},
+		},
+	}
+
+	payload := map[string]any{}
+
+	for i := 0; i < b.N; i++ {
+		fields.Extract(payload, HTML.Selection, field)
+	}
 }

@@ -6,19 +6,35 @@ import (
 	"github.com/samber/lo"
 )
 
-func Construct(field *Field) (err error) {
+func Extractor(fields ...*Field) (func(payload map[string]any, node *goquery.Selection), error) {
 
-	if err = valid.Struct(field); err != nil {
-		return err
+	if err := Construct(fields...); err != nil {
+		return nil, err
 	}
 
-	if field.between, field.final, err = RegexCompile(field); err != nil {
-		return err
-	}
+	return func(payload map[string]any, node *goquery.Selection) {
+		for _, field := range fields {
+			Extract(payload, node, field)
+		}
+	}, nil
+}
 
-	for _, child := range field.Children {
-		if err = Construct(child); err != nil {
+func Construct(fields ...*Field) (err error) {
+
+	for _, field := range fields {
+
+		if err = valid.Struct(field); err != nil {
 			return err
+		}
+
+		if field.between, field.final, err = RegexCompile(field); err != nil {
+			return err
+		}
+
+		for _, child := range field.Children {
+			if err = Construct(child); err != nil {
+				return err
+			}
 		}
 	}
 
