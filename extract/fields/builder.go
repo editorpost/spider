@@ -1,7 +1,6 @@
 package fields
 
 import (
-	"errors"
 	"github.com/PuerkitoBio/goquery"
 )
 
@@ -47,23 +46,13 @@ func Extract[T Builder](name string, builders ...T) (ExtractFn, error) {
 		// max entries for group based on Group or Field Cardinality
 		data := map[string]any{}
 
-		// apply each extractor to the selection
 		for _, builder := range builders {
 
-			// nil, string, []string, map[string]any
+			// apply each extractor to the selection
+			// nil | map[string]string | map[string][]string | map[string]any
 			values, err := extractors[builder.GetName()](selection)
-
-			// skip group selection if required field is missing
-			if builder.IsRequired() && errors.Is(err, ErrRequiredFieldMissing) {
-				return nil, err
-			}
-
 			if err != nil {
 				return nil, err
-			}
-
-			if values == nil {
-				continue
 			}
 
 			for k, v := range values {
@@ -71,8 +60,8 @@ func Extract[T Builder](name string, builders ...T) (ExtractFn, error) {
 			}
 		}
 
+		// root level fields
 		if name == "" {
-			// root level fields
 			return data, nil
 		}
 
