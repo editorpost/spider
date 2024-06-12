@@ -6,11 +6,14 @@ import (
 	"github.com/editorpost/donq/pkg/valid"
 	"github.com/editorpost/donq/pkg/vars"
 	"github.com/samber/lo"
+	"regexp"
 )
 
 var (
-	// ErrRequiredFieldMissing is an error indicating that the extraction should be skipped
-	// because a required field is missing.
+	// ErrRequiredFieldMissing expected error, stops the pipe chain
+	// used by extractors to quickly skip the pipe chain
+	// if data is not satisfied or exists
+	// ErrRequiredFieldMissing
 	ErrRequiredFieldMissing = errors.New("skip entity extraction, required field is missing")
 )
 
@@ -66,6 +69,9 @@ type Field struct {
 	// Multiline flag prevent deleting new lines from result.
 	// optional
 	Multiline bool `json:"Multiline"`
+
+	between *regexp.Regexp
+	final   *regexp.Regexp
 }
 
 // Extractor constructs an extraction function based on the Field configuration.
@@ -103,30 +109,32 @@ func (field *Field) Extractor() (ExtractFn, error) {
 		return nil, err
 	}
 
-	between, final, compileErr := RegexCompile(field)
-	if compileErr != nil {
-		return nil, compileErr
+	var reErr error
+
+	if field.between, field.final, reErr = RegexCompile(field); reErr != nil {
+		return nil, reErr
 	}
 
-	hasRegex := final != nil || between != nil
+	return field.extract, nil
+}
 
-	return func(sel *goquery.Selection) (any, error) {
+func (field *Field) extract(sel *goquery.Selection) (any, error) {
 
-		entries := EntriesAsString(field, sel)
+	entries := EntriesAsString(field, sel)
 
-		if hasRegex {
-			entries = RegexPipes(entries, between, final)
-		}
+	// if regex defined, apply it
+	if field.final != nil || field.between != nil {
+		entries = RegexPipes(entries, field.between, field.final)
+	}
 
-		entries = EntriesTransform(field, entries)
-		entries = EntriesClean(entries)
+	entries = EntriesTransform(field, entries)
+	entries = EntriesClean(entries)
 
-		if field.Required && len(entries) == 0 {
-			return nil, ErrRequiredFieldMissing
-		}
+	if field.Required && len(entries) == 0 {
+		return nil, ErrRequiredFieldMissing
+	}
 
-		return ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)), nil
-	}, nil
+	return ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)), nil
 }
 
 func FieldFromMap(m map[string]any) (*Field, error) {
@@ -156,6 +164,10 @@ func (field *Field) Map() map[string]any {
 
 func (field *Field) GetName() string {
 	return field.Name
+}
+
+func (field *Field) IsRequired() bool {
+	return field.Required
 }
 
 // ApplyCardinality applies cardinality limits to the input entries.

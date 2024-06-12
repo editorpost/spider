@@ -1,12 +1,10 @@
 package fields
 
 import (
-	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/pkg/valid"
 	"github.com/editorpost/donq/pkg/vars"
 	"github.com/samber/lo"
-	"log/slog"
 )
 
 // Group provides data describing custom data extraction for grouped
@@ -46,16 +44,21 @@ func (group *Group) Extractor() (ExtractFn, error) {
 		return nil, e
 	}
 
+	extract, e := Extract(group.Fields...)
+	if e != nil {
+		return nil, e
+	}
+
 	// selection might be entity selection or whole document
 	return func(selection *goquery.Selection) (any, error) {
 
 		// entries/deltas of the group
-		var entries []map[string]any
+		var entries []any
 
 		// select each group entry
 		selection.Find(group.Selector).Each(func(i int, groupSelection *goquery.Selection) {
 			// entry is a map of field names to their extracted values
-			if entry, err := group.extract(groupSelection); err == nil {
+			if entry, err := extract(groupSelection); err == nil {
 				entries = append(entries, entry)
 			}
 		})
@@ -66,39 +69,6 @@ func (group *Group) Extractor() (ExtractFn, error) {
 
 		return ApplyCardinality(group.Limit, lo.ToAnySlice(entries)), nil
 	}, nil
-}
-
-func (group *Group) extract(selection *goquery.Selection) (map[string]any, error) {
-
-	// entry is a map of field names to their extracted values
-	// max entries for group based on Group.Cardinality
-	entry := make(map[string]any)
-
-	// in group selection extractors each field
-	for _, field := range group.Fields {
-
-		// nil, string, []string, map[string]any
-		fieldValue, err := group.extractors[field.Name](selection)
-
-		// skip group selection if required field is missing
-		if errors.Is(err, ErrRequiredFieldMissing) {
-			return nil, err
-		}
-
-		// log extraction errors
-		if err != nil {
-			slog.Warn("group field extraction error", "field", field.Name, "error", err.Error())
-			continue
-		}
-
-		if fieldValue == nil {
-			continue
-		}
-
-		entry[field.Name] = fieldValue
-	}
-
-	return entry, nil
 }
 
 func (group *Group) Map() map[string]any {
@@ -112,6 +82,10 @@ func (group *Group) Map() map[string]any {
 
 func (group *Group) GetName() string {
 	return group.Name
+}
+
+func (group *Group) IsRequired() bool {
+	return group.Required
 }
 
 func GroupFromMap(m map[string]any) (*Group, error) {
