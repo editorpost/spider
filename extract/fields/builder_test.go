@@ -3,6 +3,7 @@ package fields_test
 import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -56,7 +57,7 @@ func TestExtract(t *testing.T) {
 			},
 		},
 		{
-			"multiple",
+			"fixed cardinality",
 			&fields.Field{
 
 				Name:        "products",
@@ -95,7 +96,7 @@ func TestExtract(t *testing.T) {
 			},
 		},
 		{
-			"multiple, skip missing required",
+			"skip required delta by field (no amount in 4rd product)",
 			&fields.Field{
 
 				Name:        "prices",
@@ -139,7 +140,7 @@ func TestExtract(t *testing.T) {
 			},
 		},
 		{
-			"multiple, skip missing required",
+			"multilevel, skip missing required",
 			&fields.Field{
 				Name:        "offer",
 				Selector:    "",
@@ -322,7 +323,39 @@ func TestExtract(t *testing.T) {
 
 func CaseHandler(c Case) func(t *testing.T) {
 	return func(t *testing.T) {
+
 		payload := map[string]any{}
+		assert.NoError(t, fields.Construct(c.field))
 		fields.Extract(payload, HTML.Selection, c.field)
+
+		if c.expected == nil {
+			assert.Empty(t, payload)
+			return
+		}
+
+		assert.Equal(t, c.expected, payload)
 	}
+}
+
+func AssertErrorIs(t *testing.T, expected bool, got error, want error) {
+
+	t.Helper()
+
+	if got == nil {
+		// continue test case execution
+		return
+	}
+
+	// force error if not expected
+	if !expected {
+		assert.NoError(t, got)
+	}
+
+	// check error instance
+	if want != nil {
+		assert.ErrorIs(t, got, want)
+	}
+
+	// stops test case execution
+	return
 }

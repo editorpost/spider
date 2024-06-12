@@ -19,14 +19,15 @@ func TestErrorIs(t *testing.T) {
 	assert.ErrorIs(t, err, fail)
 }
 
+func TestEmptyField(t *testing.T) {
+
+	f := &fields.Field{}
+	assert.Error(t, fields.Construct(f))
+}
+
 func TestField(t *testing.T) {
 
 	tc := []Case{
-		{
-			"empty",
-			&fields.Field{},
-			nil,
-		},
 		{
 			"simple",
 			&fields.Field{
