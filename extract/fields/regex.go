@@ -43,38 +43,38 @@ func RegexPipes(selections []string, expressions ...*regexp.Regexp) (entries []s
 	return entries
 }
 
-// RegexCompile compiles regular expressions based on the Field configuration.
-// It validates the Field and then compiles regex patterns for between and final matching.
+// RegexCompile compiles regular expressions based on the Extractor configuration.
+// It validates the Extractor and then compiles regex patterns for Between and Final matching.
 //
 // Parameters:
-//   - f (*Field): A pointer to an Field struct containing the configuration for regex compilation.
+//   - f (*Extractor): A pointer to an Extractor struct containing the configuration for regex compilation.
 //
 // Returns:
-//   - between (*regexp.Regexp): The compiled regular expression for matching text between BetweenStart and BetweenEnd.
+//   - Between (*regexp.Regexp): The compiled regular expression for matching text Between BetweenStart and BetweenEnd.
 //   - regex (*regexp.Regexp): The compiled user-defined regular expression from FinalRegex.
 //   - err (error): An error that occurred during validation or regex compilation, or nil if successful.
 //
 // Example:
 //
-//	extractor := &Field{
+//	extractor := &Extractor{
 //	    BetweenStart: "start",
 //	    BetweenEnd:   "end",
 //	    FinalRegex:   `\d+`,
 //	}
-//	between, regex, err := RegexCompile(extractor)
+//	Between, regex, err := RegexCompile(extractor)
 //	if err != nil {
 //	    log.Fatalf("Failed to compile regex: %v", err)
 //	}
-//	fmt.Println(between) // Output: regexp that matches "start" and "end" with any text between
+//	fmt.Println(Between) // Output: regexp that matches "start" and "end" with any text Between
 //	fmt.Println(regex)   // Output: regexp that matches one or more digits
-func RegexCompile(f *Field) (between *regexp.Regexp, regex *regexp.Regexp, err error) {
+func RegexCompile(f *Extractor) (between *regexp.Regexp, regex *regexp.Regexp, err error) {
 
 	// validate the fExtractor
 	if err = valid.Struct(f); err != nil {
 		return
 	}
 
-	// regex retrieves the text between BetweenStart and next entry BetweenEnd
+	// regex retrieves the text Between BetweenStart and next entry BetweenEnd
 	if f.BetweenStart != "" && f.BetweenEnd != "" {
 		between = regexp.MustCompile(regexp.QuoteMeta(f.BetweenStart) + "(?s)(.*?)" + regexp.QuoteMeta(f.BetweenEnd))
 	}

@@ -1,35 +1,37 @@
 package fields_test
 
 import (
+	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io"
 	"os"
 	"strings"
 	"testing"
 )
 
+func TestErrorIs(t *testing.T) {
+	var fail = errors.New("failed")
+	err := fmt.Errorf("chain: %w", fail)
+
+	assert.ErrorIs(t, err, fail)
+}
+
 func TestField(t *testing.T) {
 
-	tc := []struct {
-		name      string
-		extractor *fields.Field
-		expected  any
-		hasErr    bool
-		err       error
-	}{
+	tc := []Case{
 		{
 			"empty",
-			&fields.Field{},
+			&fields.Extractor{},
 			nil,
 			true, // fExtractor name is required
 			nil,
 		},
 		{
 			"simple",
-			&fields.Field{
+			&fields.Extractor{
 				Name:         "title",
 				Cardinality:  1,
 				InputFormat:  "text",
@@ -41,8 +43,8 @@ func TestField(t *testing.T) {
 			nil,
 		},
 		{
-			"between",
-			&fields.Field{
+			"Between",
+			&fields.Extractor{
 				Name:         "image",
 				Cardinality:  1,
 				InputFormat:  "text",
@@ -56,8 +58,8 @@ func TestField(t *testing.T) {
 			nil,
 		},
 		{
-			"between image from item prop",
-			&fields.Field{
+			"Between image from item prop",
+			&fields.Extractor{
 				Name:         "image",
 				Cardinality:  1,
 				InputFormat:  "html",
@@ -73,8 +75,8 @@ func TestField(t *testing.T) {
 			nil,
 		},
 		{
-			"between multiple selections",
-			&fields.Field{
+			"Between multiple selections",
+			&fields.Extractor{
 				Name:         "images",
 				Cardinality:  2,
 				InputFormat:  "html",
@@ -93,7 +95,7 @@ func TestField(t *testing.T) {
 		},
 		{
 			"regex",
-			&fields.Field{
+			&fields.Extractor{
 				Name:         "category",
 				Cardinality:  1,
 				InputFormat:  "html",
@@ -108,7 +110,7 @@ func TestField(t *testing.T) {
 		},
 		{
 			"regex image from item prop",
-			&fields.Field{
+			&fields.Extractor{
 				Name:         "category",
 				Cardinality:  1,
 				InputFormat:  "html",
@@ -122,7 +124,7 @@ func TestField(t *testing.T) {
 		},
 		{
 			"all prices",
-			&fields.Field{
+			&fields.Extractor{
 				Name:        "prices",
 				Cardinality: 0,
 				Selector:    ".product__price--amount",
@@ -133,7 +135,7 @@ func TestField(t *testing.T) {
 		},
 		{
 			"all prices with limit",
-			&fields.Field{
+			&fields.Extractor{
 				Name:        "prices",
 				Cardinality: 2,
 				Selector:    ".product__price--amount",
@@ -144,7 +146,7 @@ func TestField(t *testing.T) {
 		},
 		{
 			"required fExtractor are empty",
-			&fields.Field{
+			&fields.Extractor{
 				Name:        "not-exists",
 				Cardinality: 0,
 				Selector:    ".product__not-exists-element",
@@ -156,51 +158,9 @@ func TestField(t *testing.T) {
 		},
 	}
 
-	// use testify assert
 	for _, c := range tc {
-		t.Run(c.name, func(t *testing.T) {
-
-			// check error
-			skipExpectedErr := func(actual error) bool {
-
-				if actual == nil {
-					// continue test case execution
-					return false
-				}
-
-				// force error if not expected
-				if !c.hasErr {
-					assert.NoError(t, actual)
-				}
-
-				// check error instance
-				if c.err != nil {
-					assert.ErrorIs(t, c.err, actual)
-				}
-
-				// stops test case execution
-				return true
-			}
-
-			fn, err := c.extractor.Extractor()
-			if skip := skipExpectedErr(err); skip {
-				return
-			}
-
-			// compare values
-			read := strings.NewReader(GetTestFieldsHTML(t))
-			dom, err := goquery.NewDocumentFromReader(read)
-			require.NoError(t, err)
-
-			values, err := fn(dom.Selection)
-			if skip := skipExpectedErr(err); skip {
-				return
-			}
-
-			assert.Equal(t, c.expected, values)
-		})
+		t.Run(c.name, CaseHandler(c))
 	}
-
 }
 
 func TestFieldFromMap(t *testing.T) {
@@ -225,7 +185,7 @@ func TestFieldFromMap(t *testing.T) {
 
 func TestFieldToMap(t *testing.T) {
 
-	e := &fields.Field{
+	e := &fields.Extractor{
 		Name:         "title",
 		Cardinality:  1,
 		InputFormat:  "html",
@@ -243,7 +203,7 @@ func TestFieldToMap(t *testing.T) {
 }
 
 func TestEntityTransformNewDocumentFromReaderError(t *testing.T) {
-	extractor := &fields.Field{
+	extractor := &fields.Extractor{
 		InputFormat:  "html",
 		OutputFormat: []string{"text"},
 	}
@@ -254,21 +214,15 @@ func TestEntityTransformNewDocumentFromReaderError(t *testing.T) {
 
 func TestGroup(t *testing.T) {
 
-	tc := []struct {
-		name     string
-		group    *fields.Field
-		expected any
-		hasErr   bool
-		err      error
-	}{
+	tc := []Case{
 		{
 			"single",
-			&fields.Field{
+			&fields.Extractor{
 				Name:        "product",
 				Selector:    ".product--full",
 				Cardinality: 1,
 				Required:    true,
-				Fields: []*fields.Field{
+				Children: []*fields.Extractor{
 					{
 						Name:         "title",
 						Cardinality:  1,
@@ -296,13 +250,13 @@ func TestGroup(t *testing.T) {
 		},
 		{
 			"multiple",
-			&fields.Field{
-				Name:           "products",
-				Selector:       ".product",
-				Cardinality:    2,
-				Required:       true,
-				LimitSelection: true,
-				Fields: []*fields.Field{
+			&fields.Extractor{
+				Name:        "products",
+				Selector:    ".product",
+				Cardinality: 2,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Extractor{
 					{
 						Name:         "title",
 						Cardinality:  1,
@@ -336,59 +290,18 @@ func TestGroup(t *testing.T) {
 		},
 	}
 
-	// use testify assert
 	for _, c := range tc {
-		t.Run(c.name, func(t *testing.T) {
-
-			// check error
-			skipExpectedErr := func(actual error) bool {
-
-				if actual == nil {
-					// continue test case execution
-					return false
-				}
-
-				// force error if not expected
-				if !c.hasErr {
-					assert.NoError(t, actual)
-				}
-
-				// check error instance
-				if c.err != nil {
-					assert.ErrorIs(t, c.err, actual)
-				}
-
-				// stops test case execution
-				return true
-			}
-
-			fn, err := c.group.Extractor()
-			if skip := skipExpectedErr(err); skip {
-				return
-			}
-
-			// compare values
-			read := strings.NewReader(GetTestFieldsHTML(t))
-			dom, err := goquery.NewDocumentFromReader(read)
-			require.NoError(t, err)
-
-			values, err := fn(dom.Selection)
-			if skip := skipExpectedErr(err); skip {
-				return
-			}
-
-			assert.Equal(t, c.expected, values)
-		})
+		t.Run(c.name, CaseHandler(c))
 	}
 }
 
 func TestGroupExtractorMap(t *testing.T) {
 
-	e := &fields.Field{
+	e := &fields.Extractor{
 		Name:     "product",
 		Selector: ".product--full",
 		Required: true,
-		Fields: []*fields.Field{
+		Children: []*fields.Extractor{
 			{
 				Name:         "title",
 				Cardinality:  1,
@@ -411,16 +324,16 @@ func TestGroupExtractorMap(t *testing.T) {
 	assert.Equal(t, "product", m["Name"])
 	assert.Equal(t, ".product--full", m["Selector"])
 	assert.True(t, m["Required"].(bool))
-	assert.Len(t, m["Fields"].([]*fields.Field), 2)
+	assert.Len(t, m["Children"].([]*fields.Extractor), 2)
 
-	title := m["Fields"].([]*fields.Field)[0]
+	title := m["Children"].([]*fields.Extractor)[0]
 	assert.Equal(t, "title", title.Name)
 	assert.Equal(t, 1, title.Cardinality)
 	assert.Equal(t, "html", title.InputFormat)
 	assert.Equal(t, []string{"text"}, title.OutputFormat)
 	assert.Equal(t, ".product__title", title.Selector)
 
-	price := m["Fields"].([]*fields.Field)[1]
+	price := m["Children"].([]*fields.Extractor)[1]
 	assert.Equal(t, "price", price.Name)
 	assert.Equal(t, 1, price.Cardinality)
 	assert.Equal(t, "html", price.InputFormat)
@@ -428,21 +341,25 @@ func TestGroupExtractorMap(t *testing.T) {
 	assert.Equal(t, ".product__price--amount", price.Selector)
 }
 
-func GetTestFieldsHTML(t *testing.T) string {
+func GetTestFieldsHTML() string {
 
-	t.Helper()
+	b, err := os.ReadFile("field_test.html")
+	if err != nil {
+		panic(err)
+	}
 
-	// open file `article_test.html` return as string
-	f, err := os.Open("field_test.html")
-	require.NoError(t, err)
-	defer f.Close()
+	return string(b)
+}
 
-	// read file as a string
-	buf := new(strings.Builder)
-	_, err = io.Copy(buf, f)
-	require.NoError(t, err)
+func GetTestDocument() *goquery.Document {
 
-	return buf.String()
+	code := GetTestFieldsHTML()
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(code))
+	if err != nil {
+		panic(err)
+	}
+
+	return doc
 }
 
 //

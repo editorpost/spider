@@ -4,44 +4,50 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"strings"
 	"testing"
 )
 
+var HTML *goquery.Document
+
+func TestMain(m *testing.M) {
+	HTML = GetTestDocument()
+	m.Run()
+}
+
+type Case struct {
+	name      string
+	extractor *fields.Extractor
+	expected  any
+	hasErr    bool
+	err       error
+}
+
 func TestExtract(t *testing.T) {
 
-	tc := []struct {
-		name     string
-		builders []*fields.Field
-		expected any
-		hasErr   bool
-		err      error
-	}{
+	tc := []Case{
 		{
 			"single",
-			[]*fields.Field{
-				{
-					Name:           "product",
-					Selector:       ".product--full",
-					Cardinality:    1,
-					Required:       true,
-					LimitSelection: true,
-					Fields: []*fields.Field{
-						{
-							Name:         "title",
-							Cardinality:  1,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__title",
-						},
-						{
-							Name:         "price",
-							Cardinality:  1,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--amount",
-						},
+			&fields.Extractor{
+
+				Name:        "product",
+				Selector:    ".product--full",
+				Cardinality: 1,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Extractor{
+					{
+						Name:         "title",
+						Cardinality:  1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__title",
+					},
+					{
+						Name:         "price",
+						Cardinality:  1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--amount",
 					},
 				},
 			},
@@ -56,28 +62,27 @@ func TestExtract(t *testing.T) {
 		},
 		{
 			"multiple",
-			[]*fields.Field{
-				{
-					Name:           "products",
-					Selector:       ".product",
-					Cardinality:    2,
-					Required:       true,
-					LimitSelection: true,
-					Fields: []*fields.Field{
-						{
-							Name:         "title",
-							Cardinality:  1,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__title",
-						},
-						{
-							Name:         "price",
-							Cardinality:  1,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--amount",
-						},
+			&fields.Extractor{
+
+				Name:        "products",
+				Selector:    ".product",
+				Cardinality: 2,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Extractor{
+					{
+						Name:         "title",
+						Cardinality:  1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__title",
+					},
+					{
+						Name:         "price",
+						Cardinality:  1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--amount",
 					},
 				},
 			},
@@ -98,29 +103,28 @@ func TestExtract(t *testing.T) {
 		},
 		{
 			"multiple, skip missing required",
-			[]*fields.Field{
-				{
-					Name:           "prices",
-					Selector:       ".product__price",
-					Cardinality:    0,
-					Required:       true,
-					LimitSelection: true,
-					Fields: []*fields.Field{
-						{
-							Name:         "amount",
-							Cardinality:  1,
-							Required:     true,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--amount",
-						},
-						{
-							Name:         "currency",
-							Cardinality:  1,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--currency",
-						},
+			&fields.Extractor{
+
+				Name:        "prices",
+				Selector:    ".product__price",
+				Cardinality: 0,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Extractor{
+					{
+						Name:         "amount",
+						Cardinality:  1,
+						Required:     true,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--amount",
+					},
+					{
+						Name:         "currency",
+						Cardinality:  1,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--currency",
 					},
 				},
 			},
@@ -145,110 +149,178 @@ func TestExtract(t *testing.T) {
 		},
 		{
 			"multiple, skip missing required",
-			[]*fields.Field{
-				{
-					Name:           "buy",
-					Selector:       ".product__price",
-					Cardinality:    1,
-					Required:       true,
-					LimitSelection: true,
-					Fields: []*fields.Field{
-						{
-							Name:         "amount",
-							Cardinality:  1,
-							Required:     true,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--amount",
-						},
-						{
-							Name:         "currency",
-							Cardinality:  1,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--currency",
+			&fields.Extractor{
+				Name:        "offer",
+				Selector:    "",
+				Cardinality: 1,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Extractor{
+					{
+						Name:         "title",
+						Cardinality:  1,
+						Required:     true,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     "head title",
+					},
+					{
+						Name:        "buy",
+						Selector:    ".product__price",
+						Cardinality: 1,
+						Required:    true,
+						Scoped:      true,
+						Children: []*fields.Extractor{
+							{
+								Name:         "amount",
+								Cardinality:  1,
+								Required:     true,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     ".product__price--amount",
+							},
+							{
+								Name:         "currency",
+								Cardinality:  1,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     ".product__price--currency",
+							},
 						},
 					},
-				},
-				{
-					Name:           "sell",
-					Selector:       ".product__price",
-					Cardinality:    2,
-					Required:       true,
-					LimitSelection: true,
-					Fields: []*fields.Field{
-						{
-							Name:         "amount",
-							Cardinality:  1,
-							Required:     true,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--amount",
-						},
-						{
-							Name:         "currency",
-							Cardinality:  1,
-							InputFormat:  "html",
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--currency",
+					{
+						Name:        "sell",
+						Selector:    ".product__price",
+						Cardinality: 2,
+						Required:    true,
+						Scoped:      true,
+						Children: []*fields.Extractor{
+							{
+								Name:         "amount",
+								Cardinality:  1,
+								Required:     true,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     ".product__price--amount",
+							},
+							{
+								Name:         "currency",
+								Cardinality:  1,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     ".product__price--currency",
+							},
 						},
 					},
-				},
-				{
-					Name:         "title",
-					Cardinality:  1,
-					Required:     true,
-					InputFormat:  "html",
-					OutputFormat: []string{"text"},
-					Selector:     "head title",
 				},
 			},
 			map[string]any{
-				"buy": map[string]any{
-					"amount":   "99.99",
-					"currency": "USD",
-				},
-				"sell": []any{
-					map[string]any{
+				"offer": map[string]any{
+					"title": "Product Page Example",
+					"buy": map[string]any{
 						"amount":   "99.99",
 						"currency": "USD",
 					},
-					map[string]any{
-						"amount":   "49.99",
-						"currency": "USD",
+					"sell": []any{
+						map[string]any{
+							"amount":   "99.99",
+							"currency": "USD",
+						},
+						map[string]any{
+							"amount":   "49.99",
+							"currency": "USD",
+						},
 					},
 				},
-				"title": "Product Page Example",
+			},
+			false,
+			nil,
+		},
+		{
+			"multiple, skip missing required",
+			&fields.Extractor{
+				Name:        "offer",
+				Selector:    "",
+				Cardinality: 1,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Extractor{
+					{
+						Name:         "title",
+						Cardinality:  1,
+						Required:     true,
+						InputFormat:  "html",
+						OutputFormat: []string{"text"},
+						Selector:     "head title",
+					},
+					{
+						Name:        "sell",
+						Selector:    ".product__price",
+						Cardinality: 2,
+						Required:    true,
+						Scoped:      true,
+						Children: []*fields.Extractor{
+							{
+								Name:         "amount",
+								Cardinality:  1,
+								Required:     true,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     ".product__price--amount",
+							},
+							{
+								Name:         "currency",
+								Cardinality:  1,
+								InputFormat:  "html",
+								OutputFormat: []string{"text"},
+								Selector:     ".product__price--currency",
+							},
+						},
+					},
+				},
+			},
+			map[string]any{
+				"offer": map[string]any{
+					"title": "Product Page Example",
+					"sell": []any{
+						map[string]any{
+							"amount":   "99.99",
+							"currency": "USD",
+						},
+						map[string]any{
+							"amount":   "49.99",
+							"currency": "USD",
+						},
+					},
+				},
 			},
 			false,
 			nil,
 		},
 		{
 			"nil result",
-			[]*fields.Field{
-				{
-					Name:           "prices",
-					Selector:       ".product__price--amount",
-					Cardinality:    1,
-					Required:       true,
-					LimitSelection: true,
-					Fields: []*fields.Field{
-						{
-							Name:         "amount",
-							Cardinality:  1,
-							InputFormat:  "html",
-							Required:     true,
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--amount",
-						},
-						{
-							Name:         "currency",
-							Cardinality:  1,
-							InputFormat:  "html",
-							Required:     true,
-							OutputFormat: []string{"text"},
-							Selector:     ".product__price--currency",
-						},
+			&fields.Extractor{
+				Name:        "prices",
+				Selector:    ".product__price--amount",
+				Cardinality: 1,
+				Required:    true,
+				Scoped:      true,
+				Children: []*fields.Extractor{
+					{
+						Name:         "amount",
+						Cardinality:  1,
+						InputFormat:  "html",
+						Required:     true,
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--amount",
+					},
+					{
+						Name:         "currency",
+						Cardinality:  1,
+						InputFormat:  "html",
+						Required:     true,
+						OutputFormat: []string{"text"},
+						Selector:     ".product__price--currency",
 					},
 				},
 			},
@@ -258,48 +330,47 @@ func TestExtract(t *testing.T) {
 		},
 	}
 
-	// use testify assert
 	for _, c := range tc {
-		t.Run(c.name, func(t *testing.T) {
-
-			// check error
-			skipExpectedErr := func(actual error) bool {
-
-				if actual == nil {
-					// continue test case execution
-					return false
-				}
-
-				// force error if not expected
-				if !c.hasErr {
-					assert.NoError(t, actual)
-				}
-
-				// check error instance
-				if c.err != nil {
-					assert.ErrorIs(t, c.err, actual)
-				}
-
-				// stops test case execution
-				return true
-			}
-
-			fn, err := fields.Extract("", c.builders...)
-			if skip := skipExpectedErr(err); skip {
-				return
-			}
-
-			// compare values
-			read := strings.NewReader(GetTestFieldsHTML(t))
-			dom, err := goquery.NewDocumentFromReader(read)
-			require.NoError(t, err)
-
-			values, err := fn(dom.Selection)
-			if skip := skipExpectedErr(err); skip {
-				return
-			}
-
-			assert.Equal(t, c.expected, values)
-		})
+		t.Run(c.name, CaseHandler(c))
 	}
+}
+
+func CaseHandler(c Case) func(t *testing.T) {
+
+	return func(t *testing.T) {
+
+		// every time recompile
+		AssertErrorIs(t, c.hasErr, fields.Construct(c.extractor), c.err)
+
+		payload := map[string]any{}
+		err := fields.Extract(payload, HTML.Selection, c.extractor)
+		AssertErrorIs(t, c.hasErr, err, c.err)
+
+		if !c.hasErr {
+			assert.Equal(t, c.expected, payload)
+		}
+	}
+}
+
+func AssertErrorIs(t *testing.T, expected bool, got error, want error) {
+
+	t.Helper()
+
+	if got == nil {
+		// continue test case execution
+		return
+	}
+
+	// force error if not expected
+	if !expected {
+		assert.NoError(t, got)
+	}
+
+	// check error instance
+	if want != nil {
+		assert.ErrorIs(t, got, want)
+	}
+
+	// stops test case execution
+	return
 }

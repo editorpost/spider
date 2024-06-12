@@ -2,6 +2,7 @@ package fields
 
 import (
 	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/pkg/valid"
 	"github.com/editorpost/donq/pkg/vars"
@@ -17,8 +18,8 @@ var (
 	ErrRequiredFieldMissing = errors.New("skip entity extraction, required field is missing")
 )
 
-// Field provides data describing custom data extraction from text or html.
-type Field struct {
+// Extractor provides data describing custom data extraction from text or html.
+type Extractor struct {
 
 	// Name is a key to store the extracted data.
 	// required
@@ -47,7 +48,7 @@ type Field struct {
 	// def: ["text"]
 	OutputFormat []string `json:"OutputFormat"`
 
-	// Selector is a css selector to find the element or limit area for between/regex.
+	// Selector is a css selector to find the element or limit area for Between/regex.
 	// optional
 	Selector string `json:"Selector"`
 
@@ -70,25 +71,25 @@ type Field struct {
 	// optional
 	Multiline bool `json:"Multiline"`
 
-	// LimitSelection flag limits the selection area for the group of field value extractors.
-	LimitSelection bool `json:"LimitSelection"`
+	// Scoped flag limits the selection area for the group of field value extractors.
+	Scoped bool `json:"Scoped"`
 
-	between *regexp.Regexp
-	final   *regexp.Regexp
+	Between *regexp.Regexp
+	Final   *regexp.Regexp
 
-	// Fields is a map of sub-field names to their corresponding Field configurations.
+	// Children is a map of sub-field names to their corresponding Extractor configurations.
 	// required
-	Fields []*Field `json:"Fields" validate:"optional,dive"`
+	Children []*Extractor `json:"Children" validate:"optional,dive"`
 
-	extractors map[string]ExtractFn
+	extract ExtractFn
 }
 
-// Extractor constructs an extraction function based on the Field configuration.
-// It validates the Field, compiles any necessary regular expressions, and returns a function
+// Extractor constructs an extraction function based on the Extractor configuration.
+// It validates the Extractor, compiles any necessary regular expressions, and returns a function
 // that performs the extraction on a goquery.Selection.
 //
 // Parameters:
-//   - f (*Field): A pointer to an Field struct containing the configuration for extraction.
+//   - f (*Extractor): A pointer to an Extractor struct containing the configuration for extraction.
 //
 // Returns:
 //   - ExtractFn: A function that takes a goquery.Selection and returns a slice of extracted values or an error.
@@ -96,7 +97,7 @@ type Field struct {
 //
 // Example:
 //
-//	extractor := &Field{
+//	extractor := &Extractor{
 //	    Name:   "example",
 //	    InputFormat: "html",
 //	    Selector:    "p",
@@ -112,7 +113,7 @@ type Field struct {
 //	    log.Fatalf("Extraction error: %v", err)
 //	}
 //	fmt.Println(results) // Output: ["Hello", "world!"]
-func (field *Field) Extractor() (ExtractFn, error) {
+func (field *Extractor) Extractor() (ExtractFn, error) {
 
 	if err := valid.Struct(field); err != nil {
 		return nil, err
@@ -120,88 +121,135 @@ func (field *Field) Extractor() (ExtractFn, error) {
 
 	var reErr error
 
-	if field.between, field.final, reErr = RegexCompile(field); reErr != nil {
+	if field.Children != nil {
+
+		// groups requirement
+		if field.extract, reErr = ExtractDEpricated("", field.Children...); reErr != nil {
+			return nil, reErr
+		}
+
+		return field.extractGroup, nil
+	}
+
+	// single requirement
+	if field.Between, field.Final, reErr = RegexCompile(field); reErr != nil {
 		return nil, reErr
 	}
 
-	if field.Fields != nil {
-		// todo diff methods
-		return field.gExtractor()
+	return field.Field, nil
+}
+
+func construct(extractor *Extractor) (err error) {
+
+	if err = valid.Struct(extractor); err != nil {
+		return err
 	}
 
-	return field.fieldExtract, nil
+	// regex
+	if extractor.Between, extractor.Final, err = RegexCompile(extractor); err != nil {
+		return err
+	}
+
+	for _, child := range extractor.Children {
+		if err = construct(child); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func extract(payload map[string]any, node *goquery.Selection, extractor *Extractor) (err error) {
+
+	if extractor.Children == nil {
+		payload[extractor.Name], err = extractor.Field(node)
+		return err
+	}
+
+	scope := node
+	if extractor.Scoped && extractor.Selector != "" {
+		scope = node.Find(extractor.Selector)
+	}
+
+	for _, child := range extractor.Children {
+		if err = extract(payload, scope, child); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Extractor in case of group, fields extracted by selection
 // every extractor has own limited selection area (OuterHtml).
 // Result is a slice of maps with extracted
-func (field *Field) gExtractor() (ExtractFn, error) {
+func (field *Extractor) extractGroup(selection *goquery.Selection) (any, error) {
 
-	var e error
+	// entries/deltas of the group
+	var entries []any
 
-	if field.extractors, e = Build(field.Fields...); e != nil {
-		return nil, e
+	selected := selection
+
+	if field.Scoped && field.Selector != "" {
+		selected = selection.Find(field.Selector)
 	}
 
-	extract, e := Extract("", field.Fields...)
-	if e != nil {
-		return nil, e
-	}
-
-	// selection might be entity selection or whole document
-	return func(selection *goquery.Selection) (map[string]any, error) {
-
-		// entries/deltas of the group
-		var entries []any
-
-		selected := selection
-
-		if field.LimitSelection && field.Selector != "" {
-			selected = selection.Find(field.Selector)
+	selected.Each(func(i int, groupSelection *goquery.Selection) {
+		// entry is a map of fExtractor names to their extracted values
+		if entry, err := field.extract(groupSelection); err == nil {
+			entries = append(entries, entry)
 		}
+	})
 
-		selected.Each(func(i int, groupSelection *goquery.Selection) {
-			// entry is a map of fExtractor names to their extracted values
-			if entry, err := extract(groupSelection); err == nil {
-				entries = append(entries, entry)
-			}
-		})
-
-		if field.Required && len(entries) == 0 {
-			return nil, ErrRequiredFieldMissing
-		}
-
-		return map[string]any{
-			field.Name: ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)),
-		}, nil
-
-	}, nil
+	return FieldValue(entries, field)
 }
 
-func (field *Field) fieldExtract(sel *goquery.Selection) (map[string]any, error) {
+func (field *Extractor) Fieldx(sel *goquery.Selection) []string {
 
 	entries := EntriesAsString(field, sel)
 
 	// if regex defined, apply it
-	if field.final != nil || field.between != nil {
-		entries = RegexPipes(entries, field.between, field.final)
+	if field.Final != nil || field.Between != nil {
+		entries = RegexPipes(entries, field.Between, field.Final)
 	}
 
 	entries = EntriesTransform(field, entries)
 	entries = EntriesClean(entries)
 
-	if field.Required && len(entries) == 0 {
-		return nil, ErrRequiredFieldMissing
+	return entries
+	//return FieldValue(lo.ToAnySlice(entries), field)
+}
+func (field *Extractor) Field(sel *goquery.Selection) (any, error) {
+
+	entries := EntriesAsString(field, sel)
+
+	// if regex defined, apply it
+	if field.Final != nil || field.Between != nil {
+		entries = RegexPipes(entries, field.Between, field.Final)
 	}
 
-	return map[string]any{
-		field.Name: ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)),
-	}, nil
+	entries = EntriesTransform(field, entries)
+	entries = EntriesClean(entries)
+
+	return FieldValue(lo.ToAnySlice(entries), field)
 }
 
-func FieldFromMap(m map[string]any) (*Field, error) {
+func FieldValue(entries []any, field *Extractor) (any, error) {
 
-	e := &Field{}
+	entries = lo.Filter(entries, func(entry any, i int) bool {
+		return entry != nil
+	})
+
+	if field.Required && len(entries) == 0 {
+		return nil, fmt.Errorf("field %s: %w", field.Name, ErrRequiredFieldMissing)
+	}
+
+	return ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)), nil
+}
+
+func FieldFromMap(m map[string]any) (*Extractor, error) {
+
+	e := &Extractor{}
 	if err := vars.FromJSON(m, e); err != nil {
 		return nil, err
 	}
@@ -209,7 +257,7 @@ func FieldFromMap(m map[string]any) (*Field, error) {
 	return e, nil
 }
 
-func (field *Field) Map() map[string]any {
+func (field *Extractor) Map() map[string]any {
 	return map[string]any{
 		"Name":         field.Name,
 		"Cardinality":  field.Cardinality,
@@ -221,20 +269,20 @@ func (field *Field) Map() map[string]any {
 		"BetweenEnd":   field.BetweenEnd,
 		"FinalRegex":   field.FinalRegex,
 		"Multiline":    field.Multiline,
-		"Fields":       field.Fields,
+		"Children":     field.Children,
 	}
 }
 
-func (field *Field) GetName() string {
+func (field *Extractor) GetName() string {
 	return field.Name
 }
 
-func (field *Field) IsRequired() bool {
+func (field *Extractor) IsRequired() bool {
 	return field.Required
 }
 
 // ApplyCardinality applies cardinality limits to the input entries.
-// It used as a final step in the extraction process to convert entries to actual value or field or group.
+// It used as a Final step in the extraction process to convert entries to actual value or field or group.
 func ApplyCardinality(cardinality int, entries []any) any {
 
 	if len(entries) == 0 {
