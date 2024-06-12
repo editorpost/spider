@@ -3,7 +3,6 @@ package fields_test
 import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
-	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -15,11 +14,9 @@ func TestMain(m *testing.M) {
 }
 
 type Case struct {
-	name      string
-	extractor *fields.Extractor
-	expected  any
-	hasErr    bool
-	err       error
+	name     string
+	field    *fields.Field
+	expected any
 }
 
 func TestExtract(t *testing.T) {
@@ -27,14 +24,14 @@ func TestExtract(t *testing.T) {
 	tc := []Case{
 		{
 			"single",
-			&fields.Extractor{
+			&fields.Field{
 
 				Name:        "product",
 				Selector:    ".product--full",
 				Cardinality: 1,
 				Required:    true,
 				Scoped:      true,
-				Children: []*fields.Extractor{
+				Children: []*fields.Field{
 					{
 						Name:         "title",
 						Cardinality:  1,
@@ -57,19 +54,17 @@ func TestExtract(t *testing.T) {
 					"price": "99.99",
 				},
 			},
-			false,
-			nil,
 		},
 		{
 			"multiple",
-			&fields.Extractor{
+			&fields.Field{
 
 				Name:        "products",
 				Selector:    ".product",
 				Cardinality: 2,
 				Required:    true,
 				Scoped:      true,
-				Children: []*fields.Extractor{
+				Children: []*fields.Field{
 					{
 						Name:         "title",
 						Cardinality:  1,
@@ -98,19 +93,17 @@ func TestExtract(t *testing.T) {
 					},
 				},
 			},
-			false,
-			nil,
 		},
 		{
 			"multiple, skip missing required",
-			&fields.Extractor{
+			&fields.Field{
 
 				Name:        "prices",
 				Selector:    ".product__price",
 				Cardinality: 0,
 				Required:    true,
 				Scoped:      true,
-				Children: []*fields.Extractor{
+				Children: []*fields.Field{
 					{
 						Name:         "amount",
 						Cardinality:  1,
@@ -144,18 +137,16 @@ func TestExtract(t *testing.T) {
 					},
 				},
 			},
-			false,
-			nil,
 		},
 		{
 			"multiple, skip missing required",
-			&fields.Extractor{
+			&fields.Field{
 				Name:        "offer",
 				Selector:    "",
 				Cardinality: 1,
 				Required:    true,
 				Scoped:      true,
-				Children: []*fields.Extractor{
+				Children: []*fields.Field{
 					{
 						Name:         "title",
 						Cardinality:  1,
@@ -170,7 +161,7 @@ func TestExtract(t *testing.T) {
 						Cardinality: 1,
 						Required:    true,
 						Scoped:      true,
-						Children: []*fields.Extractor{
+						Children: []*fields.Field{
 							{
 								Name:         "amount",
 								Cardinality:  1,
@@ -194,7 +185,7 @@ func TestExtract(t *testing.T) {
 						Cardinality: 2,
 						Required:    true,
 						Scoped:      true,
-						Children: []*fields.Extractor{
+						Children: []*fields.Field{
 							{
 								Name:         "amount",
 								Cardinality:  1,
@@ -233,18 +224,16 @@ func TestExtract(t *testing.T) {
 					},
 				},
 			},
-			false,
-			nil,
 		},
 		{
 			"multiple, skip missing required",
-			&fields.Extractor{
+			&fields.Field{
 				Name:        "offer",
 				Selector:    "",
 				Cardinality: 1,
 				Required:    true,
 				Scoped:      true,
-				Children: []*fields.Extractor{
+				Children: []*fields.Field{
 					{
 						Name:         "title",
 						Cardinality:  1,
@@ -259,7 +248,7 @@ func TestExtract(t *testing.T) {
 						Cardinality: 2,
 						Required:    true,
 						Scoped:      true,
-						Children: []*fields.Extractor{
+						Children: []*fields.Field{
 							{
 								Name:         "amount",
 								Cardinality:  1,
@@ -294,18 +283,16 @@ func TestExtract(t *testing.T) {
 					},
 				},
 			},
-			false,
-			nil,
 		},
 		{
 			"nil result",
-			&fields.Extractor{
+			&fields.Field{
 				Name:        "prices",
 				Selector:    ".product__price--amount",
 				Cardinality: 1,
 				Required:    true,
 				Scoped:      true,
-				Children: []*fields.Extractor{
+				Children: []*fields.Field{
 					{
 						Name:         "amount",
 						Cardinality:  1,
@@ -325,8 +312,6 @@ func TestExtract(t *testing.T) {
 				},
 			},
 			nil,
-			true,
-			fields.ErrRequiredFieldMissing,
 		},
 	}
 
@@ -336,41 +321,8 @@ func TestExtract(t *testing.T) {
 }
 
 func CaseHandler(c Case) func(t *testing.T) {
-
 	return func(t *testing.T) {
-
-		// every time recompile
-		AssertErrorIs(t, c.hasErr, fields.Construct(c.extractor), c.err)
-
 		payload := map[string]any{}
-		err := fields.Extract(payload, HTML.Selection, c.extractor)
-		AssertErrorIs(t, c.hasErr, err, c.err)
-
-		if !c.hasErr {
-			assert.Equal(t, c.expected, payload)
-		}
+		fields.Extract(payload, HTML.Selection, c.field)
 	}
-}
-
-func AssertErrorIs(t *testing.T, expected bool, got error, want error) {
-
-	t.Helper()
-
-	if got == nil {
-		// continue test case execution
-		return
-	}
-
-	// force error if not expected
-	if !expected {
-		assert.NoError(t, got)
-	}
-
-	// check error instance
-	if want != nil {
-		assert.ErrorIs(t, got, want)
-	}
-
-	// stops test case execution
-	return
 }

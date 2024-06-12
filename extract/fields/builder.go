@@ -1,23 +1,22 @@
 package fields
 
 import (
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/donq/pkg/valid"
 	"github.com/samber/lo"
 )
 
-func Construct(extractor *Extractor) (err error) {
+func Construct(field *Field) (err error) {
 
-	if err = valid.Struct(extractor); err != nil {
+	if err = valid.Struct(field); err != nil {
 		return err
 	}
 
-	if extractor.between, extractor.final, err = RegexCompile(extractor); err != nil {
+	if field.between, field.final, err = RegexCompile(field); err != nil {
 		return err
 	}
 
-	for _, child := range extractor.Children {
+	for _, child := range field.Children {
 		if err = Construct(child); err != nil {
 			return err
 		}
@@ -26,47 +25,45 @@ func Construct(extractor *Extractor) (err error) {
 	return nil
 }
 
-func Extract(payload map[string]any, node *goquery.Selection, extractor *Extractor) error {
+func Extract(payload map[string]any, node *goquery.Selection, field *Field) {
 
 	var data []any
 
-	if extractor.Children != nil {
+	if field.Children != nil {
 
 		scope := node
-		if extractor.Scoped && extractor.Selector != "" {
-			scope = node.Find(extractor.Selector)
+		if field.Scoped && field.Selector != "" {
+			scope = node.Find(field.Selector)
 		}
 
 		deltas := make([]map[string]any, 0)
 		scope.Each(func(i int, selection *goquery.Selection) {
 
 			delta := map[string]any{}
+			for _, child := range field.Children {
 
-			for _, child := range extractor.Children {
-				if exErr := Extract(delta, selection, child); exErr != nil {
+				Extract(delta, selection, child)
+				if delta[child.Name] == nil && child.Required {
 					return
 				}
 			}
 
-			if len(delta) > 0 {
-				deltas = append(deltas, delta)
-			}
+			deltas = append(deltas, delta)
 		})
 
 		data = lo.ToAnySlice(deltas)
 	} else {
-		data = lo.ToAnySlice(Value(extractor, node))
+		data = lo.ToAnySlice(Value(field, node))
 	}
 
-	var err error
-	if payload[extractor.Name], err = Normalize(data, extractor); err != nil {
-		return err
-	}
+	values := Normalize(data, field.Cardinality)
 
-	return err
+	if values != nil {
+		payload[field.Name] = values
+	}
 }
 
-func Value(field *Extractor, sel *goquery.Selection) []string {
+func Value(field *Field, sel *goquery.Selection) []string {
 
 	entries := EntriesAsString(field, sel)
 
@@ -81,22 +78,11 @@ func Value(field *Extractor, sel *goquery.Selection) []string {
 	return entries
 }
 
-func Normalize(entries []any, field *Extractor) (any, error) {
+func Normalize(entries []any, cardinality int) any {
 
 	entries = lo.Filter(entries, func(entry any, i int) bool {
 		return entry != nil
 	})
-
-	if field.Required && len(entries) == 0 {
-		return nil, fmt.Errorf("field %s: %w", field.Name, ErrRequiredFieldMissing)
-	}
-
-	return Cardinality(field.Cardinality, lo.ToAnySlice(entries)), nil
-}
-
-// Cardinality applies cardinality limits to the input entries.
-// It used as a final step in the extraction process to convert entries to actual value or field or group.
-func Cardinality(cardinality int, entries []any) any {
 
 	if len(entries) == 0 {
 		return nil

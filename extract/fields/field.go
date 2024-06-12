@@ -7,13 +7,13 @@ import (
 
 var (
 	// ErrRequiredFieldMissing expected error, stops the pipe chain
-	// used by extractors to quickly skip the pipe chain
+	// used by field extractors to quickly skip the pipe chain
 	// if data is not satisfied or exists
 	ErrRequiredFieldMissing = errors.New("skip entity extraction, required field is missing")
 )
 
-// Extractor provides data describing custom data extraction from text or html.
-type Extractor struct {
+// Field provides data describing custom data extraction from text or html.
+type Field struct {
 
 	// Name is a key to store the extracted data.
 	// required
@@ -31,12 +31,12 @@ type Extractor struct {
 	// All formatters apply clear string methods to in/out data:
 	// Double spaces are deleted. Output left/right spaces are trimmed.
 
-	// InputFormat is a format of the input data to extractor.
+	// InputFormat is a format of the input data to field.
 	// It can be "text" or "html".
 	// def: "html"
 	InputFormat string `json:"InputFormat"`
 
-	// OutputFormat is a format of the output data from extractor.
+	// OutputFormat is a format of the output data from field.
 	// It can be a slice of types "text", "html", "json".
 	// Formatters called in the order of the list.
 	// def: ["text"]
@@ -68,10 +68,10 @@ type Extractor struct {
 	// Scoped flag limits the selection area for the group of field value extractors.
 	Scoped bool `json:"Scoped"`
 
+	// Children is a map of sub-field names to their corresponding Field configurations.
+	// required
+	Children []*Field `json:"Children" validate:"optional,dive"`
+
 	between *regexp.Regexp
 	final   *regexp.Regexp
-
-	// Children is a map of sub-field names to their corresponding Extractor configurations.
-	// required
-	Children []*Extractor `json:"Children" validate:"optional,dive"`
 }

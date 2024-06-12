@@ -24,14 +24,12 @@ func TestField(t *testing.T) {
 	tc := []Case{
 		{
 			"empty",
-			&fields.Extractor{},
-			nil,
-			true, // fExtractor name is required
+			&fields.Field{},
 			nil,
 		},
 		{
 			"simple",
-			&fields.Extractor{
+			&fields.Field{
 				Name:         "title",
 				Cardinality:  1,
 				InputFormat:  "text",
@@ -39,12 +37,10 @@ func TestField(t *testing.T) {
 				Selector:     ".product--full .product__title",
 			},
 			map[string]any{"title": "Main Product Title"},
-			false,
-			nil,
 		},
 		{
 			"between",
-			&fields.Extractor{
+			&fields.Field{
 				Name:         "image",
 				Cardinality:  1,
 				InputFormat:  "text",
@@ -54,12 +50,10 @@ func TestField(t *testing.T) {
 				BetweenEnd:   "USD",
 			},
 			map[string]any{"image": "99.99"},
-			false,
-			nil,
 		},
 		{
 			"between image from item prop",
-			&fields.Extractor{
+			&fields.Field{
 				Name:         "image",
 				Cardinality:  1,
 				InputFormat:  "html",
@@ -71,12 +65,10 @@ func TestField(t *testing.T) {
 			map[string]any{
 				"image": "product-image.jpg",
 			},
-			false,
-			nil,
 		},
 		{
 			"between multiple selections",
-			&fields.Extractor{
+			&fields.Field{
 				Name:         "images",
 				Cardinality:  2,
 				InputFormat:  "html",
@@ -90,12 +82,10 @@ func TestField(t *testing.T) {
 					"product-image.jpg",
 				},
 			},
-			false,
-			nil,
 		},
 		{
 			"regex",
-			&fields.Extractor{
+			&fields.Field{
 				Name:         "category",
 				Cardinality:  1,
 				InputFormat:  "html",
@@ -105,12 +95,10 @@ func TestField(t *testing.T) {
 				FinalRegex: "Category:(?s)(.*?)</p>",
 			},
 			map[string]any{"category": "Magic wands"},
-			false,
-			nil,
 		},
 		{
 			"regex image from item prop",
-			&fields.Extractor{
+			&fields.Field{
 				Name:         "category",
 				Cardinality:  1,
 				InputFormat:  "html",
@@ -119,42 +107,34 @@ func TestField(t *testing.T) {
 				FinalRegex:   "meta itemprop=\"image\" content=\"(.+?)\"",
 			},
 			map[string]any{"category": "product-image.jpg"},
-			false,
-			nil,
 		},
 		{
 			"all prices",
-			&fields.Extractor{
+			&fields.Field{
 				Name:        "prices",
 				Cardinality: 0,
 				Selector:    ".product__price--amount",
 			},
 			map[string]any{"prices": []any{"99.99", "49.99", "0.99"}},
-			false,
-			nil,
 		},
 		{
 			"all prices with limit",
-			&fields.Extractor{
+			&fields.Field{
 				Name:        "prices",
 				Cardinality: 2,
 				Selector:    ".product__price--amount",
 			},
 			map[string]any{"prices": []any{"99.99", "49.99"}},
-			false,
-			nil,
 		},
 		{
 			"required fExtractor are empty",
-			&fields.Extractor{
+			&fields.Field{
 				Name:        "not-exists",
 				Cardinality: 0,
 				Selector:    ".product__not-exists-element",
 				Required:    true,
 			},
 			nil,
-			true,
-			fields.ErrRequiredFieldMissing,
 		},
 	}
 
@@ -184,12 +164,12 @@ func TestFieldFromMap(t *testing.T) {
 }
 
 func TestEntityTransformNewDocumentFromReaderError(t *testing.T) {
-	extractor := &fields.Extractor{
+	field := &fields.Field{
 		InputFormat:  "html",
 		OutputFormat: []string{"text"},
 	}
 	input := "<div>Hello  world!</div>"
-	output := fields.EntryTransform(extractor, input)
+	output := fields.EntryTransform(field, input)
 	assert.Equal(t, "Hello world!", output)
 }
 
@@ -198,12 +178,12 @@ func TestGroup(t *testing.T) {
 	tc := []Case{
 		{
 			"single",
-			&fields.Extractor{
+			&fields.Field{
 				Name:        "product",
 				Selector:    ".product--full",
 				Cardinality: 1,
 				Required:    true,
-				Children: []*fields.Extractor{
+				Children: []*fields.Field{
 					{
 						Name:         "title",
 						Cardinality:  1,
@@ -226,18 +206,16 @@ func TestGroup(t *testing.T) {
 					"price": "99.99",
 				},
 			},
-			false,
-			nil,
 		},
 		{
 			"multiple",
-			&fields.Extractor{
+			&fields.Field{
 				Name:        "products",
 				Selector:    ".product",
 				Cardinality: 2,
 				Required:    true,
 				Scoped:      true,
-				Children: []*fields.Extractor{
+				Children: []*fields.Field{
 					{
 						Name:         "title",
 						Cardinality:  1,
@@ -266,8 +244,6 @@ func TestGroup(t *testing.T) {
 					},
 				},
 			},
-			false,
-			nil,
 		},
 	}
 
@@ -278,7 +254,7 @@ func TestGroup(t *testing.T) {
 
 func TestFieldToMap(t *testing.T) {
 
-	e := &fields.Extractor{
+	e := &fields.Field{
 		Name:         "title",
 		Cardinality:  1,
 		InputFormat:  "html",
@@ -297,11 +273,11 @@ func TestFieldToMap(t *testing.T) {
 
 func TestGroupExtractorMap(t *testing.T) {
 
-	e := &fields.Extractor{
+	e := &fields.Field{
 		Name:     "product",
 		Selector: ".product--full",
 		Required: true,
-		Children: []*fields.Extractor{
+		Children: []*fields.Field{
 			{
 				Name:         "title",
 				Cardinality:  1,
@@ -324,16 +300,16 @@ func TestGroupExtractorMap(t *testing.T) {
 	assert.Equal(t, "product", m["Name"])
 	assert.Equal(t, ".product--full", m["Selector"])
 	assert.True(t, m["Required"].(bool))
-	assert.Len(t, m["Children"].([]*fields.Extractor), 2)
+	assert.Len(t, m["Children"].([]*fields.Field), 2)
 
-	title := m["Children"].([]*fields.Extractor)[0]
+	title := m["Children"].([]*fields.Field)[0]
 	assert.Equal(t, "title", title.Name)
 	assert.Equal(t, 1, title.Cardinality)
 	assert.Equal(t, "html", title.InputFormat)
 	assert.Equal(t, []string{"text"}, title.OutputFormat)
 	assert.Equal(t, ".product__title", title.Selector)
 
-	price := m["Children"].([]*fields.Extractor)[1]
+	price := m["Children"].([]*fields.Field)[1]
 	assert.Equal(t, "price", price.Name)
 	assert.Equal(t, 1, price.Cardinality)
 	assert.Equal(t, "html", price.InputFormat)

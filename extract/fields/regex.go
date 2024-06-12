@@ -43,11 +43,11 @@ func RegexPipes(selections []string, expressions ...*regexp.Regexp) (entries []s
 	return entries
 }
 
-// RegexCompile compiles regular expressions based on the Extractor configuration.
-// It validates the Extractor and then compiles regex patterns for between and final matching.
+// RegexCompile compiles regular expressions based on the Field configuration.
+// It validates the Field and then compiles regex patterns for between and final matching.
 //
 // Parameters:
-//   - f (*Extractor): A pointer to an Extractor struct containing the configuration for regex compilation.
+//   - f (*Field): A pointer to an Field struct containing the configuration for regex compilation.
 //
 // Returns:
 //   - between (*regexp.Regexp): The compiled regular expression for matching text between BetweenStart and BetweenEnd.
@@ -56,18 +56,18 @@ func RegexPipes(selections []string, expressions ...*regexp.Regexp) (entries []s
 //
 // Example:
 //
-//	extractor := &Extractor{
+//	field := &Field{
 //	    BetweenStart: "start",
 //	    BetweenEnd:   "end",
 //	    FinalRegex:   `\d+`,
 //	}
-//	between, regex, err := RegexCompile(extractor)
+//	between, regex, err := RegexCompile(field)
 //	if err != nil {
 //	    log.Fatalf("Failed to compile regex: %v", err)
 //	}
 //	fmt.Println(between) // Output: regexp that matches "start" and "end" with any text between
 //	fmt.Println(regex)   // Output: regexp that matches one or more digits
-func RegexCompile(f *Extractor) (between *regexp.Regexp, regex *regexp.Regexp, err error) {
+func RegexCompile(f *Field) (between *regexp.Regexp, regex *regexp.Regexp, err error) {
 
 	// validate the fExtractor
 	if err = valid.Struct(f); err != nil {

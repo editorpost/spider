@@ -2,9 +2,9 @@ package fields
 
 import "github.com/editorpost/donq/pkg/vars"
 
-func MapExtractor(m map[string]any) (*Extractor, error) {
+func MapExtractor(m map[string]any) (*Field, error) {
 
-	e := &Extractor{}
+	e := &Field{}
 	if err := vars.FromJSON(m, e); err != nil {
 		return nil, err
 	}
@@ -12,7 +12,7 @@ func MapExtractor(m map[string]any) (*Extractor, error) {
 	return e, nil
 }
 
-func ExtractorMap(ex *Extractor) map[string]any {
+func ExtractorMap(ex *Field) map[string]any {
 	return map[string]any{
 		"Name":         ex.Name,
 		"Cardinality":  ex.Cardinality,

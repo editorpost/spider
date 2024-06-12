@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-// EntriesAsString extracts text or HTML content from a goquery.Selection based on the Extractor configuration.
+// EntriesAsString extracts text or HTML content from a goquery.Selection based on the Field configuration.
 // It processes the selection using the specified input format and optional CSS selector.
 //
 // Parameters:
-//   - f (*Extractor): A pointer to an Extractor struct containing the extraction configuration.
+//   - f (*Field): A pointer to an Field struct containing the extraction configuration.
 //   - sel (*goquery.Selection): A goquery.Selection object representing the HTML elements to be processed.
 //
 // Returns:
@@ -22,13 +22,13 @@ import (
 //	if err != nil {
 //	    log.Fatal(err)
 //	}
-//	extractor := &Extractor{
+//	field := &Field{
 //	    InputFormat: "text",
 //	    Selector:    "p",
 //	}
-//	results := EntriesAsString(extractor, doc.Selection)
+//	results := EntriesAsString(field, doc.Selection)
 //	fmt.Println(results) // Output: ["Hello", "world!"]
-func EntriesAsString(f *Extractor, sel *goquery.Selection) []string {
+func EntriesAsString(f *Field, sel *goquery.Selection) []string {
 
 	selection := sel
 
@@ -86,10 +86,10 @@ func EntriesClean(entries []string) []string {
 }
 
 // EntriesTransform applies the EntryTransform function to each entry in the input slice.
-// It processes each string according to the Extractor configuration.
+// It processes each string according to the Field configuration.
 //
 // Parameters:
-//   - f (*Extractor): A pointer to an Extractor struct containing the transformation configuration.
+//   - f (*Field): A pointer to an Field struct containing the transformation configuration.
 //   - entries ([]string): A slice of strings to be transformed.
 //
 // Returns:
@@ -97,14 +97,14 @@ func EntriesClean(entries []string) []string {
 //
 // Example:
 //
-//	extractor := &Extractor{
+//	field := &Field{
 //	    InputFormat:  "html",
 //	    OutputFormat: []string{"text"},
 //	}
 //	inputs := []string{"<div>Hello  world!</div>", "<p>Go is  awesome!</p>"}
-//	outputs := EntriesTransform(extractor, inputs)
+//	outputs := EntriesTransform(field, inputs)
 //	fmt.Println(outputs) // Output: ["Hello world!", "Go is awesome!"]
-func EntriesTransform(f *Extractor, entries []string) []string {
+func EntriesTransform(f *Field, entries []string) []string {
 
 	for i := range entries {
 		entries[i] = EntryTransform(f, entries[i])
@@ -113,12 +113,12 @@ func EntriesTransform(f *Extractor, entries []string) []string {
 	return entries
 }
 
-// EntryTransform transforms the input value based on the Extractor configuration.
+// EntryTransform transforms the input value based on the Field configuration.
 // It processes the value according to the specified input and output formats,
 // and applies string manipulation to clean up the output.
 //
 // Parameters:
-//   - f (*Extractor): A pointer to an Extractor struct containing the transformation configuration.
+//   - f (*Field): A pointer to an Field struct containing the transformation configuration.
 //   - value (string): The input string to be transformed.
 //
 // Returns:
@@ -126,14 +126,14 @@ func EntriesTransform(f *Extractor, entries []string) []string {
 //
 // Example:
 //
-//	extractor := &Extractor{
+//	field := &Field{
 //	    InputFormat:  "html",
 //	    OutputFormat: []string{"text"},
 //	}
 //	input := "<div>Hello  world!</div>"
-//	output := EntryTransform(extractor, input)
+//	output := EntryTransform(field, input)
 //	fmt.Println(output) // Output: "Hello world!"
-func EntryTransform(f *Extractor, value string) string {
+func EntryTransform(f *Field, value string) string {
 
 	if value == "" {
 		return ""
