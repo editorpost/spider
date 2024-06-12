@@ -150,7 +150,7 @@ func EntryTransform(f *Field, value string) string {
 				if err != nil {
 					return ""
 				}
-				// and extract text
+				// and fieldExtract text
 				value = fromHTML.Text()
 			}
 

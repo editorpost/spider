@@ -69,7 +69,7 @@ func RegexPipes(selections []string, expressions ...*regexp.Regexp) (entries []s
 //	fmt.Println(regex)   // Output: regexp that matches one or more digits
 func RegexCompile(f *Field) (between *regexp.Regexp, regex *regexp.Regexp, err error) {
 
-	// validate the field
+	// validate the fExtractor
 	if err = valid.Struct(f); err != nil {
 		return
 	}

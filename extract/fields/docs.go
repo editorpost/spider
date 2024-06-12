@@ -1,5 +1,5 @@
 /*
-Package fields provides fields.Field to extract custom entity fields.
+Package fields provides fields.Field to fieldExtract custom entity fields.
 
 Simple configuration for extracting data from HTML or text content:
 1. **CSS Selectors with goquery**:
@@ -21,7 +21,7 @@ Simple configuration for extracting data from HTML or text content:
   - Handles lists, repeated elements, and other multi-entry scenarios seamlessly.
 
 5. **Builder Limiting**:
-  - Configurable limit on the number of entries to extract.
+  - Configurable limit on the number of entries to fieldExtract.
   - Zero means no limit, and entries are stored as a list.
 
 6. **String Manipulation**:
@@ -36,7 +36,7 @@ Simple configuration for extracting data from HTML or text content:
 
 8. **Error Handling**:
   - Provides meaningful errors for required fields and validation issues.
-  - Skips entity extraction if a required field is missing.
+  - Skips entity extraction if a required fExtractor is missing.
 
 9. **Data Cleaning**:
 

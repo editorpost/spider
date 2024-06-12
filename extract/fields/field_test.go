@@ -24,7 +24,7 @@ func TestField(t *testing.T) {
 			"empty",
 			&fields.Field{},
 			nil,
-			true, // field name is required
+			true, // fExtractor name is required
 			nil,
 		},
 		{
@@ -143,7 +143,7 @@ func TestField(t *testing.T) {
 			nil,
 		},
 		{
-			"required field are empty",
+			"required fExtractor are empty",
 			&fields.Field{
 				Name:        "not-exists",
 				Cardinality: 0,
@@ -297,10 +297,11 @@ func TestGroup(t *testing.T) {
 		{
 			"multiple",
 			&fields.Field{
-				Name:        "products",
-				Selector:    ".product",
-				Cardinality: 2,
-				Required:    true,
+				Name:           "products",
+				Selector:       ".product",
+				Cardinality:    2,
+				Required:       true,
+				LimitSelection: true,
 				Fields: []*fields.Field{
 					{
 						Name:         "title",

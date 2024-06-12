@@ -14,7 +14,7 @@ type (
 	}
 )
 
-// Build creates a map of group or field names to their corresponding ExtractFn.
+// Build creates a map of group or fExtractor names to their corresponding ExtractFn.
 func Build(bb ...*Field) (map[string]ExtractFn, error) {
 
 	fns := map[string]ExtractFn{}
@@ -42,7 +42,7 @@ func Extract(name string, builders ...*Field) (ExtractFn, error) {
 
 	return func(selection *goquery.Selection) (map[string]any, error) {
 
-		// data is a map of field names to their extracted values
+		// data is a map of fExtractor names to their extracted values
 		// max entries for group based on Group or Field Cardinality
 		data := map[string]any{}
 

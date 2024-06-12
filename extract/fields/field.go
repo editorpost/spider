@@ -70,6 +70,9 @@ type Field struct {
 	// optional
 	Multiline bool `json:"Multiline"`
 
+	// LimitSelection flag limits the selection area for the group of field value extractors.
+	LimitSelection bool `json:"LimitSelection"`
+
 	between *regexp.Regexp
 	final   *regexp.Regexp
 
@@ -111,11 +114,6 @@ type Field struct {
 //	fmt.Println(results) // Output: ["Hello", "world!"]
 func (field *Field) Extractor() (ExtractFn, error) {
 
-	if field.Fields != nil {
-		// todo diff methods
-		return field.gExtractor()
-	}
-
 	if err := valid.Struct(field); err != nil {
 		return nil, err
 	}
@@ -126,7 +124,12 @@ func (field *Field) Extractor() (ExtractFn, error) {
 		return nil, reErr
 	}
 
-	return field.extract, nil
+	if field.Fields != nil {
+		// todo diff methods
+		return field.gExtractor()
+	}
+
+	return field.fieldExtract, nil
 }
 
 // Extractor in case of group, fields extracted by selection
@@ -135,10 +138,6 @@ func (field *Field) Extractor() (ExtractFn, error) {
 func (field *Field) gExtractor() (ExtractFn, error) {
 
 	var e error
-
-	if e = valid.Struct(field); e != nil {
-		return nil, e
-	}
 
 	if field.extractors, e = Build(field.Fields...); e != nil {
 		return nil, e
@@ -155,9 +154,14 @@ func (field *Field) gExtractor() (ExtractFn, error) {
 		// entries/deltas of the group
 		var entries []any
 
-		// select each group entry
-		selection.Find(field.Selector).Each(func(i int, groupSelection *goquery.Selection) {
-			// entry is a map of field names to their extracted values
+		selected := selection
+
+		if field.LimitSelection && field.Selector != "" {
+			selected = selection.Find(field.Selector)
+		}
+
+		selected.Each(func(i int, groupSelection *goquery.Selection) {
+			// entry is a map of fExtractor names to their extracted values
 			if entry, err := extract(groupSelection); err == nil {
 				entries = append(entries, entry)
 			}
@@ -174,7 +178,7 @@ func (field *Field) gExtractor() (ExtractFn, error) {
 	}, nil
 }
 
-func (field *Field) extract(sel *goquery.Selection) (map[string]any, error) {
+func (field *Field) fieldExtract(sel *goquery.Selection) (map[string]any, error) {
 
 	entries := EntriesAsString(field, sel)
 
