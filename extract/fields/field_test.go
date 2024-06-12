@@ -43,7 +43,7 @@ func TestField(t *testing.T) {
 			nil,
 		},
 		{
-			"Between",
+			"between",
 			&fields.Extractor{
 				Name:         "image",
 				Cardinality:  1,
@@ -58,7 +58,7 @@ func TestField(t *testing.T) {
 			nil,
 		},
 		{
-			"Between image from item prop",
+			"between image from item prop",
 			&fields.Extractor{
 				Name:         "image",
 				Cardinality:  1,
@@ -75,7 +75,7 @@ func TestField(t *testing.T) {
 			nil,
 		},
 		{
-			"Between multiple selections",
+			"between multiple selections",
 			&fields.Extractor{
 				Name:         "images",
 				Cardinality:  2,
@@ -173,7 +173,7 @@ func TestFieldFromMap(t *testing.T) {
 		"Selector":     ".product__title",
 	}
 
-	e, err := fields.FieldFromMap(m)
+	e, err := fields.MapExtractor(m)
 	require.NoError(t, err)
 
 	assert.Equal(t, "title", e.Name)
@@ -181,25 +181,6 @@ func TestFieldFromMap(t *testing.T) {
 	assert.Equal(t, "html", e.InputFormat)
 	assert.Equal(t, []string{"text"}, e.OutputFormat)
 	assert.Equal(t, ".product__title", e.Selector)
-}
-
-func TestFieldToMap(t *testing.T) {
-
-	e := &fields.Extractor{
-		Name:         "title",
-		Cardinality:  1,
-		InputFormat:  "html",
-		OutputFormat: []string{"text"},
-		Selector:     ".product__title",
-	}
-
-	m := e.Map()
-
-	assert.Equal(t, "title", m["Name"])
-	assert.Equal(t, 1, m["Cardinality"])
-	assert.Equal(t, "html", m["InputFormat"])
-	assert.Equal(t, []string{"text"}, m["OutputFormat"])
-	assert.Equal(t, ".product__title", m["Selector"])
 }
 
 func TestEntityTransformNewDocumentFromReaderError(t *testing.T) {
@@ -295,6 +276,25 @@ func TestGroup(t *testing.T) {
 	}
 }
 
+func TestFieldToMap(t *testing.T) {
+
+	e := &fields.Extractor{
+		Name:         "title",
+		Cardinality:  1,
+		InputFormat:  "html",
+		OutputFormat: []string{"text"},
+		Selector:     ".product__title",
+	}
+
+	m := fields.ExtractorMap(e)
+
+	assert.Equal(t, "title", m["Name"])
+	assert.Equal(t, 1, m["Cardinality"])
+	assert.Equal(t, "html", m["InputFormat"])
+	assert.Equal(t, []string{"text"}, m["OutputFormat"])
+	assert.Equal(t, ".product__title", m["Selector"])
+}
+
 func TestGroupExtractorMap(t *testing.T) {
 
 	e := &fields.Extractor{
@@ -319,7 +319,7 @@ func TestGroupExtractorMap(t *testing.T) {
 		},
 	}
 
-	m := e.Map()
+	m := fields.ExtractorMap(e)
 
 	assert.Equal(t, "product", m["Name"])
 	assert.Equal(t, ".product--full", m["Selector"])

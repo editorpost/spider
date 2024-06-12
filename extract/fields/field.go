@@ -2,10 +2,6 @@ package fields
 
 import (
 	"errors"
-	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/editorpost/donq/pkg/vars"
-	"github.com/samber/lo"
 	"regexp"
 )
 
@@ -46,12 +42,12 @@ type Extractor struct {
 	// def: ["text"]
 	OutputFormat []string `json:"OutputFormat"`
 
-	// Selector is a css selector to find the element or limit area for Between/regex.
+	// Selector is a css selector to find the element or limit area for between/regex.
 	// optional
 	Selector string `json:"Selector"`
 
-	// Between is a pair of strings to find the element.
-	// In case if Selector is not provided, Between applied on whole codfield.
+	// between is a pair of strings to find the element.
+	// In case if Selector is not provided, between applied on whole codfield.
 
 	// BetweenStart is a string to find the element.
 	// optional, required if BetweenEnd is provided
@@ -72,85 +68,10 @@ type Extractor struct {
 	// Scoped flag limits the selection area for the group of field value extractors.
 	Scoped bool `json:"Scoped"`
 
-	Between *regexp.Regexp
-	Final   *regexp.Regexp
+	between *regexp.Regexp
+	final   *regexp.Regexp
 
 	// Children is a map of sub-field names to their corresponding Extractor configurations.
 	// required
 	Children []*Extractor `json:"Children" validate:"optional,dive"`
-}
-
-func (field *Extractor) Value(sel *goquery.Selection) []string {
-
-	entries := EntriesAsString(field, sel)
-
-	// if regex defined, apply it
-	if field.Final != nil || field.Between != nil {
-		entries = RegexPipes(entries, field.Between, field.Final)
-	}
-
-	entries = EntriesTransform(field, entries)
-	entries = EntriesClean(entries)
-
-	return entries
-}
-
-func FieldFromMap(m map[string]any) (*Extractor, error) {
-
-	e := &Extractor{}
-	if err := vars.FromJSON(m, e); err != nil {
-		return nil, err
-	}
-
-	return e, nil
-}
-
-func (field *Extractor) Map() map[string]any {
-	return map[string]any{
-		"Name":         field.Name,
-		"Cardinality":  field.Cardinality,
-		"Required":     field.Required,
-		"InputFormat":  field.InputFormat,
-		"OutputFormat": field.OutputFormat,
-		"Selector":     field.Selector,
-		"BetweenStart": field.BetweenStart,
-		"BetweenEnd":   field.BetweenEnd,
-		"FinalRegex":   field.FinalRegex,
-		"Multiline":    field.Multiline,
-		"Children":     field.Children,
-	}
-}
-
-func FieldValue(entries []any, field *Extractor) (any, error) {
-
-	entries = lo.Filter(entries, func(entry any, i int) bool {
-		return entry != nil
-	})
-
-	if field.Required && len(entries) == 0 {
-		return nil, fmt.Errorf("field %s: %w", field.Name, ErrRequiredFieldMissing)
-	}
-
-	return ApplyCardinality(field.Cardinality, lo.ToAnySlice(entries)), nil
-}
-
-// ApplyCardinality applies cardinality limits to the input entries.
-// It used as a Final step in the extraction process to convert entries to actual value or field or group.
-func ApplyCardinality(cardinality int, entries []any) any {
-
-	if len(entries) == 0 {
-		return nil
-	}
-
-	// cut to limit len or return all
-	if cardinality > 0 && len(entries) > cardinality {
-		entries = entries[:cardinality]
-	}
-
-	// if limit is 1 return single value
-	if cardinality == 1 {
-		return entries[0]
-	}
-
-	return entries
 }
