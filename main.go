@@ -40,13 +40,13 @@ func Flags() (cmd, args, named, build string) {
 	}
 
 	// fNamedExtract string is the list of extractors to apply, e.g. "html,article"
-	fNamedExtract := flag.String("named-extract", "", "Extractor function name")
+	fNamedExtract := flag.String("entities", "", "Comma separated list of named extractors")
 	if fNamedExtract == nil {
 		slog.Info("extract flag is not set, use default html extractor")
 	}
 
 	// fBuildExtract is the JSON string of array of field extractor functions
-	fBuildExtract := flag.String("build-extract", "", "Field extractor functions JSON")
+	fBuildExtract := flag.String("fields", "", "Field extractor functions JSON")
 	if fBuildExtract == nil {
 		slog.Info("extract flag is not set, use default html extractor")
 	}
