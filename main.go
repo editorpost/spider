@@ -3,58 +3,88 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
-	"github.com/editorpost/donq/pkg/vars"
+	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/fields"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"log/slog"
 )
 
+var (
+	fCmd      = flag.String("cmd", "", "Available commands: start, trial")
+	fArgs     = flag.String("args", "", "Spider arguments JSON")
+	fFields   = flag.String("fields", "", "Field extractor functions JSON")
+	fEntities = flag.String("entities", "", "Comma separated list of named extractors")
+)
+
 func main() {
-
-	fCmd, fArgs, fNamedExtract, fBuildExtract := Flags()
-	if fCmd == "" || fArgs == "" {
-		slog.Error("cmd or args flag for spider is not set")
-		return
-	}
-
-	if err := Run(fCmd, fArgs, fNamedExtract, fBuildExtract); err != nil {
+	cmd, args, entities, ff := Flags()
+	if err := Run(cmd, args, entities, ff); err != nil {
 		slog.Error("run", err)
 		return
 	}
 }
 
-func Flags() (cmd, args, entities, fields string) {
+func Run(cmd string, args *config.Args, entities string, fields []*fields.Field) (err error) {
 
-	cmd = FlagToString(flag.String("cmd", "", "Available commands: start, trial"))
+	extractors, err := extract.Extractors(fields, entities)
+	if err != nil {
+		return
+	}
+
+	switch cmd {
+	case "start":
+		return windmill.Start(args, extractors...)
+	case "trial":
+		return windmill.Trial(args, extractors...)
+	}
+
+	return nil
+}
+
+func Flags() (cmd string, args *config.Args, entities string, ff []*fields.Field) {
+
+	// parse command and flags
+	flag.Parse()
+
+	cmd = FlagToString(fCmd)
 	if cmd == "" {
 		slog.Error("cmd flag for spider binary is not set")
 		return
 	}
 
 	// argsFlag string is the JSON string of spider arguments
-	args = FlagToString(flag.String("args", "", "Spider arguments JSON"))
-	if args == "" {
+	argsJson := FlagToString(fArgs)
+	if argsJson == "" {
 		slog.Error("args flag for spider binary is not set")
 		return
 	}
 
 	// entities string is the list of extractors to apply, e.g. "html,article"
-	entities = FlagToString(flag.String("entities", "", "Comma separated list of named extractors"))
+	entities = FlagToString(fEntities)
 	if entities == "" {
 		slog.Info("extract flag is not set, use default html extractor")
 	}
 
 	// fields is the JSON string of array of field extractor functions
-	fields = FlagToString(flag.String("fields", "", "Field extractor functions JSON"))
-	if fields == "" {
+	fieldsJson := FlagToString(fFields)
+	if fieldsJson == "" {
 		slog.Info("extract flag is not set, use default html extractor")
 	}
 
-	// parse command and flags
-	flag.Parse()
+	args = &config.Args{}
+	if err := JsonToType(argsJson, args); err != nil {
+		slog.Error("parse args", err)
+		return
+	}
 
-	return cmd, args, entities, fields
+	ff = make([]*fields.Field, 0)
+	if err := JsonToType(fieldsJson, &ff); err != nil {
+		slog.Error("parse args", err)
+		return
+	}
+
+	return cmd, args, entities, ff
 }
 
 func FlagToString(flag *string) string {
@@ -64,48 +94,16 @@ func FlagToString(flag *string) string {
 	return *flag
 }
 
-func Run(fCmd, fArgs, fNamedExtractors, fBuildExtractors string) (err error) {
+func JsonToType[T any](str string, typ T) error {
 
-	// parse json from args string to map[string]interface{}
-	args, err := JSONStringToMap(fArgs)
-	if err != nil {
-		slog.Error("parse args", err)
-		return
+	if str == "" {
+		return nil
 	}
 
-	// parse extractors
-	extractors := extract.ExtractorsByName(fNamedExtractors)
-	// build extractors
-	extractors = append(extractors, extract.ExtractorsByJsonString(fBuildExtractors)...)
-
-	switch fCmd {
-	case "start":
-		if err = windmill.Start(args, extractors...); err != nil {
-			slog.Error("start", err)
-			return
-		}
-	case "trial":
-		payloads := make([]*extract.Payload, 0)
-		if payloads, err = windmill.Trial(args, extractors...); err != nil {
-			slog.Error("trial", err)
-			return
-		}
-		// write extracted data to `./result.json` as windmill expects
-		if err = vars.WriteScriptResult(payloads, "./result.json"); err != nil {
-			slog.Error("write payloads", err)
-			return
-		}
+	err := json.Unmarshal([]byte(str), typ)
+	if err != nil {
+		return err
 	}
 
 	return nil
-}
-
-func JSONStringToMap(jsonStr string) (map[string]interface{}, error) {
-	var argsMap map[string]interface{}
-	fmt.Println("jsonStr: ", jsonStr)
-	if err := json.Unmarshal([]byte(jsonStr), &argsMap); err != nil {
-		return nil, err
-	}
-	fmt.Println("argsMap: ", argsMap)
-	return argsMap, nil
 }
