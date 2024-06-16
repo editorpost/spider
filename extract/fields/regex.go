@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-// RegexPipes filters and processes selections through multiple regular expressions.
+// RegexExtracts filters and processes selections through multiple regular expressions.
 // It extracts substrings from each selection that match any of the given regular expressions.
 //
 // Parameters:
@@ -21,9 +21,9 @@ import (
 //	selections := []string{"Item 123", "Product 456", "Service 789"}
 //	re1 := regexp.MustCompile(`\d+`)
 //	re2 := regexp.MustCompile(`[A-Za-z]+`)
-//	result := RegexPipes(selections, re1, re2)
+//	result := RegexExtracts(selections, re1, re2)
 //	fmt.Println(result) // Output: ["123", "Item", "456", "Product", "789", "Service"]
-func RegexPipes(selections []string, expressions ...*regexp.Regexp) (entries []string) {
+func RegexExtracts(selections []string, expressions ...*regexp.Regexp) (entries []string) {
 
 	expressions = lo.Filter(expressions, func(v *regexp.Regexp, i int) bool {
 		return v != nil
@@ -40,6 +40,41 @@ func RegexPipes(selections []string, expressions ...*regexp.Regexp) (entries []s
 	}
 
 	return entries
+}
+
+// RegexExtract extracts substrings from the input data that match the given regular expression.
+// It returns a slice of strings containing the first capturing group from each match.
+//
+// Parameters:
+//   - re (*regexp.Regexp): The compiled regular expression to apply to the input data.
+//   - data (string): The input string to be searched.
+//
+// Returns:
+//   - []string: A slice of strings containing the first capturing group from each match,
+//     or nil if the input data is an empty string.
+//
+// Example:
+//
+//	re := regexp.MustCompile(`(\d+)`)
+//	data := "Item 123, Item 456"
+//	result := RegexExtract(re, data)
+//	fmt.Println(result) // Output: ["123", "456"]
+func RegexExtract(re *regexp.Regexp, data string) []string {
+
+	if data == "" {
+		return nil
+	}
+
+	matches := re.FindAllStringSubmatch(data, -1)
+
+	var values []string
+	for _, match := range matches {
+		if len(match) > 1 {
+			values = append(values, match[1])
+		}
+	}
+
+	return values
 }
 
 // RegexCompile compiles regular expressions based on the Field configuration.
@@ -80,39 +115,4 @@ func RegexCompile(f *Field) (between *regexp.Regexp, regex *regexp.Regexp, err e
 
 	regex, err = regexp.Compile(f.FinalRegex)
 	return
-}
-
-// RegexExtract extracts substrings from the input data that match the given regular expression.
-// It returns a slice of strings containing the first capturing group from each match.
-//
-// Parameters:
-//   - re (*regexp.Regexp): The compiled regular expression to apply to the input data.
-//   - data (string): The input string to be searched.
-//
-// Returns:
-//   - []string: A slice of strings containing the first capturing group from each match,
-//     or nil if the input data is an empty string.
-//
-// Example:
-//
-//	re := regexp.MustCompile(`(\d+)`)
-//	data := "Item 123, Item 456"
-//	result := RegexExtract(re, data)
-//	fmt.Println(result) // Output: ["123", "456"]
-func RegexExtract(re *regexp.Regexp, data string) []string {
-
-	if data == "" {
-		return nil
-	}
-
-	matches := re.FindAllStringSubmatch(data, -1)
-
-	var values []string
-	for _, match := range matches {
-		if len(match) > 1 {
-			values = append(values, match[1])
-		}
-	}
-
-	return values
 }

@@ -155,7 +155,7 @@ func TestEntityTransformNewDocumentFromReaderError(t *testing.T) {
 		OutputFormat: []string{"text"},
 	}
 	input := "<div>Hello  world!</div>"
-	output := fields.EntryTransform(field, input)
+	output := fields.FormatValue(field, input)
 	assert.Equal(t, "Hello world!", output)
 }
 

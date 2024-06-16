@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// EntriesAsString extracts text or HTML content from a goquery.Selection based on the Field configuration.
+// SelectionsAsStrings extracts text or HTML content from a goquery.Selection based on the Field configuration.
 // It processes the selection using the specified input format and optional CSS selector.
 //
 // Parameters:
@@ -26,9 +26,9 @@ import (
 //	    InputFormat: "text",
 //	    Selector:    "p",
 //	}
-//	results := EntriesAsString(field, doc.Selection)
+//	results := SelectionsAsStrings(field, doc.Selection)
 //	fmt.Println(results) // Output: ["Hello", "world!"]
-func EntriesAsString(f *Field, sel *goquery.Selection) []string {
+func SelectionsAsStrings(f *Field, sel *goquery.Selection) []string {
 
 	selection := sel
 
@@ -54,7 +54,7 @@ func EntriesAsString(f *Field, sel *goquery.Selection) []string {
 	return data
 }
 
-// EntriesClean removes empty entries and duplicate entries from the input slice.
+// CleanStrings removes empty entries and duplicate entries from the input slice.
 // It returns a cleaned slice with only unique, non-empty strings.
 //
 // Parameters:
@@ -67,9 +67,9 @@ func EntriesAsString(f *Field, sel *goquery.Selection) []string {
 // Example:
 //
 //	inputs := []string{"apple", "", "banana", "apple", "cherry", ""}
-//	cleaned := EntriesClean(inputs)
+//	cleaned := CleanStrings(inputs)
 //	fmt.Println(cleaned) // Output: ["apple", "banana", "cherry"]
-func EntriesClean(entries []string) []string {
+func CleanStrings(entries []string) []string {
 
 	// remove empty entries
 	entries = lo.Filter(entries, func(v string, i int) bool {
@@ -85,7 +85,7 @@ func EntriesClean(entries []string) []string {
 	return entries
 }
 
-// EntriesTransform applies the EntryTransform function to each entry in the input slice.
+// FormatValues applies the FormatValue function to each entry in the input slice.
 // It processes each string according to the Field configuration.
 //
 // Parameters:
@@ -93,7 +93,7 @@ func EntriesClean(entries []string) []string {
 //   - entries ([]string): A slice of strings to be transformed.
 //
 // Returns:
-//   - []string: A slice of transformed strings after applying the EntryTransform function to each entry.
+//   - []string: A slice of transformed strings after applying the FormatValue function to each entry.
 //
 // Example:
 //
@@ -102,18 +102,18 @@ func EntriesClean(entries []string) []string {
 //	    OutputFormat: []string{"text"},
 //	}
 //	inputs := []string{"<div>Hello  world!</div>", "<p>Go is  awesome!</p>"}
-//	outputs := EntriesTransform(field, inputs)
+//	outputs := FormatValues(field, inputs)
 //	fmt.Println(outputs) // Output: ["Hello world!", "Go is awesome!"]
-func EntriesTransform(f *Field, entries []string) []string {
+func FormatValues(f *Field, entries []string) []string {
 
 	for i := range entries {
-		entries[i] = EntryTransform(f, entries[i])
+		entries[i] = FormatValue(f, entries[i])
 	}
 
 	return entries
 }
 
-// EntryTransform transforms the input value based on the Field configuration.
+// FormatValue transforms the input value based on the Field configuration.
 // It processes the value according to the specified input and output formats,
 // and applies string manipulation to clean up the output.
 //
@@ -131,9 +131,9 @@ func EntriesTransform(f *Field, entries []string) []string {
 //	    OutputFormat: []string{"text"},
 //	}
 //	input := "<div>Hello  world!</div>"
-//	output := EntryTransform(field, input)
+//	output := FormatValue(field, input)
 //	fmt.Println(output) // Output: "Hello world!"
-func EntryTransform(f *Field, value string) string {
+func FormatValue(f *Field, value string) string {
 
 	if value == "" {
 		return ""

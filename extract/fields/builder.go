@@ -81,15 +81,14 @@ func Extract(payload map[string]any, node *goquery.Selection, field *Field) {
 
 func Value(field *Field, sel *goquery.Selection) []string {
 
-	entries := EntriesAsString(field, sel)
+	entries := SelectionsAsStrings(field, sel)
 
-	// if regex defined, apply it
 	if field.final != nil || field.between != nil {
-		entries = RegexPipes(entries, field.between, field.final)
+		entries = RegexExtracts(entries, field.between, field.final)
 	}
 
-	entries = EntriesTransform(field, entries)
-	entries = EntriesClean(entries)
+	entries = FormatValues(field, entries)
+	entries = CleanStrings(entries)
 
 	return entries
 }
