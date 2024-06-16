@@ -4,6 +4,7 @@ import (
 	"github.com/editorpost/donq/pkg/vars"
 )
 
+//goland:noinspection GoUnusedConst
 const (
 	// DefaultMongoResource is the name of the mongo resource
 	DefaultMongoResource = "f/spider/resource/mongodb"

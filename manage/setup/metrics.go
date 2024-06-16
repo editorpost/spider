@@ -23,7 +23,7 @@ const (
 	StartTimeCtx = "metrics-request-start-time"
 )
 
-// Metrics is spider event dispatcher and VictoriaMetrics
+// VictoriaMetrics is spider event dispatcher and VictoriaMetrics
 type VictoriaMetrics struct {
 	jobID    string
 	spiderID string

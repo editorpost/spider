@@ -19,7 +19,7 @@ type Source struct {
 	Schema string
 }
 
-// LoadPublicList loads the valid list from public sources
+// LoadPublicLists loads the valid list from public sources
 func LoadPublicLists() ([]string, error) {
 	return LoadStringLists([]string{
 		// uri

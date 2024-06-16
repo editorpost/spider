@@ -62,7 +62,6 @@ func LoadStringList(sourceURL string) ([]string, error) {
 
 	// parse the response body
 	lines := []string{}
-
 	scanner := bufio.NewScanner(res.Body)
 
 	for scanner.Scan() {
