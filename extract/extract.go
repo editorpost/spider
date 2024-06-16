@@ -3,7 +3,9 @@ package extract
 import (
 	"errors"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/editorpost/spider/extract/fields"
 	"github.com/gocolly/colly/v2"
+	"log/slog"
 	"net/url"
 	"strings"
 )
@@ -70,6 +72,23 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 
 		return nil
 	}
+}
+
+func Extractors(ff []*fields.Field, entities string) ([]PipeFn, error) {
+
+	// entity extractors
+	extractors := ExtractorsByName(entities)
+
+	// field extractors
+	extractFields, err := Fields(ff...)
+	if err != nil {
+		slog.Error("build extractors from field tree", err)
+		return nil, err
+	}
+
+	extractors = append(extractors, extractFields)
+
+	return extractors, err
 }
 
 // ExtractorsByName creates slice of extractors by name.
