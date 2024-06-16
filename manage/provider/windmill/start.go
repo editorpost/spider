@@ -12,18 +12,24 @@ import (
 // as Windmill Script with extract.Article
 //
 //goland:noinspection GoUnusedExportedFunction
-func Start(argsJSON any, extractors ...extract.PipeFn) (err error) {
+func Start(args *config.Args, extractors ...extract.PipeFn) (err error) {
 
-	args := &config.Args{}
 	deploy := &setup.Config{}
-
-	if err = vars.FromJSON(argsJSON, args); err != nil {
-		return err
-	}
 
 	if err = SetupConfig(deploy); err != nil {
 		return err
 	}
 
 	return manage.Start(args, deploy, extractors...)
+}
+
+func StartScript(argsJSON any, extractors ...extract.PipeFn) (err error) {
+
+	args := &config.Args{}
+
+	if err = vars.FromJSON(argsJSON, args); err != nil {
+		return err
+	}
+
+	return Start(args, extractors...)
 }

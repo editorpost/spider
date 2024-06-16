@@ -8,16 +8,7 @@ import (
 
 // Trial spider against limited and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Trial(argsMap any, extractors ...extract.PipeFn) ([]*extract.Payload, error) {
-
-	args := &config.Args{
-		SpiderID: "trials",
-	}
-
-	err := vars.FromJSON(argsMap, args)
-	if err != nil {
-		return nil, err
-	}
+func Trial(args *config.Args, extractors ...extract.PipeFn) error {
 
 	items := []*extract.Payload{}
 
@@ -27,11 +18,27 @@ func Trial(argsMap any, extractors ...extract.PipeFn) ([]*extract.Payload, error
 		if len(items) < args.ExtractLimit {
 			items = append(items, payload)
 		}
-
 		return nil
 	}
 
-	err = Start(argsMap, append(extractors, limiter)...)
+	if err := Start(args, append(extractors, limiter)...); err != nil {
+		return err
+	}
 
-	return items, err
+	// write extracted data to `./result.json` as windmill expects
+
+	return vars.WriteScriptResult(items, "./result.json")
+}
+
+func TrialWith(argsMap any, extractors ...extract.PipeFn) error {
+
+	args := &config.Args{
+		SpiderID: "trials",
+	}
+
+	if err := vars.FromJSON(argsMap, args); err != nil {
+		return err
+	}
+
+	return Trial(args, extractors...)
 }
