@@ -23,6 +23,7 @@ func Start(args *config.Args, extractors ...extract.PipeFn) (err error) {
 	return manage.Start(args, deploy, extractors...)
 }
 
+//goland:noinspection GoUnusedExportedFunction
 func StartScript(argsJSON any, extractors ...extract.PipeFn) (err error) {
 
 	args := &config.Args{}

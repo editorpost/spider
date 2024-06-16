@@ -30,6 +30,7 @@ func Trial(args *config.Args, extractors ...extract.PipeFn) error {
 	return vars.WriteScriptResult(items, "./result.json")
 }
 
+//goland:noinspection GoUnusedExportedFunction
 func TrialWith(argsMap any, extractors ...extract.PipeFn) error {
 
 	args := &config.Args{

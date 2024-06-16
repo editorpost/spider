@@ -116,6 +116,8 @@ func ExtractorsByName(seq string) []PipeFn {
 }
 
 // ExtractorsByJsonString creates slice of extractors by name.
+//
+//goland:noinspection GoUnusedExportedFunction
 func ExtractorsByJsonString(js string) []PipeFn {
 	if js == "" {
 		return []PipeFn{}
