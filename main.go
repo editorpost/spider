@@ -24,37 +24,44 @@ func main() {
 	}
 }
 
-func Flags() (cmd, args, named, build string) {
+func Flags() (cmd, args, entities, fields string) {
 
-	cmdFlag := flag.String("cmd", "", "Available commands: start, trial")
-	if cmdFlag == nil {
+	cmd = FlagToString(flag.String("cmd", "", "Available commands: start, trial"))
+	if cmd == "" {
 		slog.Error("cmd flag for spider binary is not set")
 		return
 	}
 
 	// argsFlag string is the JSON string of spider arguments
-	argsFlag := flag.String("args", "", "Spider arguments JSON")
-	if argsFlag == nil {
+	args = FlagToString(flag.String("args", "", "Spider arguments JSON"))
+	if args == "" {
 		slog.Error("args flag for spider binary is not set")
 		return
 	}
 
-	// fNamedExtract string is the list of extractors to apply, e.g. "html,article"
-	fNamedExtract := flag.String("entities", "", "Comma separated list of named extractors")
-	if fNamedExtract == nil {
+	// entities string is the list of extractors to apply, e.g. "html,article"
+	entities = FlagToString(flag.String("entities", "", "Comma separated list of named extractors"))
+	if entities == "" {
 		slog.Info("extract flag is not set, use default html extractor")
 	}
 
-	// fBuildExtract is the JSON string of array of field extractor functions
-	fBuildExtract := flag.String("fields", "", "Field extractor functions JSON")
-	if fBuildExtract == nil {
+	// fields is the JSON string of array of field extractor functions
+	fields = FlagToString(flag.String("fields", "", "Field extractor functions JSON"))
+	if fields == "" {
 		slog.Info("extract flag is not set, use default html extractor")
 	}
 
 	// parse command and flags
 	flag.Parse()
 
-	return *cmdFlag, *argsFlag, *fNamedExtract, *fBuildExtract
+	return cmd, args, entities, fields
+}
+
+func FlagToString(flag *string) string {
+	if flag == nil {
+		return ""
+	}
+	return *flag
 }
 
 func Run(fCmd, fArgs, fNamedExtractors, fBuildExtractors string) (err error) {
