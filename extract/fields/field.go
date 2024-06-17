@@ -1,15 +1,7 @@
 package fields
 
 import (
-	"errors"
 	"regexp"
-)
-
-var (
-	// ErrRequiredFieldMissing expected error, stops the pipe chain
-	// used by field extractors to quickly skip the pipe chain
-	// if data is not satisfied or exists
-	ErrRequiredFieldMissing = errors.New("skip entity extraction, required field is missing")
 )
 
 // Field provides data describing custom data extraction from text or html.

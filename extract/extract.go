@@ -16,6 +16,7 @@ const (
 	HtmlField = "spider__html"
 )
 
+//goland:noinspection GoNameStartsWithPackageName
 type (
 	PipeFn    func(*Payload) error
 	ExtractFn func(doc *colly.HTMLElement, s *goquery.Selection) error

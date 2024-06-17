@@ -92,10 +92,10 @@ func TestMongoConfig(t *testing.T) {
 		},
 	}
 
-	config, err := mongodb.ConfigFromResource(validResource)
+	conf, err := mongodb.ConfigFromResource(validResource)
 
 	assert.NoError(t, err, "Expected no error")
-	assert.NotNil(t, config, "Expected non-nil config")
+	assert.NotNil(t, conf, "Expected non-nil config")
 }
 
 func TestServeFile(t *testing.T) {
