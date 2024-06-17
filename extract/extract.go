@@ -83,7 +83,7 @@ func Extractors(ff []*fields.Field, entities string) ([]PipeFn, error) {
 	// field extractors
 	extractFields, err := Fields(ff...)
 	if err != nil {
-		slog.Error("build extractors from field tree", err)
+		slog.Error("build extractors from field tree", slog.String("err", err.Error()))
 		return nil, err
 	}
 

@@ -25,13 +25,13 @@ func Article(p *Payload) error {
 
 	htmlStr, err := p.Selection.Html()
 	if err != nil {
-		slog.Warn("failed to get HTML from selection", err)
+		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
 		return err
 	}
 
 	art, err := ArticleFromHTML(htmlStr, p.URL)
 	if err != nil {
-		slog.Warn("failed to extract article", err)
+		slog.Warn("failed to extract article", slog.String("err", err.Error()))
 		return err
 	}
 

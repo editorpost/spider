@@ -71,6 +71,7 @@ func TestReadability(t *testing.T) {
 	fmt.Printf("Content:\n %s \n", article.Content)
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func TestMarkdown(t *testing.T) {
 
 	markup := GetArticleHTML(t)

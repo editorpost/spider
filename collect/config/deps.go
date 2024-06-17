@@ -25,7 +25,7 @@ type Deps struct {
 func (deps *Deps) Normalize() *Deps {
 
 	if deps.Extractor == nil {
-		deps.Extractor = func(e *colly.HTMLElement, s *goquery.Selection) error {
+		deps.Extractor = func(_ *colly.HTMLElement, _ *goquery.Selection) error {
 			return nil
 		}
 	}

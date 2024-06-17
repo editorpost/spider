@@ -67,7 +67,7 @@ func (s *CollectStore) preload() error {
 	s._visited = bloom.NewWithEstimates(1000000, 0.01)
 
 	// load visited urls from db
-	cursor, dbErr := s.visited.Find(nil, bson.D{})
+	cursor, dbErr := s.visited.Find(context.TODO(), bson.D{})
 
 	if errors.Is(dbErr, mongo.ErrNoDocuments) {
 		return nil
@@ -76,9 +76,10 @@ func (s *CollectStore) preload() error {
 	if dbErr != nil {
 		return dbErr
 	}
-	defer cursor.Close(nil)
+	//goland:noinspection GoUnhandledErrorResult
+	defer cursor.Close(context.TODO())
 
-	for cursor.Next(nil) {
+	for cursor.Next(context.TODO()) {
 		doc := bson.D{}
 		if err := cursor.Decode(&doc); err != nil {
 			return err
@@ -108,7 +109,7 @@ func (s *CollectStore) Visited(requestID uint64) error {
 	})
 
 	if err != nil {
-		slog.Error("visited failed", err, slog.Uint64("requestID", requestID))
+		slog.Error("visited failed", slog.Uint64("requestID", requestID), slog.String("err", err.Error()))
 		return err
 	}
 
@@ -126,7 +127,7 @@ func (s *CollectStore) IsVisited(requestID uint64) (bool, error) {
 	}
 
 	doc := bson.D{}
-	err := s.visited.FindOne(nil, bson.D{
+	err := s.visited.FindOne(context.TODO(), bson.D{
 		{StoreRequestIDKey, strconv.FormatUint(requestID, 10)},
 	}).Decode(&doc)
 
@@ -147,12 +148,15 @@ func (s *CollectStore) Cookies(u *url.URL) string {
 
 	// check cache
 	if v, ok := s._cookies.Load(u.Host); ok {
-		return v.(string)
+		if str, k := v.(string); k {
+			return str
+		}
+		return ""
 	}
 
 	// check db
 	doc := bson.D{}
-	err := s.cookies.FindOne(nil, bson.D{
+	err := s.cookies.FindOne(context.TODO(), bson.D{
 		{StoreHostKey, u.Host},
 	}).Decode(&doc)
 
@@ -173,7 +177,7 @@ func (s *CollectStore) Cookies(u *url.URL) string {
 // SetCookies implements colly/storage.SetCookies()
 func (s *CollectStore) SetCookies(u *url.URL, cookies string) {
 
-	_, err := s.cookies.InsertOne(nil, bson.D{
+	_, err := s.cookies.InsertOne(context.TODO(), bson.D{
 		{StoreHostKey, u.Host},
 		{StoreCookiesKey, cookies},
 	})

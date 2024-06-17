@@ -178,7 +178,7 @@ func ServeFile(t *testing.T, path string) *httptest.Server {
 func NewServer(content []byte) (*httptest.Server, error) {
 
 	// create a new server
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write(content)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

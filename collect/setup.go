@@ -90,6 +90,7 @@ func (crawler *Crawler) withQueue() (err error) {
 	return err
 }
 
+//goland:noinspection GoLinter
 func (crawler *Crawler) withDebug() {
 
 	if crawler.deps.Debugger == nil {

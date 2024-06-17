@@ -72,7 +72,7 @@ func (ts *MetricStore) Close() {
 	ts.flushTicker.Stop()
 
 	if err := ts.flush(); err != nil {
-		slog.Error("Error flushing data on close", err)
+		slog.Error("Error flushing data on close", slog.String("err", err.Error()))
 	}
 
 	close(ts.closeChan)
@@ -122,11 +122,12 @@ func (ts *MetricStore) cache(job, url, eventType string, errorInfo *string) {
 	ts.accumulator[key] = event
 }
 
+//goland:noinspection GoLinter
 func (ts *MetricStore) flush() error {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	var models []mongo.WriteModel
+	models := make([]mongo.WriteModel, 0, len(ts.accumulator))
 	for _, event := range ts.accumulator {
 		filter := bson.M{"job": event.Job, "url": event.URL}
 		update := bson.M{
@@ -135,6 +136,7 @@ func (ts *MetricStore) flush() error {
 			},
 		}
 		if event.ErrorInfo != nil {
+
 			update["$set"].(bson.M)["error"] = *event.ErrorInfo
 		}
 		models = append(models, mongo.NewUpdateOneModel().SetFilter(filter).SetUpdate(update).SetUpsert(true))
@@ -149,10 +151,4 @@ func (ts *MetricStore) flush() error {
 		ts.accumulator = make(map[string]MetricRow)
 	}
 	return nil
-}
-
-func (ts *MetricStore) len() int {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-	return len(ts.accumulator)
 }

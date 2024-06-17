@@ -24,6 +24,7 @@ func LoadJSONList(url string) []string {
 		fmt.Printf("error making http request: %s\n", err)
 		os.Exit(1)
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer res.Body.Close()
 
 	// read the response body
@@ -58,6 +59,7 @@ func LoadStringList(sourceURL string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can not load proxy list from proxyscrape.com: %w", err)
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer res.Body.Close()
 
 	// parse the response body

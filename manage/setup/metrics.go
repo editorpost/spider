@@ -87,7 +87,7 @@ func (m *VictoriaMetrics) OnResponse(resp *colly.Response) {
 	m.SetLatency(ResponseEvent, resp.Request)
 }
 
-func (m *VictoriaMetrics) OnError(resp *colly.Response, err error) {
+func (m *VictoriaMetrics) OnError(resp *colly.Response, _ error) {
 	m.Counter(ErrorEvent).Inc()
 	m.SetLatency(ErrorEvent, resp.Request)
 }

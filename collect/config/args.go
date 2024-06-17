@@ -122,7 +122,7 @@ func (args *Args) NormalizeURLs() error {
 	// start url should be valid
 	startURI, err := url.ParseRequestURI(args.StartURL)
 	if err != nil {
-		return fmt.Errorf("start url is invalid: %v", err)
+		return fmt.Errorf("start url is invalid: %w", err)
 	}
 
 	// if host is empty, then it is invalid

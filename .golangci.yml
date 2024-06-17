@@ -1,0 +1,40 @@
+run:
+  timeout: 5m
+linters:
+  enable:
+    - asciicheck
+    - durationcheck
+    - ineffassign
+    - errcheck
+    - errorlint
+    - exportloopref
+    - forcetypeassert
+    - gosec
+    - gosimple
+    - maligned
+    - misspell
+    - nilerr
+    - nolintlint
+    - prealloc
+    - revive
+    - staticcheck
+    - structcheck
+    - wastedassign
+issues:
+  exclude-rules:
+    - linters:
+        - structcheck
+        - unused
+      text: "`data` is unused"
+    - linters:
+        - staticcheck
+      text: "SA1019:"
+    - linters:
+        - revive
+      text: "var-naming:"
+    - linters:
+        - revive
+      text: "exported:"
+    - path: _test\.go
+      linters:
+        - gosec # security is not make sense in tests

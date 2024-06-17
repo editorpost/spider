@@ -54,7 +54,7 @@ func NewExtractStore(dbName, mongoDSN string) (s *ExtractStore, err error) {
 func (s *ExtractStore) Save(p *extract.Payload) error {
 
 	if err := s.save(p.Data); err != nil {
-		slog.Error("save error: ", err)
+		slog.Error("save error: ", slog.String("err", err.Error()), slog.String("url", p.URL.String()))
 		return err
 	}
 
@@ -102,7 +102,7 @@ func (s *ExtractStore) upsert(row map[string]any) error {
 
 		// internal db error, fail
 		if err != nil {
-			slog.Error("read db error: ", err)
+			slog.Error("read db error: ", slog.String("err", err.Error()))
 			return err
 		}
 
@@ -115,7 +115,7 @@ func (s *ExtractStore) upsert(row map[string]any) error {
 	// already exists, update
 	err := s.update(bson.M{field: row[field]}, row)
 	if err != nil {
-		slog.Error("update db error: ", err)
+		slog.Error("update db error: ", slog.String("err", err.Error()))
 	}
 
 	return err
@@ -130,7 +130,13 @@ func (s *ExtractStore) read(req bson.M) (map[string]any, error) {
 
 // absentPerRun returns true if item is in cache (was processed during this runtime session)
 func (s *ExtractStore) absentPerRun(req bson.M) bool {
-	return !s.cache.Test([]byte(req[s.uniqueField].(string)))
+
+	v, ok := req[s.uniqueField].(string)
+	if !ok {
+		return false
+	}
+
+	return !s.cache.Test([]byte(v))
 }
 
 func (s *ExtractStore) insert(row map[string]any) error {
@@ -146,7 +152,11 @@ func (s *ExtractStore) insert(row map[string]any) error {
 		debug.PrintStack()
 	}
 
-	s.cache.Add([]byte(row[s.uniqueField].(string)))
+	v, ok := row[s.uniqueField].(string)
+	if !ok {
+		return errors.New("unique field is not a string")
+	}
+	s.cache.Add([]byte(v))
 
 	return err
 }
@@ -157,7 +167,13 @@ func (s *ExtractStore) update(req bson.M, row map[string]any) error {
 	row["updated"] = time.Now().UTC()
 
 	_, err := s.col.ReplaceOne(context.Background(), req, row)
-	s.cache.Add([]byte(row[s.uniqueField].(string)))
+
+	v, ok := row[s.uniqueField].(string)
+	if !ok {
+		return errors.New("unique field is not a string")
+	}
+
+	s.cache.Add([]byte(v))
 
 	return err
 }

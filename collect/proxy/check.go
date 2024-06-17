@@ -41,6 +41,7 @@ func Check(proxyURL, testURL, contains string, timeout time.Duration) error {
 	if err != nil {
 		return fmt.Errorf("запрос через прокси не удался: %w", err)
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
