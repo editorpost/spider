@@ -81,15 +81,16 @@ func Extractors(ff []*fields.Field, entities string) ([]PipeFn, error) {
 	extractors := ExtractorsByName(entities)
 
 	// field extractors
-	extractFields, err := Fields(ff...)
-	if err != nil {
-		slog.Error("build extractors from field tree", slog.String("err", err.Error()))
-		return nil, err
+	if len(ff) > 0 {
+		extractFields, err := Fields(ff...)
+		if err != nil {
+			slog.Error("build extractors from field tree", slog.String("err", err.Error()))
+			return nil, err
+		}
+		extractors = append(extractors, extractFields)
 	}
 
-	extractors = append(extractors, extractFields)
-
-	return extractors, err
+	return extractors, nil
 }
 
 // ExtractorsByName creates slice of extractors by name.
