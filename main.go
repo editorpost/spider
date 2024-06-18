@@ -68,19 +68,16 @@ func Flags() (cmd string, args *config.Args, entities string, ff []*fields.Field
 
 	// fields is the JSON string of array of field extractor functions
 	fieldsJson := FlagToString(fFields)
-	if fieldsJson == "" {
-		slog.Info("extract flag is not set, use default html extractor")
-	}
 
 	args = &config.Args{}
 	if err := JsonToType(argsJson, args); err != nil {
-		slog.Error("parse args", err)
+		slog.Error("parse args", slog.String("args", argsJson), err)
 		return
 	}
 
 	ff = make([]*fields.Field, 0)
 	if err := JsonToType(fieldsJson, &ff); err != nil {
-		slog.Error("parse args", err)
+		slog.Error("parse fields", slog.String("fields", fieldsJson), err)
 		return
 	}
 
