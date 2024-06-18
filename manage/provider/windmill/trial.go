@@ -4,12 +4,15 @@ import (
 	"github.com/editorpost/donq/pkg/vars"
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/manage"
+	"github.com/editorpost/spider/manage/setup"
 )
 
 // Trial spider against limited and return extracted data
 // It does not store the data, but uses proxy pool for requests.
 func Trial(args *config.Args, extractors ...extract.PipeFn) error {
 
+	args.SpiderID = "trial"
 	items := []*extract.Payload{}
 
 	// the queue will stop automatically
@@ -21,12 +24,11 @@ func Trial(args *config.Args, extractors ...extract.PipeFn) error {
 		return nil
 	}
 
-	if err := Start(args, append(extractors, limiter)...); err != nil {
+	if err := manage.Start(args, &setup.Config{}, append(extractors, limiter)...); err != nil {
 		return err
 	}
 
 	// write extracted data to `./result.json` as windmill expects
-
 	return vars.WriteScriptResult(items, "./result.json")
 }
 
