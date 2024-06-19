@@ -13,13 +13,13 @@ import (
 func Trial(args *config.Args, extractors ...extract.PipeFn) error {
 
 	args.SpiderID = "trial"
-	items := []*extract.Payload{}
+	items := []map[string]any{}
 
 	// the queue will stop automatically
 	// after args.ExtractLimit is reached
 	limiter := func(payload *extract.Payload) error {
 		if len(items) < args.ExtractLimit {
-			items = append(items, payload)
+			items = append(items, payload.Data)
 		}
 		return nil
 	}
