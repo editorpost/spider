@@ -19,6 +19,9 @@ type Args struct {
 	// ID is the unique identifier for the spider
 	ID string `json:"ID"`
 
+	// Name is the name of the spider
+	Name string `json:"Name"`
+
 	// StartURL is the url to start the scraping
 	StartURL string `json:"StartURL"`
 
@@ -58,8 +61,6 @@ type Args struct {
 
 	// options
 
-	// Name is the name of the spider
-	Name string `json:"Name"`
 }
 
 // The Args JSON representation:
