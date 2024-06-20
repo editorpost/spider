@@ -34,7 +34,7 @@ func Deps(args *config.Args, deploy *Config, extractors ...extract.PipeFn) (*con
 	}
 
 	if deploy.VictoriaLogsUrl != "" {
-		VictoriaLogs(deploy.VictoriaLogsUrl, "info", args.SpiderID)
+		VictoriaLogs(deploy.VictoriaLogsUrl, "info", args.ID)
 	}
 
 	// prepend windmill
@@ -45,14 +45,14 @@ func Deps(args *config.Args, deploy *Config, extractors ...extract.PipeFn) (*con
 	// database
 	if deploy.MongoDSN != "" {
 
-		collectStore, err := store.NewCollectStore(args.SpiderID, deploy.MongoDSN)
+		collectStore, err := store.NewCollectStore(args.ID, deploy.MongoDSN)
 		if err != nil {
 			return nil, err
 		}
 		deps.Storage = collectStore
 
 		// connect storage
-		extractStore, err := store.NewExtractStore(args.SpiderID, deploy.MongoDSN)
+		extractStore, err := store.NewExtractStore(args.ID, deploy.MongoDSN)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create extract store: %v", err)
 		}
@@ -65,7 +65,7 @@ func Deps(args *config.Args, deploy *Config, extractors ...extract.PipeFn) (*con
 
 	// metrics
 	if deploy.VictoriaMetricsUrl != "" {
-		metrics, err := NewMetrics(vars.FromEnv().JobID, args.SpiderID, deploy.VictoriaMetricsUrl)
+		metrics, err := NewMetrics(vars.FromEnv().JobID, args.ID, deploy.VictoriaMetricsUrl)
 		if err != nil {
 			return nil, err
 		}

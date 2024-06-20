@@ -12,7 +12,7 @@ import (
 // It does not store the data, but uses proxy pool for requests.
 func Trial(args *config.Args, extractors ...extract.PipeFn) error {
 
-	args.SpiderID = "trial"
+	args.ID = "trial"
 	items := []map[string]any{}
 
 	// the queue will stop automatically
@@ -36,7 +36,7 @@ func Trial(args *config.Args, extractors ...extract.PipeFn) error {
 func TrialWith(argsMap any, extractors ...extract.PipeFn) error {
 
 	args := &config.Args{
-		SpiderID: "trials",
+		ID: "trials",
 	}
 
 	if err := vars.FromJSON(argsMap, args); err != nil {

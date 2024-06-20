@@ -16,8 +16,9 @@ type Args struct {
 
 	// required
 
-	// SpiderID is the unique identifier for the spider
-	SpiderID string `json:"SpiderID"`
+	// ID is the unique identifier for the spider
+	ID string `json:"ID"`
+
 	// StartURL is the url to start the scraping
 	StartURL string `json:"StartURL"`
 
@@ -63,7 +64,7 @@ type Args struct {
 
 // The Args JSON representation:
 // {
-// 	"SpiderID": "ready-check",
+// 	"ID": "ready-check",
 //  "Name": "Ready Check",
 // 	"StartURL": "https://example.com",
 // 	"AllowedURL": "https://example.com/{any}",

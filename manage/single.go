@@ -14,7 +14,7 @@ func Single(uri, selector string, extractor extract.PipeFn) (*extract.Payload, e
 
 	args := &config.Args{
 		// Any name since no data is stored
-		SpiderID: "ready-check",
+		ID: "ready-check",
 		// All urls are the same for single turn
 		StartURL:        uri,
 		AllowedURL:      uri,

@@ -10,7 +10,7 @@ import (
 // It does not store the data, but uses proxy pool for requests.
 func Trial(args *config.Args, extractor extract.PipeFn) ([]*extract.Payload, error) {
 
-	args.SpiderID = "trial"
+	args.ID = "trial"
 	items := []*extract.Payload{}
 	deploy := &setup.Config{}
 

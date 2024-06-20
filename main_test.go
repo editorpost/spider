@@ -29,7 +29,7 @@ func TestFlags(t *testing.T) {
 
 func NewArgs() (js string, args *config.Args) {
 	args = &config.Args{
-		SpiderID:        "ready-check",
+		ID:              "ready-check",
 		Name:            "Ready Check",
 		StartURL:        "https://example.com",
 		AllowedURL:      "https://example.com/{any}",
