@@ -7,7 +7,6 @@ import (
 	"github.com/gocolly/colly/v2"
 	"log/slog"
 	"net/url"
-	"strings"
 )
 
 const (
@@ -75,10 +74,10 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 	}
 }
 
-func Extractors(ff []*fields.Field, entities string) ([]PipeFn, error) {
+func Extractors(ff []*fields.Field, entities ...string) ([]PipeFn, error) {
 
 	// entity extractors
-	extractors := ExtractorsByName(entities)
+	extractors := ExtractorsByName(entities...)
 
 	// field extractors
 	if len(ff) > 0 {
@@ -95,17 +94,14 @@ func Extractors(ff []*fields.Field, entities string) ([]PipeFn, error) {
 
 // ExtractorsByName creates slice of extractors by name.
 // The string is a string like "html,article", e.g.: extract.Html, extract.Article
-func ExtractorsByName(seq string) []PipeFn {
+func ExtractorsByName(names ...string) []PipeFn {
 
-	seq = strings.ReplaceAll(seq, " ", "")
-
-	if seq == "" {
+	if len(names) == 0 {
 		return []PipeFn{}
 	}
 
 	extractors := make([]PipeFn, 0)
-	for _, key := range strings.Split(seq, ",") {
-
+	for _, key := range names {
 		switch key {
 		case "html":
 			extractors = append(extractors, Html)

@@ -3,46 +3,43 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract"
-	"github.com/editorpost/spider/extract/fields"
 	"github.com/editorpost/spider/manage/provider/windmill"
+	"github.com/editorpost/spider/manage/setup"
 	"log/slog"
 )
 
 var (
-	fCmd      = flag.String("cmd", "", "Available commands: start, trial")
-	fArgs     = flag.String("args", "", "Spider arguments JSON")
-	fFields   = flag.String("fields", "", "Field extractor functions JSON")
-	fEntities = flag.String("entities", "", "Comma separated list of named extractors")
+	fCmd    = flag.String("cmd", "", "Available commands: start, trial")
+	fSpider = flag.String("spider", "", "Spider arguments as JSON string")
 )
 
 func main() {
-	cmd, args, entities, ff := Flags()
-	if err := Run(cmd, args, entities, ff); err != nil {
-		slog.Error("run", err)
+	cmd, spider := Flags()
+	if err := Run(cmd, spider); err != nil {
+		slog.Error("cmd:"+cmd, err)
 		return
 	}
 }
 
-func Run(cmd string, args *config.Args, entities string, fields []*fields.Field) (err error) {
+func Run(cmd string, s *setup.Spider) (err error) {
 
-	extractors, err := extract.Extractors(fields, entities)
+	extractors, err := extract.Extractors(s.ExtractFields, s.ExtractEntities...)
 	if err != nil {
 		return
 	}
 
 	switch cmd {
 	case "start":
-		return windmill.Start(args, extractors...)
+		return windmill.Start(s.Args, extractors...)
 	case "trial":
-		return windmill.Trial(args, extractors...)
+		return windmill.Trial(s.Args, extractors...)
 	}
 
 	return nil
 }
 
-func Flags() (cmd string, args *config.Args, entities string, ff []*fields.Field) {
+func Flags() (cmd string, spider *setup.Spider) {
 
 	// parse command and flags
 	flag.Parse()
@@ -54,34 +51,19 @@ func Flags() (cmd string, args *config.Args, entities string, ff []*fields.Field
 	}
 
 	// argsFlag string is the JSON string of spider arguments
-	argsJson := FlagToString(fArgs)
-	if argsJson == "" {
+	spiderJson := FlagToString(fSpider)
+	if spiderJson == "" {
 		slog.Error("args flag for spider binary is not set")
 		return
 	}
 
-	// entities string is the list of extractors to apply, e.g. "html,article"
-	entities = FlagToString(fEntities)
-	if entities == "" {
-		slog.Info("extract flag is not set, use default html extractor")
-	}
-
-	// fields is the JSON string of array of field extractor functions
-	fieldsJson := FlagToString(fFields)
-
-	args = &config.Args{}
-	if err := JsonToType(argsJson, args); err != nil {
-		slog.Error("parse args", slog.String("args", argsJson), err)
+	spider = &setup.Spider{}
+	if err := JsonToType(spiderJson, spider); err != nil {
+		slog.Error("parse spider JSON", slog.String("arg", spiderJson), err)
 		return
 	}
 
-	ff = make([]*fields.Field, 0)
-	if err := JsonToType(fieldsJson, &ff); err != nil {
-		slog.Error("parse fields", slog.String("fields", fieldsJson), err)
-		return
-	}
-
-	return cmd, args, entities, ff
+	return cmd, spider
 }
 
 func FlagToString(flag *string) string {
