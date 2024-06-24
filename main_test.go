@@ -19,12 +19,11 @@ func TestFlags(t *testing.T) {
 	flag.Set("entities", "html,article")
 	flag.Set("cmd", "start")
 
-	cmd, args, entities, tree := Flags()
+	cmd, spider := Flags()
 
 	assert.Equal(t, "start", cmd)
-	assert.Equal(t, "html,article", entities)
-	assert.Equal(t, expectedArgs, args)
-	assert.Len(t, tree, len(expectedTree))
+	assert.Equal(t, expectedArgs, spider.Args)
+	assert.Equal(t, expectedTree, spider.ExtractFields)
 }
 
 func NewArgs() (js string, args *config.Args) {

@@ -45,7 +45,7 @@ func Extract(payload map[string]any, node *goquery.Selection, field *Field) {
 
 	var data []any
 
-	if field.Children != nil {
+	if len(field.Children) > 0 {
 
 		scope := node
 		if field.Scoped && field.Selector != "" {
