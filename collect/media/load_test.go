@@ -111,11 +111,11 @@ func TestDownloader_Copy(t *testing.T) {
 	require.NoError(t, err)
 
 	// Generate the expected upload path.
-	uploadPath, err := downloader.Path(server.URL)
+	name, err := downloader.Filename(server.URL)
 	require.NoError(t, err)
 
 	// Assert the data was uploaded correctly.
-	uploadedData, exists := storage.data[uploadPath]
+	uploadedData, exists := storage.data[name]
 	require.True(t, exists)
 	DataAssert(t, uploadedData)
 }

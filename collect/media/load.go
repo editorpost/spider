@@ -40,11 +40,7 @@ func (dl *Downloader) SetClient(client *http.Client) {
 	dl.client = client
 }
 
-func (dl *Downloader) Path(srcURL string) (string, error) {
-	return dl.filename(srcURL)
-}
-
-func (dl *Downloader) filename(srcURL string) (string, error) {
+func (dl *Downloader) Filename(srcURL string) (string, error) {
 
 	// Generate upload path from the source URL using FNV hash.
 	uploadPath, err := StorageHash(srcURL)
@@ -68,7 +64,7 @@ func (dl *Downloader) Upload(srcURL string) (string, error) {
 	defer dl.ReleaseBuffer(buf)
 
 	// path
-	uploadPath, err := dl.Path(srcURL)
+	uploadPath, err := dl.Filename(srcURL)
 	if err != nil {
 		return "", err
 	}
