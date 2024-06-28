@@ -1,7 +1,7 @@
 package media_test
 
 import (
-	"github.com/editorpost/spider/collect/media"
+	"github.com/editorpost/spider/extract/media"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
