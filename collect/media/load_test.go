@@ -132,8 +132,8 @@ func NewMockStorage() *MockStorage {
 	}
 }
 
-// Upload mocks the upload of data to a storage system.
-func (ms *MockStorage) Upload(data []byte, path string) error {
+// Save mocks the upload of data to a storage system.
+func (ms *MockStorage) Save(data []byte, path string) error {
 	if ms.data == nil {
 		ms.data = make(map[string][]byte)
 	}

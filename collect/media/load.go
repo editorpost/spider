@@ -13,7 +13,7 @@ import (
 )
 
 type Store interface {
-	Upload(data []byte, path string) error
+	Save(data []byte, filename string) error
 }
 
 // Downloader manages downloading and coping data to storage data and uses a pool for bytes.Buffer.
@@ -43,15 +43,15 @@ func (dl *Downloader) SetClient(client *http.Client) {
 func (dl *Downloader) Filename(srcURL string) (string, error) {
 
 	// Generate upload path from the source URL using FNV hash.
-	uploadPath, err := StorageHash(srcURL)
+	name, err := StorageHash(srcURL)
 	if err != nil {
 		return "", err
 	}
 
 	// add file extension from srcURL to the upload pat
-	uploadPath += filepath.Ext(srcURL)
+	name += filepath.Ext(srcURL)
 
-	return uploadPath, nil
+	return name, nil
 }
 
 func (dl *Downloader) Upload(srcURL string) (string, error) {
@@ -70,7 +70,7 @@ func (dl *Downloader) Upload(srcURL string) (string, error) {
 	}
 
 	// upload the data
-	err = dl.store.Upload(buf.Bytes(), uploadPath)
+	err = dl.store.Save(buf.Bytes(), uploadPath)
 	if err != nil {
 		return "", err
 	}
