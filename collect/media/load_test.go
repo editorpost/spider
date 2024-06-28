@@ -133,10 +133,10 @@ func NewMockStorage() *MockStorage {
 }
 
 // Save mocks the upload of data to a storage system.
-func (ms *MockStorage) Save(data []byte, path string) error {
+func (ms *MockStorage) Save(data []byte, name string) (path string, err error) {
 	if ms.data == nil {
 		ms.data = make(map[string][]byte)
 	}
-	ms.data[path] = data
-	return nil
+	ms.data[name] = data
+	return name, nil
 }

@@ -13,7 +13,7 @@ import (
 )
 
 type Store interface {
-	Save(data []byte, filename string) error
+	Save(data []byte, filename string) (string, error)
 }
 
 // Downloader manages downloading and coping data to storage data and uses a pool for bytes.Buffer.
@@ -64,18 +64,18 @@ func (dl *Downloader) Upload(srcURL string) (string, error) {
 	defer dl.ReleaseBuffer(buf)
 
 	// path
-	uploadPath, err := dl.Filename(srcURL)
+	name, err := dl.Filename(srcURL)
 	if err != nil {
 		return "", err
 	}
 
 	// upload the data
-	err = dl.store.Save(buf.Bytes(), uploadPath)
+	path, err := dl.store.Save(buf.Bytes(), name)
 	if err != nil {
 		return "", err
 	}
 
-	return uploadPath, nil
+	return path, nil
 }
 
 // Download data from the specified URL and return a buffer with the data.
