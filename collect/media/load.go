@@ -3,38 +3,95 @@ package media
 import (
 	"bytes"
 	"errors"
+	"fmt"
+	"hash/fnv"
 	"io"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"sync"
 )
 
-// Downloader manages downloading data and uses a pool for bytes.Buffer.
+type Store interface {
+	Upload(data []byte, path string) error
+}
+
+// Downloader manages downloading and coping data to storage data and uses a pool for bytes.Buffer.
 type Downloader struct {
 	pool  sync.Pool
+	store Store
 	proxy *http.Transport
 }
 
 // NewDownloader creates a new Downloader.
-func NewDownloader(proxy *http.Transport) *Downloader {
+func NewDownloader(store Store, proxy *http.Transport) *Downloader {
 	return &Downloader{
 		pool: sync.Pool{
 			New: func() interface{} {
 				return new(bytes.Buffer)
 			},
 		},
+		store: store,
 		proxy: proxy,
 	}
 }
 
-// Download downloads an data from the specified URL using the provided http.Transport.
+func (dl *Downloader) Upload(srcURL string) (string, error) {
+
+	// download
+	buf, err := dl.Download(srcURL)
+	if err != nil {
+		return "", err
+	}
+	defer dl.ReleaseBuffer(buf)
+
+	// path
+	uploadPath, err := dl.Path(srcURL)
+	if err != nil {
+		return "", err
+	}
+
+	// upload the data
+	err = dl.store.Upload(buf.Bytes(), uploadPath)
+	if err != nil {
+		return "", err
+	}
+
+	return uploadPath, nil
+}
+
+func (dl *Downloader) Path(srcURL string) (string, error) {
+
+	name, err := dl.filename(srcURL)
+	if err != nil {
+		return "", err
+	}
+
+	return name, nil
+}
+
+func (dl *Downloader) filename(srcURL string) (string, error) {
+
+	// Generate upload path from the source URL using FNV hash.
+	uploadPath, err := StorageHash(srcURL)
+	if err != nil {
+		return "", err
+	}
+
+	// add file extension from srcURL to the upload pat
+	uploadPath += filepath.Ext(srcURL)
+
+	return uploadPath, nil
+}
+
+// Download data from the specified URL and return a buffer with the data.
 func (dl *Downloader) Download(imageURL string) (*bytes.Buffer, error) {
 	// Parse the URL to ensure it's valid.
 	parsedURL, err := url.Parse(imageURL)
 	if err != nil {
 		return nil, err
 	}
-	dl.pool.Get()
+
 	// Create a new HTTP client with the specified transport.
 	client := &http.Client{
 		Transport: dl.proxy,
@@ -45,6 +102,7 @@ func (dl *Downloader) Download(imageURL string) (*bytes.Buffer, error) {
 	if err != nil {
 		return nil, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
 	// Check if the response status is OK.
@@ -53,7 +111,7 @@ func (dl *Downloader) Download(imageURL string) (*bytes.Buffer, error) {
 	}
 
 	// Get a buffer from the pool.
-	buf := dl.pool.Get().(*bytes.Buffer)
+	buf, _ := dl.pool.Get().(*bytes.Buffer)
 	buf.Reset()
 
 	// Read the image data into the buffer.
@@ -69,6 +127,16 @@ func (dl *Downloader) Download(imageURL string) (*bytes.Buffer, error) {
 // ReleaseBuffer returns the buffer back to the pool.
 func (dl *Downloader) ReleaseBuffer(buf *bytes.Buffer) {
 	dl.pool.Put(buf)
+}
+
+// StorageHash generates an FNV hash from the source URL.
+func StorageHash(sourceURL string) (string, error) {
+	h := fnv.New64a()
+	_, err := h.Write([]byte(sourceURL))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", h.Sum64()), nil
 }
 
 // Download downloads an image from the specified URL using the provided http.Transport.
@@ -90,6 +158,7 @@ func Download(absoluteURL string, transport *http.Transport) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	//goland:noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
 	// Check if the response status is OK.
