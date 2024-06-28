@@ -18,22 +18,26 @@ type Store interface {
 
 // Downloader manages downloading and coping data to storage data and uses a pool for bytes.Buffer.
 type Downloader struct {
-	pool  sync.Pool
-	store Store
-	proxy *http.Transport
+	pool   sync.Pool
+	store  Store
+	client *http.Client
 }
 
 // NewDownloader creates a new Downloader.
-func NewDownloader(store Store, proxy *http.Transport) *Downloader {
+func NewDownloader(store Store) *Downloader {
 	return &Downloader{
 		pool: sync.Pool{
 			New: func() interface{} {
 				return new(bytes.Buffer)
 			},
 		},
-		store: store,
-		proxy: proxy,
+		store:  store,
+		client: &http.Client{},
 	}
+}
+
+func (dl *Downloader) SetClient(client *http.Client) {
+	dl.client = client
 }
 
 func (dl *Downloader) Upload(srcURL string) (string, error) {
@@ -61,13 +65,7 @@ func (dl *Downloader) Upload(srcURL string) (string, error) {
 }
 
 func (dl *Downloader) Path(srcURL string) (string, error) {
-
-	name, err := dl.filename(srcURL)
-	if err != nil {
-		return "", err
-	}
-
-	return name, nil
+	return dl.filename(srcURL)
 }
 
 func (dl *Downloader) filename(srcURL string) (string, error) {
@@ -92,13 +90,8 @@ func (dl *Downloader) Download(imageURL string) (*bytes.Buffer, error) {
 		return nil, err
 	}
 
-	// Create a new HTTP client with the specified transport.
-	client := &http.Client{
-		Transport: dl.proxy,
-	}
-
 	// Send the GET request.
-	resp, err := client.Get(parsedURL.String())
+	resp, err := dl.client.Get(parsedURL.String())
 	if err != nil {
 		return nil, err
 	}

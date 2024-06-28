@@ -9,20 +9,33 @@ import (
 	"testing"
 )
 
+var (
+	server *httptest.Server
+)
+
+func DataExpected() []byte {
+	return []byte{0xFF, 0xD8, 0xFF}
+}
+
+func DataAssert(t *testing.T, got []byte) {
+	assert.Equal(t, DataExpected(), got)
+}
+
+func TestMain(m *testing.M) {
+
+	// run image server
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(DataExpected()) // Example of JPEG header bytes.
+	}))
+	defer server.Close()
+	m.Run()
+}
+
 // TestDownloadImage tests the DownloadImage function.
 func TestDownload(t *testing.T) {
-	// Set up a test server that serves an example image.
-	testImage := []byte{0xFF, 0xD8, 0xFF} // Example of JPEG header bytes.
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(testImage)
-	}))
-	defer ts.Close()
-
-	// Use the test server URL in place of the real image URL.
-	transport := &http.Transport{}
-	data, err := media.Download(ts.URL, transport)
+	data, err := media.Download(server.URL, &http.Transport{})
 	require.NoError(t, err)
-	assert.Equal(t, testImage, data)
+	DataAssert(t, data)
 }
 
 // TestDownloadImage tests the DownloadImage function.
@@ -35,31 +48,37 @@ func TestDownloader_Download(t *testing.T) {
 	defer ts.Close()
 
 	// Use the test server URL in place of the real image URL.
-	downloader := media.NewDownloader(nil, &http.Transport{})
+	downloader := media.NewDownloader(nil)
+	downloader.SetClient(ts.Client())
 
 	buf, err := downloader.Download(ts.URL)
 	require.NoError(t, err)
 	defer downloader.ReleaseBuffer(buf)
-	assert.Equal(t, string(buf.Bytes()), string(testImage))
+	DataAssert(t, buf.Bytes())
+}
+
+// TestDownloadImage tests the DownloadImage function.
+func TestDownloader_SetClient(t *testing.T) {
+
+	downloader := media.NewDownloader(nil)
+	downloader.SetClient(server.Client())
+
+	buf, err := downloader.Download(server.URL)
+	require.NoError(t, err)
+	defer downloader.ReleaseBuffer(buf)
+	DataAssert(t, buf.Bytes())
 }
 
 func TestDownloader_BuffersMemoryAllocation(t *testing.T) {
-	// Set up a test server that serves an example image.
-	data := []byte{0xFF, 0xD8, 0xFF} // Example of JPEG header bytes.
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(data)
-	}))
-	defer ts.Close()
-
 	// Use the test server URL in place of the real image URL.
-	downloader := media.NewDownloader(nil, &http.Transport{})
+	downloader := media.NewDownloader(nil)
 
 	// Download the image multiple times to ensure the buffers are reused.
 	for i := 0; i < 10; i++ {
-		buf, err := downloader.Download(ts.URL)
+		buf, err := downloader.Download(server.URL)
 		require.NoError(t, err)
 		defer downloader.ReleaseBuffer(buf)
-		assert.Equal(t, string(buf.Bytes()), string(data))
+		DataAssert(t, buf.Bytes())
 	}
 }
 
@@ -72,7 +91,7 @@ func BenchmarkDownloader_Download(b *testing.B) {
 	defer ts.Close()
 
 	// Use the test server URL in place of the real image URL.
-	downloader := media.NewDownloader(nil, &http.Transport{})
+	downloader := media.NewDownloader(nil)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -82,29 +101,23 @@ func BenchmarkDownloader_Download(b *testing.B) {
 }
 
 func TestDownloader_Copy(t *testing.T) {
-	// Set up a test server that serves an example image.
-	testImage := []byte{0xFF, 0xD8, 0xFF} // Example of JPEG header bytes.
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(testImage)
-	}))
-	defer ts.Close()
 
 	// Use the test server URL in place of the real image URL.
 	storage := NewMockStorage()
-	downloader := media.NewDownloader(storage, &http.Transport{})
+	downloader := media.NewDownloader(storage)
 
 	// Perform the download and upload.
-	_, err := downloader.Upload(ts.URL)
+	_, err := downloader.Upload(server.URL)
 	require.NoError(t, err)
 
 	// Generate the expected upload path.
-	uploadPath, err := media.StorageHash(ts.URL)
+	uploadPath, err := downloader.Path(server.URL)
 	require.NoError(t, err)
 
 	// Assert the data was uploaded correctly.
 	uploadedData, exists := storage.data[uploadPath]
 	require.True(t, exists)
-	assert.Equal(t, testImage, uploadedData)
+	DataAssert(t, uploadedData)
 }
 
 // MockStorage is a mock implementation of the Store interface for testing.
