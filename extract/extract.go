@@ -30,8 +30,8 @@ type (
 		URL *url.URL `json:"-"`
 		// Data is a map of extracted data
 		Data map[string]any `json:"Data"`
-		// Media is a map of media to extract
-		Uploads media.UploadClaims `json:"UploadClaims"`
+		// Claims is a list of media to upload
+		Claims *media.Claims `json:"Claims"`
 	}
 )
 
