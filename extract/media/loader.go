@@ -17,16 +17,16 @@ type (
 	Store interface {
 		Save(data []byte, filename string) (string, error)
 	}
-	// Downloader copy data from url to store.
-	Downloader struct {
+	// Loader copy data from url to store.
+	Loader struct {
 		pool   sync.Pool
 		store  Store
 		client *http.Client
 	}
 )
 
-func NewDownloader(store Store) *Downloader {
-	return &Downloader{
+func NewLoader(store Store) *Loader {
+	return &Loader{
 		pool: sync.Pool{
 			New: func() interface{} {
 				return new(bytes.Buffer)
@@ -39,12 +39,13 @@ func NewDownloader(store Store) *Downloader {
 
 // SetClient sets the HTTP client used to download the media.
 // Proxy pool might be used to download media from different sources.
-func (dl *Downloader) SetClient(client *http.Client) {
+func (dl *Loader) SetClient(client *http.Client) {
 	dl.client = client
 }
 
 // Filename generates a unique filename hash for the media based on the source URL.
-func (dl *Downloader) Filename(srcURL string) (string, error) {
+// deprecated: use media.Filename instead.
+func (dl *Loader) Filename(srcURL string) (string, error) {
 
 	// Generate upload path from the source URL using FNV hash.
 	name, err := StorageHash(srcURL)
@@ -58,8 +59,8 @@ func (dl *Downloader) Filename(srcURL string) (string, error) {
 	return name, nil
 }
 
-// Upload downloads the media from the specified URL and uploads it to the store.
-func (dl *Downloader) Upload(srcURL string) (string, error) {
+// Upload fetches the media from the specified URL and uploads it to the store.
+func (dl *Loader) Upload(srcURL string) (string, error) {
 
 	// download
 	buf, err := dl.Fetch(srcURL)
@@ -69,7 +70,7 @@ func (dl *Downloader) Upload(srcURL string) (string, error) {
 	defer dl.ReleaseBuffer(buf)
 
 	// path
-	name, err := dl.Filename(srcURL)
+	name, err := Filename(srcURL)
 	if err != nil {
 		return "", err
 	}
@@ -84,7 +85,7 @@ func (dl *Downloader) Upload(srcURL string) (string, error) {
 }
 
 // Fetch data from the specified URL and return a buffer with the data.
-func (dl *Downloader) Fetch(imageURL string) (*bytes.Buffer, error) {
+func (dl *Loader) Fetch(imageURL string) (*bytes.Buffer, error) {
 	// Parse the URL to ensure it's valid.
 	parsedURL, err := url.Parse(imageURL)
 	if err != nil {
@@ -119,7 +120,7 @@ func (dl *Downloader) Fetch(imageURL string) (*bytes.Buffer, error) {
 }
 
 // ReleaseBuffer returns the buffer back to the pool.
-func (dl *Downloader) ReleaseBuffer(buf *bytes.Buffer) {
+func (dl *Loader) ReleaseBuffer(buf *bytes.Buffer) {
 	dl.pool.Put(buf)
 }
 
@@ -131,6 +132,25 @@ func StorageHash(sourceURL string) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%x", h.Sum64()), nil
+}
+
+// Filename generates a unique filename hash for the media based on the source URL.
+func Filename(srcURL string) (string, error) {
+
+	if len(srcURL) == 0 {
+		return "", errors.New("empty source URL for filename")
+	}
+
+	// Generate upload path from the source URL using FNV hash.
+	name, err := StorageHash(srcURL)
+	if err != nil {
+		return "", err
+	}
+
+	// add file extension from srcURL to the upload pat
+	name += filepath.Ext(srcURL)
+
+	return name, nil
 }
 
 // Download downloads an image from the specified URL using the provided http.Transport.

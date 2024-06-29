@@ -48,7 +48,7 @@ func TestDownloader_Download(t *testing.T) {
 	defer ts.Close()
 
 	// Use the test server URL in place of the real image URL.
-	downloader := media.NewDownloader(nil)
+	downloader := media.NewLoader(nil)
 	downloader.SetClient(ts.Client())
 
 	buf, err := downloader.Fetch(ts.URL)
@@ -60,7 +60,7 @@ func TestDownloader_Download(t *testing.T) {
 // TestDownloadImage tests the DownloadImage function.
 func TestDownloader_SetClient(t *testing.T) {
 
-	downloader := media.NewDownloader(nil)
+	downloader := media.NewLoader(nil)
 	downloader.SetClient(server.Client())
 
 	buf, err := downloader.Fetch(server.URL)
@@ -71,7 +71,7 @@ func TestDownloader_SetClient(t *testing.T) {
 
 func TestDownloader_BuffersMemoryAllocation(t *testing.T) {
 	// Use the test server URL in place of the real image URL.
-	downloader := media.NewDownloader(nil)
+	downloader := media.NewLoader(nil)
 
 	// Fetch the image multiple times to ensure the buffers are reused.
 	for i := 0; i < 10; i++ {
@@ -91,7 +91,7 @@ func BenchmarkDownloader_Download(b *testing.B) {
 	defer ts.Close()
 
 	// Use the test server URL in place of the real image URL.
-	downloader := media.NewDownloader(nil)
+	downloader := media.NewLoader(nil)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -104,14 +104,14 @@ func TestDownloader_Copy(t *testing.T) {
 
 	// Use the test server URL in place of the real image URL.
 	storage := NewMockStorage()
-	downloader := media.NewDownloader(storage)
+	downloader := media.NewLoader(storage)
 
 	// Perform the download and upload.
 	_, err := downloader.Upload(server.URL)
 	require.NoError(t, err)
 
 	// Generate the expected upload path.
-	name, err := downloader.Filename(server.URL)
+	name, err := media.Filename(server.URL)
 	require.NoError(t, err)
 
 	// Assert the data was uploaded correctly.
