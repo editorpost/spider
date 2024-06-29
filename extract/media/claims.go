@@ -3,7 +3,7 @@ package media
 import (
 	"github.com/PuerkitoBio/goquery"
 	"log/slog"
-	"path"
+	"net/url"
 	"strings"
 )
 
@@ -39,7 +39,7 @@ func NewClaims(uri string) *Claims {
 }
 
 // ExtractAndReplace Claim for each img tag and replace src path in selection.
-func (list *Claims) ExtractAndReplace(uri string, selection *goquery.Selection) {
+func (list *Claims) ExtractAndReplace(selection *goquery.Selection) *Claims {
 
 	selection.Find("img").Each(func(i int, el *goquery.Selection) {
 
@@ -60,14 +60,18 @@ func (list *Claims) ExtractAndReplace(uri string, selection *goquery.Selection) 
 		}
 
 		// filename as src url hash
-		dst, err := Filename(src)
+		filename, err := Filename(src)
 		if err != nil {
 			slog.Error("failed to hash filename", slog.String("src", src), slog.String("err", err.Error()))
 			return
 		}
 
 		// full url
-		dst = path.Join(uri, dst)
+		dst, err := url.JoinPath(list.dstURL, filename)
+		if err != nil {
+			slog.Error("failed to join url", slog.String("dst", list.dstURL), slog.String("filename", filename), slog.String("err", err.Error()))
+			return
+		}
 
 		// replace url in selection
 		el.SetAttr("src", dst)
@@ -78,6 +82,8 @@ func (list *Claims) ExtractAndReplace(uri string, selection *goquery.Selection) 
 			Dst: dst,
 		})
 	})
+
+	return list
 }
 
 func (list *Claims) Add(c Claim) *Claims {
@@ -140,4 +146,8 @@ func (list *Claims) All() []Claim {
 		all = append(all, claim)
 	}
 	return all
+}
+
+func (list *Claims) Len() int {
+	return len(list.claims)
 }
