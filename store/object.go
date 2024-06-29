@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"path/filepath"
 )
 
 type Bucket struct {
@@ -21,45 +20,33 @@ type Bucket struct {
 }
 
 type BucketFolder struct {
-	bucket Bucket
-	prefix string
+	bucket string
 	client *s3.Client
 }
 
-func NewBucketFolder(path string, bucket Bucket) (*BucketFolder, error) {
-
-	client, err := NewS3Client(bucket)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new s3 client, %w", err)
-	}
+func NewBucketFolder(bucket string, client *s3.Client) (*BucketFolder, error) {
 
 	return &BucketFolder{
 		bucket: bucket,
-		prefix: path,
 		client: client,
 	}, nil
 }
 
-func (b *BucketFolder) Save(data []byte, filename string) (string, error) {
+func (b *BucketFolder) Save(data []byte, path string) error {
 
 	uploader := manager.NewUploader(b.client)
 
-	result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String(b.bucket.Name),
-		Key:    aws.String(b.Path(filename)),
+	_, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(b.bucket),
+		Key:    aws.String(path),
 		Body:   bytes.NewReader(data),
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("failed to upload object, %w", err)
+		return fmt.Errorf("failed to upload object, %w", err)
 	}
 
-	return result.Location, nil
-}
-
-// Path returns the full path of the file in the bucket.
-func (b *BucketFolder) Path(filename string) string {
-	return filepath.Join(b.prefix, filename)
+	return nil
 }
 
 func NewS3Client(bucket Bucket) (*s3.Client, error) {
