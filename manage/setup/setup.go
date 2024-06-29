@@ -28,7 +28,7 @@ type Config struct {
 	VictoriaLogsUrl string `json:"VictoriaLogsUrl" validate:"trim"`
 }
 
-func Deps(args *config.Args, deploy *Config, extractors ...payload.Extractor) (*config.Deps, error) {
+func Deps(args *config.Args, deploy *Config, pipe *payload.Pipeline) (*config.Deps, error) {
 
 	if err := args.Normalize(); err != nil {
 		return nil, err
@@ -38,8 +38,8 @@ func Deps(args *config.Args, deploy *Config, extractors ...payload.Extractor) (*
 		VictoriaLogs(deploy.VictoriaLogsUrl, "info", args.ID)
 	}
 
-	// prepend windmill
-	extractors = append([]payload.Extractor{extract.WindmillMeta}, extractors...)
+	// job metadata will be saved in payload data
+	pipe.Starter(extract.WindmillMeta)
 
 	deps := &config.Deps{}
 
@@ -59,10 +59,10 @@ func Deps(args *config.Args, deploy *Config, extractors ...payload.Extractor) (*
 		}
 
 		// provide save extractor func
-		extractors = append(extractors, extractStore.Save)
+		pipe.Finisher(extractStore.Save)
 	}
 
-	deps.Extractor = payload.PipelineFn(extractors...)
+	deps.Extractor = pipe.Run
 
 	// metrics
 	if deploy.VictoriaMetricsUrl != "" {

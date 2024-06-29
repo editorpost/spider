@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"github.com/editorpost/spider/manage/setup"
 	"log/slog"
@@ -29,11 +30,13 @@ func Run(cmd string, s *setup.Spider) (err error) {
 		return
 	}
 
+	pipe := payload.NewPipeline(extractors...)
+
 	switch cmd {
 	case "start":
-		return windmill.Start(s.Args, extractors...)
+		return windmill.Start(s.Args, pipe)
 	case "trial":
-		return windmill.Trial(s.Args, extractors...)
+		return windmill.Trial(s.Args, pipe)
 	}
 
 	return nil

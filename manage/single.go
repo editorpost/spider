@@ -30,7 +30,7 @@ func Single(uri, selector string, extractor payload.Extractor) (*payload.Payload
 	// empty deploy, since no data is stored
 	deploy := &setup.Config{}
 
-	err := Start(args, deploy, extract.Article, extractor)
+	err := Start(args, deploy, payload.NewPipeline(extract.Article, extractor))
 
 	return result, err
 }

@@ -10,21 +10,22 @@ import (
 
 // Trial spider against limited and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Trial(args *config.Args, extractors ...payload.Extractor) error {
+func Trial(args *config.Args, pipe *payload.Pipeline) error {
 
 	args.ID = "trial"
 	items := []map[string]any{}
 
-	// the queue will stop automatically
-	// after args.ExtractLimit is reached
-	limiter := func(payload *payload.Payload) error {
-		if len(items) < args.ExtractLimit {
-			items = append(items, payload.Data)
-		}
-		return nil
+	// force low limit for trial
+	if args.ExtractLimit == 0 && args.ExtractLimit > 30 {
+		args.ExtractLimit = 30
 	}
 
-	if err := manage.Start(args, &setup.Config{}, append(extractors, limiter)...); err != nil {
+	pipe.Append(func(payload *payload.Payload) error {
+		items = append(items, payload.Data)
+		return nil
+	})
+
+	if err := manage.Start(args, &setup.Config{}, pipe); err != nil {
 		return err
 	}
 
@@ -33,7 +34,7 @@ func Trial(args *config.Args, extractors ...payload.Extractor) error {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func TrialWith(argsMap any, extractors ...payload.Extractor) error {
+func TrialWith(argsMap any, pipe *payload.Pipeline) error {
 
 	args := &config.Args{
 		ID: "trials",
@@ -43,5 +44,5 @@ func TrialWith(argsMap any, extractors ...payload.Extractor) error {
 		return err
 	}
 
-	return Trial(args, extractors...)
+	return Trial(args, pipe)
 }

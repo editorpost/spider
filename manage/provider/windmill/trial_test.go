@@ -3,6 +3,7 @@ package windmill_test
 import (
 	"encoding/json"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"github.com/editorpost/spider/manage/setup"
 	"github.com/stretchr/testify/require"
@@ -14,7 +15,7 @@ func TestTrial(t *testing.T) {
 	s := NewSpider(t)
 	extractors, err := extract.Extractors(s.ExtractFields, s.ExtractEntities...)
 	require.NoError(t, err)
-	require.NoError(t, windmill.Trial(s.Args, extractors...))
+	require.NoError(t, windmill.Trial(s.Args, payload.NewPipeline(extractors...)))
 }
 
 func NewSpider(t *testing.T) *setup.Spider {
