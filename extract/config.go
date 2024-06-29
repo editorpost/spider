@@ -7,4 +7,6 @@ type Config struct {
 	ExtractEntities []string `json:"ExtractEntities"`
 	// ExtractFields is the list of fields to extract
 	ExtractFields []*fields.Field `json:"ExtractFields"`
+	// DownloadMedia is a flag to download media
+	DownloadMedia bool `json:"DownloadMedia"`
 }

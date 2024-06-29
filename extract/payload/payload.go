@@ -68,7 +68,7 @@ func (p *Pipeline) Finisher(extractors ...Extractor) *Pipeline {
 	return p
 }
 
-func (p *Pipeline) Run(doc *colly.HTMLElement, s *goquery.Selection) error {
+func (p *Pipeline) Extract(doc *colly.HTMLElement, s *goquery.Selection) error {
 
 	if s == nil {
 		return errors.New("document is nil")

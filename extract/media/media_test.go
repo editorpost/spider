@@ -25,9 +25,9 @@ func NewLoader() *Loader {
 }
 
 // Upload fetches the media from the specified URL and uploads it to the store.
-func (dl *Loader) Upload(src, dst string) (string, error) {
+func (dl *Loader) Upload(src, dst string) error {
 	dl.uploads.Store(dst, src)
-	return dst, nil
+	return nil
 }
 
 func TestNewMedia(t *testing.T) {
@@ -53,9 +53,7 @@ func TestNewMedia(t *testing.T) {
 	require.NotZero(t, len(claims.All()))
 
 	// Upload requested media from claims
-	upload, err := m.Upload()
-	require.NoError(t, err)
-	require.NoError(t, upload(p))
+	require.NoError(t, m.Upload(p))
 
 	count := atomic.Int32{}
 	loader.uploads.Range(func(key, value any) bool {
@@ -73,7 +71,7 @@ func TestNewMedia(t *testing.T) {
 	claims.Request(claims.All()[0].Dst)
 
 	// Upload requested media from claims
-	require.NoError(t, upload(p))
+	require.NoError(t, m.Upload(p))
 
 	count = atomic.Int32{}
 	loader.uploads.Range(func(key, value any) bool {

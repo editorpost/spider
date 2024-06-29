@@ -23,7 +23,7 @@ type (
 	}
 
 	Uploader interface {
-		Upload(src, dst string) (string, error)
+		Upload(src, dst string) error
 	}
 )
 
@@ -60,34 +60,31 @@ func (m *Media) Claims(payload *payload.Payload) error {
 }
 
 // Upload creates Fn to upload requested media from claims.
-func (m *Media) Upload() (payload.Extractor, error) {
+func (m *Media) Upload(payload *payload.Payload) error {
 
-	return func(payload *payload.Payload) error {
-
-		claims, ok := payload.Ctx.Value(ClaimsCtxKey).(*Claims)
-		if !ok {
-			slog.Error("claims not found in payload context")
-			return nil
-		}
-
-		// skip if no requested claims
-		requested := claims.Requested()
-		if len(requested) == 0 {
-			return nil
-		}
-
-		// download source and upload to destination
-		for _, claim := range requested {
-			if _, err := m.loader.Upload(claim.Src, m.storagePath); err != nil {
-				slog.Error("failed to download media", slog.String("publicURL", claim.Src), slog.String("err", err.Error()))
-				continue
-			}
-			claims.Done(claim.Dst)
-		}
-
-		// set uploaded media mapping to payload
-		payload.Data["extract_media"] = claims.Uploaded()
-
+	claims, ok := payload.Ctx.Value(ClaimsCtxKey).(*Claims)
+	if !ok {
+		slog.Error("claims not found in payload context")
 		return nil
-	}, nil
+	}
+
+	// skip if no requested claims
+	requested := claims.Requested()
+	if len(requested) == 0 {
+		return nil
+	}
+
+	// download source and upload to destination
+	for _, claim := range requested {
+		if err := m.loader.Upload(claim.Src, m.storagePath); err != nil {
+			slog.Error("failed to download media", slog.String("publicURL", claim.Src), slog.String("err", err.Error()))
+			continue
+		}
+		claims.Done(claim.Dst)
+	}
+
+	// set uploaded media mapping to payload
+	payload.Data["extract_media"] = claims.Uploaded()
+
+	return nil
 }

@@ -19,20 +19,19 @@ type Bucket struct {
 	Region string
 }
 
-type BucketFolder struct {
+type BucketStore struct {
 	bucket string
 	client *s3.Client
 }
 
-func NewBucketFolder(bucket string, client *s3.Client) (*BucketFolder, error) {
-
-	return &BucketFolder{
+func NewBucketStore(bucket string, client *s3.Client) *BucketStore {
+	return &BucketStore{
 		bucket: bucket,
 		client: client,
-	}, nil
+	}
 }
 
-func (b *BucketFolder) Save(data []byte, path string) error {
+func (b *BucketStore) Save(data []byte, path string) error {
 
 	uploader := manager.NewUploader(b.client)
 
