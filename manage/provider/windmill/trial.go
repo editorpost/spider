@@ -10,7 +10,7 @@ import (
 
 // Trial spider against limited and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Trial(args *config.Args, extractors ...extract.PipeFn) error {
+func Trial(args *config.Args, extractors ...extract.Extractor) error {
 
 	args.ID = "trial"
 	items := []map[string]any{}
@@ -33,7 +33,7 @@ func Trial(args *config.Args, extractors ...extract.PipeFn) error {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func TrialWith(argsMap any, extractors ...extract.PipeFn) error {
+func TrialWith(argsMap any, extractors ...extract.Extractor) error {
 
 	args := &config.Args{
 		ID: "trials",

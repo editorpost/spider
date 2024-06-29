@@ -8,7 +8,7 @@ import (
 
 // Single spider against one url and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Single(uri, selector string, extractor extract.PipeFn) (*extract.Payload, error) {
+func Single(uri, selector string, extractor extract.Extractor) (*extract.Payload, error) {
 
 	result := &extract.Payload{}
 

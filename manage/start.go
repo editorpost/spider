@@ -9,7 +9,7 @@ import (
 
 // Start is a code for running spider
 // as Windmill Script with extract.Article
-func Start(args *config.Args, deploy *setup.Config, extractors ...extract.PipeFn) error {
+func Start(args *config.Args, deploy *setup.Config, extractors ...extract.Extractor) error {
 
 	c, err := Crawler(args, deploy, extractors...)
 
@@ -20,7 +20,7 @@ func Start(args *config.Args, deploy *setup.Config, extractors ...extract.PipeFn
 	return c.Run()
 }
 
-func Crawler(args *config.Args, deploy *setup.Config, extractors ...extract.PipeFn) (*collect.Crawler, error) {
+func Crawler(args *config.Args, deploy *setup.Config, extractors ...extract.Extractor) (*collect.Crawler, error) {
 
 	deps, err := setup.Deps(args, deploy, extractors...)
 	if err != nil {

@@ -18,8 +18,8 @@ const (
 
 //goland:noinspection GoNameStartsWithPackageName
 type (
-	PipeFn    func(*Payload) error
-	ExtractFn func(doc *colly.HTMLElement, s *goquery.Selection) error
+	Extractor func(*Payload) error
+	Pipeline  func(doc *colly.HTMLElement, s *goquery.Selection) error
 
 	Payload struct {
 		// Doc is full document
@@ -42,7 +42,7 @@ var (
 
 // Pipe is a function to process the html node and url.
 // Order of the pipes is important.
-func Pipe(pipes ...PipeFn) ExtractFn {
+func Pipe(processors ...Extractor) Pipeline {
 
 	return func(doc *colly.HTMLElement, s *goquery.Selection) error {
 
@@ -60,7 +60,7 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 			},
 		}
 
-		for _, pipe := range pipes {
+		for _, pipe := range processors {
 			err := pipe(payload)
 
 			// stop the pipe chain if required data is missing
@@ -77,7 +77,7 @@ func Pipe(pipes ...PipeFn) ExtractFn {
 	}
 }
 
-func Extractors(ff []*fields.Field, entities ...string) ([]PipeFn, error) {
+func Extractors(ff []*fields.Field, entities ...string) ([]Extractor, error) {
 
 	// entity extractors
 	extractors := ExtractorsByName(entities...)
@@ -97,13 +97,13 @@ func Extractors(ff []*fields.Field, entities ...string) ([]PipeFn, error) {
 
 // ExtractorsByName creates slice of extractors by name.
 // The string is a string like "html,article", e.g.: extract.Html, extract.Article
-func ExtractorsByName(names ...string) []PipeFn {
+func ExtractorsByName(names ...string) []Extractor {
 
 	if len(names) == 0 {
-		return []PipeFn{}
+		return []Extractor{}
 	}
 
-	extractors := make([]PipeFn, 0)
+	extractors := make([]Extractor, 0)
 	for _, key := range names {
 		switch key {
 		case "html":
@@ -119,9 +119,9 @@ func ExtractorsByName(names ...string) []PipeFn {
 // ExtractorsByJsonString creates slice of extractors by name.
 //
 //goland:noinspection GoUnusedExportedFunction
-func ExtractorsByJsonString(js string) []PipeFn {
+func ExtractorsByJsonString(js string) []Extractor {
 	if js == "" {
-		return []PipeFn{}
+		return []Extractor{}
 	}
-	return []PipeFn{}
+	return []Extractor{}
 }

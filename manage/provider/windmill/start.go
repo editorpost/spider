@@ -12,7 +12,7 @@ import (
 // as Windmill Script with extract.Article
 //
 //goland:noinspection GoUnusedExportedFunction
-func Start(args *config.Args, extractors ...extract.PipeFn) (err error) {
+func Start(args *config.Args, extractors ...extract.Extractor) (err error) {
 
 	deploy := &setup.Config{}
 
@@ -24,7 +24,7 @@ func Start(args *config.Args, extractors ...extract.PipeFn) (err error) {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func StartScript(argsJSON any, extractors ...extract.PipeFn) (err error) {
+func StartScript(argsJSON any, extractors ...extract.Extractor) (err error) {
 
 	args := &config.Args{}
 

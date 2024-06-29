@@ -8,7 +8,7 @@ import (
 
 // Trial spider against limited and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Trial(args *config.Args, extractor extract.PipeFn) ([]*extract.Payload, error) {
+func Trial(args *config.Args, extractor extract.Extractor) ([]*extract.Payload, error) {
 
 	args.ID = "trial"
 	items := []*extract.Payload{}

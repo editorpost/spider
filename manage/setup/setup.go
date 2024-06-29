@@ -27,7 +27,7 @@ type Config struct {
 	VictoriaLogsUrl string `json:"VictoriaLogsUrl" validate:"trim"`
 }
 
-func Deps(args *config.Args, deploy *Config, extractors ...extract.PipeFn) (*config.Deps, error) {
+func Deps(args *config.Args, deploy *Config, extractors ...extract.Extractor) (*config.Deps, error) {
 
 	if err := args.Normalize(); err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func Deps(args *config.Args, deploy *Config, extractors ...extract.PipeFn) (*con
 	}
 
 	// prepend windmill
-	extractors = append([]extract.PipeFn{extract.WindmillMeta}, extractors...)
+	extractors = append([]extract.Extractor{extract.WindmillMeta}, extractors...)
 
 	deps := &config.Deps{}
 

@@ -6,7 +6,7 @@ import (
 
 // Fields extracts the fields from the HTML
 // and sets the fields to the payload
-func Fields(root ...*fields.Field) (PipeFn, error) {
+func Fields(root ...*fields.Field) (Extractor, error) {
 
 	extract, err := fields.Extractor(root...)
 	if err != nil {
