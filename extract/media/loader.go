@@ -60,17 +60,17 @@ func (dl *Loader) Filename(srcURL string) (string, error) {
 }
 
 // Upload fetches the media from the specified URL and uploads it to the store.
-func (dl *Loader) Upload(srcURL string) (string, error) {
+func (dl *Loader) Upload(src, dst string) (string, error) {
 
 	// download
-	buf, err := dl.Fetch(srcURL)
+	buf, err := dl.Fetch(src)
 	if err != nil {
 		return "", err
 	}
 	defer dl.ReleaseBuffer(buf)
 
 	// path
-	name, err := Filename(srcURL)
+	name, err := Filename(src)
 	if err != nil {
 		return "", err
 	}
