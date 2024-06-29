@@ -20,19 +20,19 @@ type Claim struct {
 }
 
 type Claims struct {
-	// dstURL is a prefix of public path of the replaced media url.
-	dstURL string
+	// publicURL is a prefix of the replaced media url.
+	publicURL string
 	// claims keyed with source url
 	claims map[string]Claim
 }
 
 // NewClaims creates a new Claim for each image and replace src path in document and selection.
 // Replacement path from media.Filename. Replaces src url in selection.
-func NewClaims(uri string) *Claims {
+func NewClaims(publicURL string) *Claims {
 
 	claims := &Claims{
-		dstURL: uri,
-		claims: make(map[string]Claim),
+		publicURL: publicURL,
+		claims:    make(map[string]Claim),
 	}
 
 	return claims
@@ -55,7 +55,7 @@ func (list *Claims) ExtractAndReplace(selection *goquery.Selection) *Claims {
 		}
 
 		// already replaced
-		if strings.HasPrefix(src, list.dstURL) {
+		if strings.HasPrefix(src, list.publicURL) {
 			return
 		}
 
@@ -67,9 +67,9 @@ func (list *Claims) ExtractAndReplace(selection *goquery.Selection) *Claims {
 		}
 
 		// full url
-		dst, err := url.JoinPath(list.dstURL, filename)
+		dst, err := url.JoinPath(list.publicURL, filename)
 		if err != nil {
-			slog.Error("failed to join url", slog.String("dst", list.dstURL), slog.String("filename", filename), slog.String("err", err.Error()))
+			slog.Error("failed to join url", slog.String("dst", list.publicURL), slog.String("filename", filename), slog.String("err", err.Error()))
 			return
 		}
 

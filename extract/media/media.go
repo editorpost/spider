@@ -30,10 +30,10 @@ type (
 // NewMedia creates a new media extractors.
 // Claims extracts and replaces image urls in the document. Must be called before extractors relying on document content.
 // Uploads requested media to the destination. Must be called right before saving the payload. Adds upload result to the payload.
-func NewMedia(url, path string, loader Uploader) *Media {
+func NewMedia(publicURL, storagePath string, loader Uploader) *Media {
 	return &Media{
-		publicURL:   url,
-		storagePath: path,
+		publicURL:   publicURL,
+		storagePath: storagePath,
 		loader:      loader,
 	}
 }
