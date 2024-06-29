@@ -1,10 +1,10 @@
-package extract_test
+package article_test
 
 import (
 	"fmt"
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/article"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
 	"github.com/gocolly/colly/v2"
@@ -21,12 +21,12 @@ import (
 
 func TestFromHTML(t *testing.T) {
 
-	a, err := extract.ArticleFromHTML(GetArticleHTML(t), GetArticleURL(t))
+	a, err := article.ArticleFromHTML(GetArticleHTML(t), GetArticleURL(t))
 	require.NoError(t, err)
 
 	// custom fallback with css selector
 	assert.Equal(t, "2024-03-13", a.Published.Format("2006-01-02"))
-	assert.Equal(t, "Egor Denisov", a.Author)
+	assert.Equal(t, "John Doe", a.Author)
 	assert.Equal(t, "Пхукет в стиле вашего отдыха", a.Title)
 	assert.Equal(t, "https://thailand-news.ru/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/", a.SourceURL)
 	assert.Equal(t, "", a.SourceName)

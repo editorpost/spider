@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/editorpost/article"
 	"github.com/editorpost/spider/collect/config"
-	"github.com/editorpost/spider/extract"
+	article2 "github.com/editorpost/spider/extract/article"
 	"github.com/editorpost/spider/manage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,7 +26,7 @@ func TestTrial(t *testing.T) {
 		ProxyEnabled:    false,
 	}
 
-	articles, tErr := manage.Trial(args, extract.Article)
+	articles, tErr := manage.Trial(args, article2.Article)
 	require.NoError(t, tErr)
 	assert.NotNil(t, articles)
 

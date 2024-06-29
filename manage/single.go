@@ -2,7 +2,7 @@ package manage
 
 import (
 	"github.com/editorpost/spider/collect/config"
-	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/article"
 	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage/setup"
 )
@@ -30,7 +30,7 @@ func Single(uri, selector string, extractor payload.Extractor) (*payload.Payload
 	// empty deploy, since no data is stored
 	deploy := &setup.Config{}
 
-	err := Start(args, deploy, payload.NewPipeline(extract.Article, extractor))
+	err := Start(args, deploy, payload.NewPipeline(article.Article, extractor))
 
 	return result, err
 }

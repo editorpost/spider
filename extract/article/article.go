@@ -1,9 +1,9 @@
-package extract
+package article
 
 import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/editorpost/article"
+	dto "github.com/editorpost/article"
 	"github.com/editorpost/spider/extract/payload"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
@@ -16,8 +16,8 @@ import (
 	"time"
 )
 
-// Article extracts the article from the HTML
-// and sets the article fields to the payload
+// Article extracts the dto from the HTML
+// and sets the dto fields to the payload
 func Article(p *payload.Payload) error {
 
 	if p.Selection == nil {
@@ -32,11 +32,11 @@ func Article(p *payload.Payload) error {
 
 	art, err := ArticleFromHTML(htmlStr, p.URL)
 	if err != nil {
-		slog.Warn("failed to extract article", slog.String("err", err.Error()))
+		slog.Warn("failed to extract dto", slog.String("err", err.Error()))
 		return err
 	}
 
-	// set the article to the payload
+	// set the dto to the payload
 	for k, v := range art.Map() {
 		p.Data[k] = v
 	}
@@ -47,9 +47,9 @@ func Article(p *payload.Payload) error {
 }
 
 // ArticleFromHTML extracts Article
-func ArticleFromHTML(html string, resource *url.URL) (*article.Article, error) {
+func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 
-	a := article.NewArticle()
+	a := dto.NewArticle()
 	a.SourceURL = resource.String()
 
 	// readability: title, summary, text, html, language
@@ -65,7 +65,7 @@ func ArticleFromHTML(html string, resource *url.URL) (*article.Article, error) {
 	// html to markdown
 	a.Markup = markupText(a.Markup)
 
-	// nil article if it's invalid
+	// nil dto if it's invalid
 	if err := a.Normalize(); err != nil {
 		return nil, err
 	}
@@ -73,14 +73,14 @@ func ArticleFromHTML(html string, resource *url.URL) (*article.Article, error) {
 	return a, nil
 }
 
-func readabilityArticle(html string, resource *url.URL, a *article.Article) {
+func readabilityArticle(html string, resource *url.URL, a *dto.Article) {
 
 	read, err := readability.FromReader(strings.NewReader(html), resource)
 	if err != nil {
 		return
 	}
 
-	// set the article fields
+	// set the dto fields
 	a.Title = read.Title
 	a.Text = read.TextContent
 	a.Markup = read.Content
@@ -100,7 +100,7 @@ func readabilityArticle(html string, resource *url.URL, a *article.Article) {
 	}
 }
 
-func distillArticle(html string, resource *url.URL, a *article.Article) {
+func distillArticle(html string, resource *url.URL, a *dto.Article) {
 
 	distill, err := distiller.ApplyForReader(strings.NewReader(html), &distiller.Options{
 		OriginalURL: resource,
@@ -111,7 +111,7 @@ func distillArticle(html string, resource *url.URL, a *article.Article) {
 
 	info := distill.MarkupInfo
 
-	// set the article fields
+	// set the dto fields
 	a.Category = info.Article.Section
 	a.SourceName = info.Publisher
 	a.Images = distillImages(distill, resource)
@@ -135,12 +135,12 @@ func distillPublished(distill *distiller.Result) time.Time {
 	return published
 }
 
-func distillImages(distill *distiller.Result, resource *url.URL) *article.Images {
+func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
 
-	images := article.NewImages()
+	images := dto.NewImages()
 
 	for _, src := range distill.MarkupInfo.Images {
-		image := article.NewImage(AbsoluteUrl(resource, src.URL))
+		image := dto.NewImage(AbsoluteUrl(resource, src.URL))
 		image.Width = src.Width
 		image.Height = src.Height
 		image.Title = src.Caption

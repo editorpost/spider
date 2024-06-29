@@ -1,9 +1,9 @@
 package payload
 
 import (
+	"context"
 	"errors"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/editorpost/spider/extract/media"
 	"github.com/gocolly/colly/v2"
 	"net/url"
 )
@@ -23,6 +23,7 @@ type (
 	Extractor func(*Payload) error
 	//goland:noinspection GoNameStartsWithPackageName
 	Payload struct {
+		Ctx context.Context
 		// Doc is full document
 		Doc *colly.HTMLElement `json:"-"`
 		// Selection of entity in document
@@ -31,8 +32,6 @@ type (
 		URL *url.URL `json:"-"`
 		// Data is a map of extracted data
 		Data map[string]any `json:"Data"`
-		// Claims is a list of media to upload
-		Claims *media.Claims `json:"Claims"`
 	}
 	CollectorHook func(doc *colly.HTMLElement, s *goquery.Selection) error
 )
@@ -76,6 +75,7 @@ func (p *Pipeline) Run(doc *colly.HTMLElement, s *goquery.Selection) error {
 	}
 
 	payload := &Payload{
+		Ctx:       context.Background(),
 		Doc:       doc,
 		Selection: s,
 		URL:       doc.Request.URL,

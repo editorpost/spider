@@ -1,23 +1,36 @@
-package extract
+package media
 
 import (
-	"github.com/editorpost/spider/extract/media"
+	"context"
 	"github.com/editorpost/spider/extract/payload"
 	"log/slog"
 )
 
-type Media struct {
-	// publicURL for public media storagePath
-	publicURL string
-	// storagePath for media storage
-	storagePath string
-	loader      *media.Loader
-}
+type ClaimsCtx string
+
+const (
+	// ClaimsCtxKey is a key for media claims in the payload context.
+	ClaimsCtxKey ClaimsCtx = "extract.media.claims"
+)
+
+type (
+	Media struct {
+		// publicURL for public media storagePath
+		publicURL string
+		// storagePath for media storage
+		storagePath string
+		loader      Uploader
+	}
+
+	Uploader interface {
+		Upload(src, dst string) (string, error)
+	}
+)
 
 // NewMedia creates a new media extractors.
 // Claims extracts and replaces image urls in the document. Must be called before extractors relying on document content.
 // Uploads requested media to the destination. Must be called right before saving the payload. Adds upload result to the payload.
-func NewMedia(url, path string, loader *media.Loader) *Media {
+func NewMedia(url, path string, loader Uploader) *Media {
 	return &Media{
 		publicURL:   url,
 		storagePath: path,
@@ -40,7 +53,8 @@ func NewMedia(url, path string, loader *media.Loader) *Media {
 //	}
 func (m *Media) Claims(payload *payload.Payload) error {
 
-	payload.Claims = media.NewClaims(m.publicURL).ExtractAndReplace(payload.Doc.DOM)
+	claims := NewClaims(m.publicURL).ExtractAndReplace(payload.Doc.DOM)
+	payload.Ctx = context.WithValue(payload.Ctx, ClaimsCtxKey, claims)
 
 	return nil
 }
@@ -50,8 +64,14 @@ func (m *Media) Upload() (payload.Extractor, error) {
 
 	return func(payload *payload.Payload) error {
 
+		claims, ok := payload.Ctx.Value(ClaimsCtxKey).(*Claims)
+		if !ok {
+			slog.Error("claims not found in payload context")
+			return nil
+		}
+
 		// skip if no requested claims
-		requested := payload.Claims.Requested()
+		requested := claims.Requested()
 		if len(requested) == 0 {
 			return nil
 		}
@@ -62,11 +82,11 @@ func (m *Media) Upload() (payload.Extractor, error) {
 				slog.Error("failed to download media", slog.String("publicURL", claim.Src), slog.String("err", err.Error()))
 				continue
 			}
-			payload.Claims.Done(claim.Dst)
+			claims.Done(claim.Dst)
 		}
 
 		// set uploaded media mapping to payload
-		payload.Data["media"] = payload.Claims.Uploaded()
+		payload.Data["extract_media"] = claims.Uploaded()
 
 		return nil
 	}, nil

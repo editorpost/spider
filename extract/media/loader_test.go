@@ -107,15 +107,11 @@ func TestDownloader_Copy(t *testing.T) {
 	downloader := media.NewLoader(storage)
 
 	// Perform the download and upload.
-	_, err := downloader.Upload(server.URL, "test.jpg")
-	require.NoError(t, err)
-
-	// Generate the expected upload path.
-	name, err := media.Filename(server.URL)
-	require.NoError(t, err)
+	path := "static/media/test.jpg"
+	require.NoError(t, downloader.Upload(server.URL, path))
 
 	// Assert the data was uploaded correctly.
-	uploadedData, exists := storage.data[name]
+	uploadedData, exists := storage.data[path]
 	require.True(t, exists)
 	DataAssert(t, uploadedData)
 }
@@ -133,10 +129,10 @@ func NewMockStorage() *MockStorage {
 }
 
 // Save mocks the upload of data to a storage system.
-func (ms *MockStorage) Save(data []byte, name string) (path string, err error) {
+func (ms *MockStorage) Save(data []byte, name string) (err error) {
 	if ms.data == nil {
 		ms.data = make(map[string][]byte)
 	}
 	ms.data[name] = data
-	return name, nil
+	return nil
 }

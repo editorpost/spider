@@ -15,7 +15,7 @@ import (
 type (
 	// Store media data to destinations like S3.
 	Store interface {
-		Save(data []byte, filename string) (string, error)
+		Save(data []byte, filename string) error
 	}
 	// Loader copy data from url to store.
 	Loader struct {
@@ -43,45 +43,18 @@ func (dl *Loader) SetClient(client *http.Client) {
 	dl.client = client
 }
 
-// Filename generates a unique filename hash for the media based on the source URL.
-// deprecated: use media.Filename instead.
-func (dl *Loader) Filename(srcURL string) (string, error) {
-
-	// Generate upload path from the source URL using FNV hash.
-	name, err := StorageHash(srcURL)
-	if err != nil {
-		return "", err
-	}
-
-	// add file extension from srcURL to the upload pat
-	name += filepath.Ext(srcURL)
-
-	return name, nil
-}
-
 // Upload fetches the media from the specified URL and uploads it to the store.
-func (dl *Loader) Upload(src, dst string) (string, error) {
+func (dl *Loader) Upload(src, dst string) error {
 
 	// download
 	buf, err := dl.Fetch(src)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer dl.ReleaseBuffer(buf)
 
-	// path
-	name, err := Filename(src)
-	if err != nil {
-		return "", err
-	}
-
 	// upload the data
-	path, err := dl.store.Save(buf.Bytes(), name)
-	if err != nil {
-		return "", err
-	}
-
-	return path, nil
+	return dl.store.Save(buf.Bytes(), dst)
 }
 
 // Fetch data from the specified URL and return a buffer with the data.

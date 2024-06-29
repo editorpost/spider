@@ -5,8 +5,6 @@ import (
 	"github.com/editorpost/spider/extract/media"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io"
-	"os"
 	"strings"
 	"testing"
 )
@@ -20,7 +18,7 @@ func TestNewClaims(t *testing.T) {
 
 func TestNewExtract(t *testing.T) {
 
-	code := GetArticleHTML(t)
+	code := GetHTML(t)
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(code))
 
 	// check if url replaced in selection
@@ -50,21 +48,4 @@ func TestNewExtract(t *testing.T) {
 		src, _ := el.Attr("src")
 		assert.True(t, strings.HasPrefix(src, prefix))
 	})
-}
-
-func GetArticleHTML(t *testing.T) string {
-
-	t.Helper()
-
-	// open file `article_test.html` return as string
-	f, err := os.Open("claims_test.html")
-	require.NoError(t, err)
-	defer f.Close()
-
-	// read file as a string
-	buf := new(strings.Builder)
-	_, err = io.Copy(buf, f)
-	require.NoError(t, err)
-
-	return buf.String()
 }

@@ -1,6 +1,7 @@
 package extract
 
 import (
+	"github.com/editorpost/spider/extract/article"
 	"github.com/editorpost/spider/extract/fields"
 	"github.com/editorpost/spider/extract/payload"
 	"log/slog"
@@ -40,7 +41,7 @@ func ExtractorsByName(names ...string) []payload.Extractor {
 		case "html":
 			extractors = append(extractors, Html)
 		case "article":
-			extractors = append(extractors, Article)
+			extractors = append(extractors, article.Article)
 		}
 	}
 
