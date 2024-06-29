@@ -107,7 +107,7 @@ func TestDownloader_Copy(t *testing.T) {
 	downloader := media.NewLoader(storage)
 
 	// Perform the download and upload.
-	_, err := downloader.Upload(server.URL)
+	_, err := downloader.Upload(server.URL, "test.jpg")
 	require.NoError(t, err)
 
 	// Generate the expected upload path.
