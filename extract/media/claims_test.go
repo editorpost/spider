@@ -44,7 +44,7 @@ func NewClaims(uri string) *UploadClaims {
 	return claims
 }
 
-// Extract Claim for each img tag and replace src path in selection.
+// ExtractAndReplace Claim for each img tag and replace src path in selection.
 func (list *UploadClaims) Extract(selection *goquery.Selection) {
 
 	selection.Find("img").Each(func(i int, el *goquery.Selection) {
