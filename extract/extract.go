@@ -40,8 +40,7 @@ var (
 	ErrDataNotFound = errors.New("skip entity extraction, required data is missing")
 )
 
-// Pipe is a function to process the html node and url.
-// Order of the pipes is important.
+// Pipe of Processors. Order matters.
 func Pipe(processors ...Extractor) Pipeline {
 
 	return func(doc *colly.HTMLElement, s *goquery.Selection) error {
