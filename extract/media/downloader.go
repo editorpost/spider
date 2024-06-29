@@ -12,18 +12,19 @@ import (
 	"sync"
 )
 
-type Store interface {
-	Save(data []byte, filename string) (string, error)
-}
+type (
+	// Store media data to destinations like S3.
+	Store interface {
+		Save(data []byte, filename string) (string, error)
+	}
+	// Downloader copy data from url to store.
+	Downloader struct {
+		pool   sync.Pool
+		store  Store
+		client *http.Client
+	}
+)
 
-// Downloader manages downloading and coping data to storage data and uses a pool for bytes.Buffer.
-type Downloader struct {
-	pool   sync.Pool
-	store  Store
-	client *http.Client
-}
-
-// NewDownloader creates a new Downloader.
 func NewDownloader(store Store) *Downloader {
 	return &Downloader{
 		pool: sync.Pool{
@@ -36,10 +37,13 @@ func NewDownloader(store Store) *Downloader {
 	}
 }
 
+// SetClient sets the HTTP client used to download the media.
+// Proxy pool might be used to download media from different sources.
 func (dl *Downloader) SetClient(client *http.Client) {
 	dl.client = client
 }
 
+// Filename generates a unique filename hash for the media based on the source URL.
 func (dl *Downloader) Filename(srcURL string) (string, error) {
 
 	// Generate upload path from the source URL using FNV hash.
@@ -54,10 +58,11 @@ func (dl *Downloader) Filename(srcURL string) (string, error) {
 	return name, nil
 }
 
+// Upload downloads the media from the specified URL and uploads it to the store.
 func (dl *Downloader) Upload(srcURL string) (string, error) {
 
 	// download
-	buf, err := dl.Download(srcURL)
+	buf, err := dl.Fetch(srcURL)
 	if err != nil {
 		return "", err
 	}
@@ -78,8 +83,8 @@ func (dl *Downloader) Upload(srcURL string) (string, error) {
 	return path, nil
 }
 
-// Download data from the specified URL and return a buffer with the data.
-func (dl *Downloader) Download(imageURL string) (*bytes.Buffer, error) {
+// Fetch data from the specified URL and return a buffer with the data.
+func (dl *Downloader) Fetch(imageURL string) (*bytes.Buffer, error) {
 	// Parse the URL to ensure it's valid.
 	parsedURL, err := url.Parse(imageURL)
 	if err != nil {

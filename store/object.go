@@ -26,7 +26,13 @@ type BucketFolder struct {
 	client *s3.Client
 }
 
-func NewBucketFolder(path string, bucket Bucket, client *s3.Client) (*BucketFolder, error) {
+func NewBucketFolder(path string, bucket Bucket) (*BucketFolder, error) {
+
+	client, err := NewS3Client(bucket)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new s3 client, %w", err)
+	}
+
 	return &BucketFolder{
 		bucket: bucket,
 		prefix: path,

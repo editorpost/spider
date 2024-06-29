@@ -49,7 +49,7 @@ func TestBucketFolder_Save(t *testing.T) {
 	client, err := store.NewS3Client(bucket)
 	require.NoError(t, err)
 
-	bf, err := store.NewBucketFolder("test", bucket, client)
+	bf, err := store.NewBucketFolder("test", bucket.Name, client)
 	require.NoError(t, err)
 
 	data := []byte("test data")

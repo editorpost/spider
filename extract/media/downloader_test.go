@@ -51,7 +51,7 @@ func TestDownloader_Download(t *testing.T) {
 	downloader := media.NewDownloader(nil)
 	downloader.SetClient(ts.Client())
 
-	buf, err := downloader.Download(ts.URL)
+	buf, err := downloader.Fetch(ts.URL)
 	require.NoError(t, err)
 	defer downloader.ReleaseBuffer(buf)
 	DataAssert(t, buf.Bytes())
@@ -63,7 +63,7 @@ func TestDownloader_SetClient(t *testing.T) {
 	downloader := media.NewDownloader(nil)
 	downloader.SetClient(server.Client())
 
-	buf, err := downloader.Download(server.URL)
+	buf, err := downloader.Fetch(server.URL)
 	require.NoError(t, err)
 	defer downloader.ReleaseBuffer(buf)
 	DataAssert(t, buf.Bytes())
@@ -73,9 +73,9 @@ func TestDownloader_BuffersMemoryAllocation(t *testing.T) {
 	// Use the test server URL in place of the real image URL.
 	downloader := media.NewDownloader(nil)
 
-	// Download the image multiple times to ensure the buffers are reused.
+	// Fetch the image multiple times to ensure the buffers are reused.
 	for i := 0; i < 10; i++ {
-		buf, err := downloader.Download(server.URL)
+		buf, err := downloader.Fetch(server.URL)
 		require.NoError(t, err)
 		defer downloader.ReleaseBuffer(buf)
 		DataAssert(t, buf.Bytes())
@@ -95,7 +95,7 @@ func BenchmarkDownloader_Download(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := downloader.Download(ts.URL)
+		_, err := downloader.Fetch(ts.URL)
 		require.NoError(b, err)
 	}
 }

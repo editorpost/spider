@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
+	"github.com/editorpost/spider/extract/media"
 	"github.com/gocolly/colly/v2"
 	"log/slog"
 	"net/url"
@@ -29,6 +30,8 @@ type (
 		URL *url.URL `json:"-"`
 		// Data is a map of extracted data
 		Data map[string]any `json:"Data"`
+		// Media is a map of media to extract
+		Uploads media.UploadClaims `json:"UploadClaims"`
 	}
 )
 
