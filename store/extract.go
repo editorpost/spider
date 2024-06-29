@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/bits-and-blooms/bloom/v3"
-	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/payload"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -45,13 +45,13 @@ func NewExtractStore(dbName, mongoDSN string) (s *ExtractStore, err error) {
 
 	// do not uniqueOverwrite by default
 	s.uniqueOverwrite = false
-	s.uniqueField = extract.UrlField
+	s.uniqueField = payload.UrlField
 
 	return
 }
 
 // Save saves extracted data to mongo
-func (s *ExtractStore) Save(p *extract.Payload) error {
+func (s *ExtractStore) Save(p *payload.Payload) error {
 
 	if err := s.save(p.Data); err != nil {
 		slog.Error("save error: ", slog.String("err", err.Error()), slog.String("url", p.URL.String()))

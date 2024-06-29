@@ -4,6 +4,7 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/article"
+	"github.com/editorpost/spider/extract/payload"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
 	"github.com/goodsign/monday"
@@ -17,7 +18,7 @@ import (
 
 // Article extracts the article from the HTML
 // and sets the article fields to the payload
-func Article(p *Payload) error {
+func Article(p *payload.Payload) error {
 
 	if p.Selection == nil {
 		p.Selection = p.Doc.DOM

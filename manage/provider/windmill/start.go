@@ -3,7 +3,7 @@ package windmill
 import (
 	"github.com/editorpost/donq/pkg/vars"
 	"github.com/editorpost/spider/collect/config"
-	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage"
 	"github.com/editorpost/spider/manage/setup"
 )
@@ -12,7 +12,7 @@ import (
 // as Windmill Script with extract.Article
 //
 //goland:noinspection GoUnusedExportedFunction
-func Start(args *config.Args, extractors ...extract.Extractor) (err error) {
+func Start(args *config.Args, extractors ...payload.Extractor) (err error) {
 
 	deploy := &setup.Config{}
 
@@ -24,7 +24,7 @@ func Start(args *config.Args, extractors ...extract.Extractor) (err error) {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func StartScript(argsJSON any, extractors ...extract.Extractor) (err error) {
+func StartScript(argsJSON any, extractors ...payload.Extractor) (err error) {
 
 	args := &config.Args{}
 

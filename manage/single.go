@@ -3,14 +3,15 @@ package manage
 import (
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage/setup"
 )
 
 // Single spider against one url and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Single(uri, selector string, extractor extract.Extractor) (*extract.Payload, error) {
+func Single(uri, selector string, extractor payload.Extractor) (*payload.Payload, error) {
 
-	result := &extract.Payload{}
+	result := &payload.Payload{}
 
 	args := &config.Args{
 		// Any name since no data is stored

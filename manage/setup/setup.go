@@ -6,6 +6,7 @@ import (
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/collect/proxy"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/store"
 )
 
@@ -27,7 +28,7 @@ type Config struct {
 	VictoriaLogsUrl string `json:"VictoriaLogsUrl" validate:"trim"`
 }
 
-func Deps(args *config.Args, deploy *Config, extractors ...extract.Extractor) (*config.Deps, error) {
+func Deps(args *config.Args, deploy *Config, extractors ...payload.Extractor) (*config.Deps, error) {
 
 	if err := args.Normalize(); err != nil {
 		return nil, err
@@ -38,7 +39,7 @@ func Deps(args *config.Args, deploy *Config, extractors ...extract.Extractor) (*
 	}
 
 	// prepend windmill
-	extractors = append([]extract.Extractor{extract.WindmillMeta}, extractors...)
+	extractors = append([]payload.Extractor{extract.WindmillMeta}, extractors...)
 
 	deps := &config.Deps{}
 
@@ -61,7 +62,7 @@ func Deps(args *config.Args, deploy *Config, extractors ...extract.Extractor) (*
 		extractors = append(extractors, extractStore.Save)
 	}
 
-	deps.Extractor = extract.Pipe(extractors...)
+	deps.Extractor = payload.PipelineFn(extractors...)
 
 	// metrics
 	if deploy.VictoriaMetricsUrl != "" {

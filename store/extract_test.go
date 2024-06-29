@@ -7,6 +7,7 @@ import (
 	"github.com/editorpost/spider/collect"
 	"github.com/editorpost/spider/collect/proxy"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/payload"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -59,7 +60,7 @@ func TestStart(t *testing.T) {
 		ExtractURL:      "https://thailand-news.ru/news/{dir}/{some}",
 		Depth:           3,
 		ExtractSelector: ".node-article--full",
-		Extractor: extract.Pipe(extract.WindmillMeta, extract.Html, func(p *extract.Payload) error {
+		Extractor: payload.PipelineFn(extract.WindmillMeta, extract.Html, func(p *payload.Payload) error {
 			println(p.URL.String())
 			return nil
 		}, storage.Save),
@@ -84,7 +85,7 @@ func TestStartNoDatabase(t *testing.T) {
 		ExtractURL:      "https://thailand-news.ru/news/{dir}/{some}",
 		Depth:           3,
 		ExtractSelector: ".node-article--full",
-		Extractor:       extract.Pipe(extract.WindmillMeta),
+		Extractor:       payload.PipelineFn(extract.WindmillMeta),
 		Storage:         nil,
 		RoundTripper:    pool.Transport(),
 	}
@@ -100,7 +101,7 @@ func TestDatabaseSave(t *testing.T) {
 
 	dispatched := false
 
-	dispatcher := func(payload *extract.Payload) error {
+	dispatcher := func(payload *payload.Payload) error {
 		dispatched = true
 		return nil
 	}
@@ -113,7 +114,7 @@ func TestDatabaseSave(t *testing.T) {
 		AllowedURL:      ".*",
 		Depth:           1,
 		ExtractSelector: ".article--ssr",
-		Extractor:       extract.Pipe(extract.WindmillMeta, extract.Html, dispatcher, extractor.Save),
+		Extractor:       payload.PipelineFn(extract.WindmillMeta, extract.Html, dispatcher, extractor.Save),
 		Storage:         collector,
 	}
 
@@ -136,7 +137,7 @@ func TestRealForbidden(t *testing.T) {
 		ExtractURL:      "https://thailand-news.ru/news/{dir}/{some}",
 		Depth:           3,
 		ExtractSelector: ".node-article--full",
-		Extractor: extract.Pipe(extract.WindmillMeta, extract.Html, func(p *extract.Payload) error {
+		Extractor: payload.PipelineFn(extract.WindmillMeta, extract.Html, func(p *payload.Payload) error {
 			println(p.URL.String())
 			return nil
 		}, storage.Save),

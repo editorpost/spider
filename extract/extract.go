@@ -1,82 +1,14 @@
 package extract
 
 import (
-	"errors"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
-	"github.com/editorpost/spider/extract/media"
-	"github.com/gocolly/colly/v2"
+	"github.com/editorpost/spider/extract/payload"
 	"log/slog"
-	"net/url"
-)
-
-const (
-	UrlField  = "spider__url"
-	HostField = "spider__host"
-	HtmlField = "spider__html"
 )
 
 //goland:noinspection GoNameStartsWithPackageName
-type (
-	Extractor func(*Payload) error
-	Pipeline  func(doc *colly.HTMLElement, s *goquery.Selection) error
 
-	Payload struct {
-		// Doc is full document
-		Doc *colly.HTMLElement `json:"-"`
-		// Selection of entity in document
-		Selection *goquery.Selection `json:"-"`
-		// URL of the document
-		URL *url.URL `json:"-"`
-		// Data is a map of extracted data
-		Data map[string]any `json:"Data"`
-		// Claims is a list of media to upload
-		Claims *media.Claims `json:"Claims"`
-	}
-)
-
-var (
-	// ErrDataNotFound expected error, stops the extraction pipeline.
-	ErrDataNotFound = errors.New("skip entity extraction, required data is missing")
-)
-
-// Pipe of Processors. Order matters.
-func Pipe(processors ...Extractor) Pipeline {
-
-	return func(doc *colly.HTMLElement, s *goquery.Selection) error {
-
-		if s == nil {
-			return errors.New("document is nil")
-		}
-
-		payload := &Payload{
-			Doc:       doc,
-			Selection: s,
-			URL:       doc.Request.URL,
-			Data: map[string]any{
-				UrlField:  doc.Request.URL.String(),
-				HostField: doc.Request.URL.Host,
-			},
-		}
-
-		for _, pipe := range processors {
-			err := pipe(payload)
-
-			// stop the pipe chain if required data is missing
-			if errors.Is(err, ErrDataNotFound) {
-				return nil
-			}
-
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-}
-
-func Extractors(ff []*fields.Field, entities ...string) ([]Extractor, error) {
+func Extractors(ff []*fields.Field, entities ...string) ([]payload.Extractor, error) {
 
 	// entity extractors
 	extractors := ExtractorsByName(entities...)
@@ -96,13 +28,13 @@ func Extractors(ff []*fields.Field, entities ...string) ([]Extractor, error) {
 
 // ExtractorsByName creates slice of extractors by name.
 // The string is a string like "html,article", e.g.: extract.Html, extract.Article
-func ExtractorsByName(names ...string) []Extractor {
+func ExtractorsByName(names ...string) []payload.Extractor {
 
 	if len(names) == 0 {
-		return []Extractor{}
+		return []payload.Extractor{}
 	}
 
-	extractors := make([]Extractor, 0)
+	extractors := make([]payload.Extractor, 0)
 	for _, key := range names {
 		switch key {
 		case "html":
@@ -118,9 +50,9 @@ func ExtractorsByName(names ...string) []Extractor {
 // ExtractorsByJsonString creates slice of extractors by name.
 //
 //goland:noinspection GoUnusedExportedFunction
-func ExtractorsByJsonString(js string) []Extractor {
+func ExtractorsByJsonString(js string) []payload.Extractor {
 	if js == "" {
-		return []Extractor{}
+		return []payload.Extractor{}
 	}
-	return []Extractor{}
+	return []payload.Extractor{}
 }

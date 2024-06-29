@@ -3,21 +3,21 @@ package windmill
 import (
 	"github.com/editorpost/donq/pkg/vars"
 	"github.com/editorpost/spider/collect/config"
-	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage"
 	"github.com/editorpost/spider/manage/setup"
 )
 
 // Trial spider against limited and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Trial(args *config.Args, extractors ...extract.Extractor) error {
+func Trial(args *config.Args, extractors ...payload.Extractor) error {
 
 	args.ID = "trial"
 	items := []map[string]any{}
 
 	// the queue will stop automatically
 	// after args.ExtractLimit is reached
-	limiter := func(payload *extract.Payload) error {
+	limiter := func(payload *payload.Payload) error {
 		if len(items) < args.ExtractLimit {
 			items = append(items, payload.Data)
 		}
@@ -33,7 +33,7 @@ func Trial(args *config.Args, extractors ...extract.Extractor) error {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func TrialWith(argsMap any, extractors ...extract.Extractor) error {
+func TrialWith(argsMap any, extractors ...payload.Extractor) error {
 
 	args := &config.Args{
 		ID: "trials",

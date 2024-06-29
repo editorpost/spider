@@ -2,6 +2,7 @@ package extract
 
 import (
 	"github.com/editorpost/spider/extract/media"
+	"github.com/editorpost/spider/extract/payload"
 	"log/slog"
 )
 
@@ -37,7 +38,7 @@ func NewMedia(url, path string, loader *media.Loader) *Media {
 //		payload.Claims.Request(uri)
 //		return nil
 //	}
-func (m *Media) Claims(payload *Payload) error {
+func (m *Media) Claims(payload *payload.Payload) error {
 
 	payload.Claims = media.NewClaims(m.publicURL).ExtractAndReplace(payload.Doc.DOM)
 
@@ -45,9 +46,9 @@ func (m *Media) Claims(payload *Payload) error {
 }
 
 // Upload creates Fn to upload requested media from claims.
-func (m *Media) Upload() (Extractor, error) {
+func (m *Media) Upload() (payload.Extractor, error) {
 
-	return func(payload *Payload) error {
+	return func(payload *payload.Payload) error {
 
 		// skip if no requested claims
 		requested := payload.Claims.Requested()

@@ -2,6 +2,7 @@ package extract
 
 import (
 	"github.com/editorpost/donq/pkg/vars"
+	"github.com/editorpost/spider/extract/payload"
 )
 
 //goland:noinspection GoUnusedConst
@@ -17,7 +18,7 @@ const (
 )
 
 // WindmillMeta is a meta data extractor
-func WindmillMeta(p *Payload) error {
+func WindmillMeta(p *payload.Payload) error {
 
 	e := vars.FromEnv()
 	// windmill flow
