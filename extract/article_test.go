@@ -3,9 +3,11 @@ package extract_test
 import (
 	"fmt"
 	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
+	"github.com/gocolly/colly/v2"
 	distiller "github.com/markusmobius/go-domdistiller"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -124,4 +126,44 @@ func GetArticleURL(t *testing.T) *url.URL {
 		Host:   "thailand-news.ru",
 		Path:   "/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/",
 	}
+}
+
+func GetArticleDocument(t *testing.T) *colly.HTMLElement {
+
+	t.Helper()
+
+	// open file `article_test.html` return as string
+	f, err := os.Open("article_test.html")
+	require.NoError(t, err)
+	defer f.Close()
+
+	// read file as a string
+	buf := new(strings.Builder)
+	_, err = io.Copy(buf, f)
+	require.NoError(t, err)
+
+	// parse html
+	query, err := goquery.NewDocumentFromReader(strings.NewReader(buf.String()))
+	require.NoError(t, err)
+
+	ctx := &colly.Context{}
+	resp := &colly.Response{
+		Request: &colly.Request{
+			Ctx: ctx,
+		},
+		Ctx: ctx,
+	}
+
+	var doc *colly.HTMLElement
+	doc = colly.NewHTMLElementFromSelectionNode(resp, query.Selection, query.Nodes[0], 0)
+
+	query.Find("html").Each(func(_ int, s *goquery.Selection) {
+		for _, n := range s.Nodes {
+			if doc != nil {
+				doc = colly.NewHTMLElementFromSelectionNode(resp, s, n, 0)
+			}
+		}
+	})
+
+	return doc
 }
