@@ -153,6 +153,10 @@ func (s *Spider) NewCrawler(deploy *Config) (*collect.Crawler, error) {
 
 func (s *Spider) withMedia(deploy *Config) error {
 
+	if !s.ExtractMedia {
+		return nil
+	}
+
 	if deploy.Bucket.Name != "" {
 		return nil
 	}
