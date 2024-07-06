@@ -12,9 +12,9 @@ import (
 )
 
 var bucket = store.Bucket{
-	Name:   "ep-spider",
-	URL:    "https://s3.ap-southeast-1.wasabisys.com",
-	Region: "ap-southeast-1",
+	Name:     "ep-spider",
+	Endpoint: "https://s3.ap-southeast-1.wasabisys.com",
+	Region:   "ap-southeast-1",
 }
 
 func TestMain(m *testing.M) {

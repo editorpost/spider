@@ -18,11 +18,13 @@ func Reset(name string) error {
 		return err
 	}
 
+	// todo reset media
+
 	return ResetExtractor(name, conf)
 }
 
 // ResetCollector drops the collector store
-// Crawler URL history will be erased.
+// Crawler Endpoint history will be erased.
 func ResetCollector(name string, cfg *mongodb.Config) error {
 
 	collector, err := store.NewCollectStore(name, cfg.DSN)

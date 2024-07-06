@@ -111,7 +111,7 @@ func (ts *MetricStore) cache(job, url, eventType string, errorInfo *string) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	key := fmt.Sprintf("%s_%s", job, url) // Unique key for job and URL
+	key := fmt.Sprintf("%s_%s", job, url) // Unique key for job and Endpoint
 	event := MetricRow{
 		Job:       job,
 		URL:       url,

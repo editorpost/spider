@@ -28,7 +28,7 @@ type (
 )
 
 // NewMedia creates a new media extractors.
-// Claims extracts and replaces image urls in the document. Must be called before extractors relying on document content.
+// Claims extracts and replaces image urls in the document. Must be called before extractors got access to document content.
 // Uploads requested media to the destination. Must be called right before saving the payload. Adds upload result to the payload.
 func NewMedia(publicURL, storagePath string, loader Uploader) *Media {
 	return &Media{
@@ -77,7 +77,7 @@ func (m *Media) Upload(payload *payload.Payload) error {
 	// download source and upload to destination
 	for _, claim := range requested {
 		if err := m.loader.Upload(claim.Src, m.storagePath); err != nil {
-			slog.Error("failed to download media", slog.String("publicURL", claim.Src), slog.String("err", err.Error()))
+			slog.Error("failed to download media", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
 			continue
 		}
 		claims.Done(claim.Dst)

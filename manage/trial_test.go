@@ -1,5 +1,4 @@
 //go:build e2e
-// +build e2e
 
 package manage_test
 
@@ -7,8 +6,9 @@ import (
 	"fmt"
 	"github.com/editorpost/article"
 	"github.com/editorpost/spider/collect/config"
-	article2 "github.com/editorpost/spider/extract/article"
+	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/manage"
+	"github.com/editorpost/spider/manage/setup"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -26,7 +26,12 @@ func TestTrial(t *testing.T) {
 		ProxyEnabled:    false,
 	}
 
-	articles, tErr := manage.Trial(args, article2.Article)
+	s, tErr := setup.NewSpider(args, &extract.Config{
+		ExtractEntities: []string{"article"},
+	})
+	require.NoError(t, tErr)
+
+	articles, tErr := manage.Trial(s)
 	require.NoError(t, tErr)
 	assert.NotNil(t, articles)
 

@@ -6,10 +6,10 @@ import (
 	"strings"
 )
 
-// RegexPattern transforms a given URL pattern into a regular expression string for matching URLs.
+// RegexPattern transforms a given Endpoint pattern into a regular expression string for matching URLs.
 // The function supports specific placeholders within the pattern to capture dynamic parts of URLs:
 //
-//   - {dir}: Matches any sequence of characters except slashes (/), representing a directory name in the URL path.
+//   - {dir}: Matches any sequence of characters except slashes (/), representing a directory name in the Endpoint path.
 //   - {any}: Matches any sequence of characters, including an empty sequence, allowing for the most flexibility.
 //   - {some}: Matches any non-empty sequence of characters, similar to {any} but requires at least one character.
 //   - {num}: Matches any sequence of digits, useful for numeric identifiers in URLs.
@@ -78,7 +78,7 @@ func ContentLikeURL(urlStr string) bool {
 		".jspx":  true,
 	}
 
-	// Parse the URL to extract the path
+	// Parse the Endpoint to extract the path
 	parsedURL, err := url.Parse(urlStr)
 	if err != nil {
 		return false

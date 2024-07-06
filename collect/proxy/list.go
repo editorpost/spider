@@ -48,7 +48,7 @@ func (lst *List) Next(pr *http.Request) *Proxy {
 	index := atomic.AddUint32(&lst.index, 1) - 1
 	next := lst.proxies[index%uint32(len(lst.proxies))]
 
-	// set the valid URL in the request context
+	// set the valid Endpoint in the request context
 	if pr != nil {
 		// note this context doesn't applied to final request
 		// since colly doesn't copy this context (but tries to retrieve by this key, probably bug)

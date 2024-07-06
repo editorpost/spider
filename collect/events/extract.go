@@ -13,7 +13,7 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 
 	var entityURL *regexp.Regexp
 
-	// If the entity URL is not empty, compile a regular expression from it
+	// If the entity Endpoint is not empty, compile a regular expression from it
 	if len(crawler.args.ExtractURL) > 0 {
 		regex := config.RegexPattern(crawler.args.ExtractURL)
 		entityURL = regexp.MustCompile(regex)

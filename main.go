@@ -25,9 +25,9 @@ func Run(cmd string, s *setup.Spider) (err error) {
 
 	switch cmd {
 	case "start":
-		return windmill.Start(s.Args, s.Pipeline())
+		return windmill.Start(s)
 	case "trial":
-		return windmill.Trial(s.Args, s.Pipeline())
+		return windmill.Trial(s)
 	}
 
 	return nil
@@ -51,7 +51,7 @@ func Flags() (cmd string, spider *setup.Spider) {
 		return
 	}
 
-	spider, err := setup.NewSpider([]byte(spiderJson))
+	spider, err := setup.NewSpiderFromJSON([]byte(spiderJson))
 	if err != nil {
 		slog.Error("parse spider JSON", slog.String("arg", spiderJson), slog.String("error", err.Error()))
 		return

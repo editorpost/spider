@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
+// Browse the Endpoint this chromedp.Navigate, wait dom loaded and return the rendered HTML
 func (crawler *Crawler) Browse(reqURL string) (*goquery.Selection, error) {
 
 	resp, err := crawler.browseChrome(reqURL)
@@ -33,7 +33,7 @@ func (crawler *Crawler) Browse(reqURL string) (*goquery.Selection, error) {
 	return doc.Find(crawler.args.ExtractSelector), nil
 }
 
-// Browse the URL this chromedp.Navigate, wait dom loaded and return the rendered HTML
+// Browse the Endpoint this chromedp.Navigate, wait dom loaded and return the rendered HTML
 func (crawler *Crawler) browseChrome(reqURL string) (string, error) {
 
 	// Initialize a new browser context
@@ -42,7 +42,7 @@ func (crawler *Crawler) browseChrome(reqURL string) (string, error) {
 
 	chromedp.UserAgent(crawler.args.UserAgent)
 
-	// Navigate to the URL and fetch the rendered HTML
+	// Navigate to the Endpoint and fetch the rendered HTML
 	var htmlContent string
 	err := chromedp.Run(ctx,
 		&emulation.SetUserAgentOverrideParams{

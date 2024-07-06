@@ -28,7 +28,7 @@ func Reset(name string, cfg *mongodb.Config) error {
 }
 
 // ResetCollector drops the collector store
-// Crawler URL history will be erased.
+// crawler Endpoint history will be erased.
 func ResetCollector(name string, cfg *mongodb.Config) error {
 
 	collector, err := store.NewCollectStore(name, cfg.DSN)

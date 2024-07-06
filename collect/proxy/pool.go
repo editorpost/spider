@@ -15,7 +15,7 @@ var (
 	ErrBadProxy = errors.New("bad proxy")
 )
 
-// Pool is a pool of proxies checked against the test URL.
+// Pool is a pool of proxies checked against the test Endpoint.
 // Periodically checks the proxies and updates the valid list.
 type Pool struct {
 	valid        *List
@@ -32,7 +32,7 @@ type Pool struct {
 	rtp     *http.Transport
 }
 
-// StartPool initializes a new pool with the given start URL and proxy sources.
+// StartPool initializes a new pool with the given start Endpoint and proxy sources.
 func StartPool(startURL string, proxySources ...string) (*Pool, error) {
 
 	// start the proxy pool

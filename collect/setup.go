@@ -56,9 +56,9 @@ func (crawler *Crawler) collector() (*colly.Collector, error) {
 	return crawler.collect, nil
 }
 
-// VisitUrlFilter sets up the URL filters for the collector.
+// VisitUrlFilter sets up the Endpoint filters for the collector.
 // It applies a regular expression filter to the URLs visited by the collector.
-// Allowed URL pattern is used to extract links in hope to find entity URLs.
+// Allowed Endpoint pattern is used to extract links in hope to find entity URLs.
 // In other hand, ExtractURL is used to run extractors on the page.
 func (crawler *Crawler) VisitUrlFilter(args *config.Args) colly.CollectorOption {
 	return func(collector *colly.Collector) {
@@ -66,10 +66,10 @@ func (crawler *Crawler) VisitUrlFilter(args *config.Args) colly.CollectorOption 
 		// Generate regular expressions from the start, allowed, and entity URLs
 		allowed := config.RegexPattern(args.AllowedURL)
 
-		// Append the host of the start URL to the allowed domains of the collector
+		// Append the host of the start Endpoint to the allowed domains of the collector
 		collector.AllowedDomains = append(collector.AllowedDomains, config.MustHostname(args.StartURL))
 
-		// Append a regular expression from the allowed URL to the URL filters of the collector
+		// Append a regular expression from the allowed Endpoint to the Endpoint filters of the collector
 		collector.URLFilters = append(collector.URLFilters, regexp.MustCompile(allowed))
 	}
 }

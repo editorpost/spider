@@ -2,7 +2,7 @@ package manage
 
 import (
 	"github.com/editorpost/spider/collect/config"
-	"github.com/editorpost/spider/extract/article"
+	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage/setup"
 )
@@ -27,10 +27,22 @@ func Single(uri, selector string, extractor payload.Extractor) (*payload.Payload
 		ProxyEnabled: true,
 	}
 
-	// empty deploy, since no data is stored
-	deploy := &setup.Config{}
+	s, err := setup.NewSpider(args, &extract.Config{})
+	if err != nil {
+		return result, err
+	}
 
-	err := Start(args, deploy, payload.NewPipeline(article.Article, extractor))
+	s.Pipeline().Append(extractor)
+	s.Pipeline().Finisher(func(p *payload.Payload) error {
+		result = p
+		return nil
+	})
 
-	return result, err
+	// empty deploy, no data stored
+	crawler, err := s.NewCrawler(&setup.Config{})
+	if err != nil {
+		return result, err
+	}
+
+	return result, crawler.Run()
 }

@@ -47,7 +47,7 @@ func TestDownloader_Download(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	// Use the test server URL in place of the real image URL.
+	// Use the test server Endpoint in place of the real image Endpoint.
 	downloader := media.NewLoader(nil)
 	downloader.SetClient(ts.Client())
 
@@ -70,7 +70,7 @@ func TestDownloader_SetClient(t *testing.T) {
 }
 
 func TestDownloader_BuffersMemoryAllocation(t *testing.T) {
-	// Use the test server URL in place of the real image URL.
+	// Use the test server Endpoint in place of the real image Endpoint.
 	downloader := media.NewLoader(nil)
 
 	// Fetch the image multiple times to ensure the buffers are reused.
@@ -90,7 +90,7 @@ func BenchmarkDownloader_Download(b *testing.B) {
 	}))
 	defer ts.Close()
 
-	// Use the test server URL in place of the real image URL.
+	// Use the test server Endpoint in place of the real image Endpoint.
 	downloader := media.NewLoader(nil)
 
 	b.ResetTimer()
@@ -102,7 +102,7 @@ func BenchmarkDownloader_Download(b *testing.B) {
 
 func TestDownloader_Copy(t *testing.T) {
 
-	// Use the test server URL in place of the real image URL.
+	// Use the test server Endpoint in place of the real image Endpoint.
 	storage := NewMockStorage()
 	downloader := media.NewLoader(storage)
 

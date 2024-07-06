@@ -152,7 +152,7 @@ var (
 	collector *CollectStore
 )
 
-// ServeFile serves the file at the given path and returns the URL
+// ServeFile serves the file at the given path and returns the Endpoint
 func ServeFile(t *testing.T, path string) *httptest.Server {
 
 	t.Helper()
@@ -169,7 +169,7 @@ func ServeFile(t *testing.T, path string) *httptest.Server {
 		t.Fatal(err)
 	}
 
-	// return the server URL
+	// return the server Endpoint
 	return srv
 }
 

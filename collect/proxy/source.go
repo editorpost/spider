@@ -12,7 +12,7 @@ type Source struct {
 	// Kind of structure for the source list
 	// Only `uri` expected right now - extend kind when needed
 	Kind string
-	// Endpoint URL of the source list
+	// Endpoint Endpoint of the source list
 	Endpoint string
 	// Schema for proxy IP if not provided, default is http
 	// Expected one of http|https|socks4|socks5

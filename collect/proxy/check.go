@@ -14,7 +14,7 @@ func Check(proxyURL, testURL, contains string, timeout time.Duration) error {
 
 	proxy, err := url.Parse(proxyURL)
 	if err != nil {
-		return fmt.Errorf("невозможно разобрать прокси URL: %w", err)
+		return fmt.Errorf("невозможно разобрать прокси Endpoint: %w", err)
 	}
 
 	transport := &http.Transport{

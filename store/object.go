@@ -12,11 +12,12 @@ import (
 )
 
 type Bucket struct {
-	Name   string
-	URL    string
-	Access string
-	Secret string
-	Region string
+	Name      string
+	Endpoint  string
+	Access    string
+	Secret    string
+	Region    string
+	PublicURL string
 }
 
 type BucketStore struct {
@@ -57,7 +58,7 @@ func NewS3Client(bucket Bucket) (*s3.Client, error) {
 		return nil, fmt.Errorf("failed to load configuration, %w", err)
 	}
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.BaseEndpoint = aws.String(bucket.URL)
+		o.BaseEndpoint = aws.String(bucket.Endpoint)
 		o.UsePathStyle = true
 	})
 

@@ -43,7 +43,7 @@ func (dl *Loader) SetClient(client *http.Client) {
 	dl.client = client
 }
 
-// Upload fetches the media from the specified URL and uploads it to the store.
+// Upload fetches the media from the specified Endpoint and uploads it to the store.
 func (dl *Loader) Upload(src, dst string) error {
 
 	// download
@@ -57,9 +57,9 @@ func (dl *Loader) Upload(src, dst string) error {
 	return dl.store.Save(buf.Bytes(), dst)
 }
 
-// Fetch data from the specified URL and return a buffer with the data.
+// Fetch data from the specified Endpoint and return a buffer with the data.
 func (dl *Loader) Fetch(imageURL string) (*bytes.Buffer, error) {
-	// Parse the URL to ensure it's valid.
+	// Parse the Endpoint to ensure it's valid.
 	parsedURL, err := url.Parse(imageURL)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (dl *Loader) ReleaseBuffer(buf *bytes.Buffer) {
 	dl.pool.Put(buf)
 }
 
-// StorageHash generates an FNV hash from the source URL.
+// StorageHash generates an FNV hash from the source Endpoint.
 func StorageHash(sourceURL string) (string, error) {
 	h := fnv.New64a()
 	_, err := h.Write([]byte(sourceURL))
@@ -107,14 +107,14 @@ func StorageHash(sourceURL string) (string, error) {
 	return fmt.Sprintf("%x", h.Sum64()), nil
 }
 
-// Filename generates a unique filename hash for the media based on the source URL.
+// Filename generates a unique filename hash for the media based on the source Endpoint.
 func Filename(srcURL string) (string, error) {
 
 	if len(srcURL) == 0 {
-		return "", errors.New("empty source URL for filename")
+		return "", errors.New("empty source Endpoint for filename")
 	}
 
-	// Generate upload path from the source URL using FNV hash.
+	// Generate upload path from the source Endpoint using FNV hash.
 	name, err := StorageHash(srcURL)
 	if err != nil {
 		return "", err
@@ -126,10 +126,10 @@ func Filename(srcURL string) (string, error) {
 	return name, nil
 }
 
-// Download downloads an image from the specified URL using the provided http.Transport.
+// Download downloads an image from the specified Endpoint using the provided http.Transport.
 func Download(absoluteURL string, transport *http.Transport) ([]byte, error) {
 
-	// Parse the URL to ensure it's valid.
+	// Parse the Endpoint to ensure it's valid.
 	parsedURL, err := url.Parse(absoluteURL)
 	if err != nil {
 		return nil, err

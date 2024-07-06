@@ -1,10 +1,6 @@
 package windmill
 
 import (
-	"github.com/editorpost/donq/pkg/vars"
-	"github.com/editorpost/spider/collect/config"
-	"github.com/editorpost/spider/extract/payload"
-	"github.com/editorpost/spider/manage"
 	"github.com/editorpost/spider/manage/setup"
 )
 
@@ -12,7 +8,7 @@ import (
 // as Windmill Script with extract.Article
 //
 //goland:noinspection GoUnusedExportedFunction
-func Start(args *config.Args, pipe *payload.Pipeline) (err error) {
+func Start(s *setup.Spider) (err error) {
 
 	deploy := &setup.Config{}
 
@@ -20,17 +16,10 @@ func Start(args *config.Args, pipe *payload.Pipeline) (err error) {
 		return err
 	}
 
-	return manage.Start(args, deploy, pipe)
-}
-
-//goland:noinspection GoUnusedExportedFunction
-func StartScript(argsJSON any, extractors ...payload.Extractor) (err error) {
-
-	args := &config.Args{}
-
-	if err = vars.FromJSON(argsJSON, args); err != nil {
+	crawler, err := s.NewCrawler(deploy)
+	if err != nil {
 		return err
 	}
 
-	return Start(args, payload.NewPipeline().Append(extractors...))
+	return crawler.Run()
 }

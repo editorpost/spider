@@ -29,9 +29,9 @@ func TestNewPool(t *testing.T) {
 
 type ProxyInfoContextKey struct{}
 
-// ProxySelector returns a dynamically chosen proxy URL based on the request
+// ProxySelector returns a dynamically chosen proxy Endpoint based on the request
 func ProxySelector(req *http.Request) (*url.URL, error) {
-	return url.Parse("http://45.95.203.159:4444") // set actual proxy URL here
+	return url.Parse("http://45.95.203.159:4444") // set actual proxy Endpoint here
 }
 
 func TestContext(t *testing.T) {

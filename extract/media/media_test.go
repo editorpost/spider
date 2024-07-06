@@ -24,7 +24,7 @@ func NewLoader() *Loader {
 	return &Loader{}
 }
 
-// Upload fetches the media from the specified URL and uploads it to the store.
+// Upload fetches the media from the specified Endpoint and uploads it to the store.
 func (dl *Loader) Upload(src, dst string) error {
 	dl.uploads.Store(dst, src)
 	return nil
