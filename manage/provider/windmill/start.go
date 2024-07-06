@@ -12,7 +12,7 @@ func Start(s *setup.Spider) (err error) {
 
 	deploy := &setup.Deploy{}
 
-	if err = SetupConfig(deploy); err != nil {
+	if err = SetupDeploy(deploy); err != nil {
 		return err
 	}
 
