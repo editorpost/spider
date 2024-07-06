@@ -39,7 +39,7 @@ func Single(uri, selector string, extractor payload.Extractor) (*payload.Payload
 	})
 
 	// empty deploy, no data stored
-	crawler, err := s.NewCrawler(&setup.Config{})
+	crawler, err := s.NewCrawler(&setup.Deploy{})
 	if err != nil {
 		return result, err
 	}

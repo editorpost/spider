@@ -24,7 +24,7 @@ func Trial(s *setup.Spider) error {
 		return nil
 	})
 
-	if err := manage.Start(s, &setup.Config{}); err != nil {
+	if err := manage.Start(s, &setup.Deploy{}); err != nil {
 		return err
 	}
 

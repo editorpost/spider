@@ -10,7 +10,7 @@ import (
 //goland:noinspection GoUnusedExportedFunction
 func Start(s *setup.Spider) (err error) {
 
-	deploy := &setup.Config{}
+	deploy := &setup.Deploy{}
 
 	if err = SetupConfig(deploy); err != nil {
 		return err

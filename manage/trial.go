@@ -24,7 +24,7 @@ func Trial(s *setup.Spider) ([]*payload.Payload, error) {
 		return nil
 	})
 
-	err := Start(s, &setup.Config{})
+	err := Start(s, &setup.Deploy{})
 
 	return items, err
 }

@@ -28,7 +28,7 @@ func MongoConfig(resource string) (*mongodb.Config, error) {
 }
 
 // SetupConfig returns the config or panic
-func SetupConfig(deploy *setup.Config) error {
+func SetupConfig(deploy *setup.Deploy) error {
 
 	if err := vars.FromResource(DefaultSpiderDeploy, deploy); err != nil {
 		return err

@@ -17,31 +17,39 @@ const (
 	SpiderMediaPath = "spiders/%s/media/"
 )
 
-// Config is the configuration for the spider
+// Deploy is the configuration for the spider
 // JSON:
 //
 //		{
-//		  "MongoDSN": "mongodb://localhost:27017",
-//		  "VictoriaMetricsUrl": "http://localhost:8428",
-//		  "VictoriaLogsUrl": "http://localhost:8429"
+//	     "MongoDSN": "mongodb://spider:pass@mongo-server-rs.spider.svc/spider?ssl=false",
+//	     "VictoriaLogsUrl": "http://spider-victoria-logs-single-server.spider.svc:9428",
+//	     "VictoriaMetricsUrl": "http://vmsingle-spider.spider.svc:8429/api/v1/import/prometheus",
+//			"Bucket": {
+//				"Name": "ep-spider",
+//				"Endpoint": "https://s3.ap-southeast-1.wasabisys.com",
+//				"Region": "ap-southeast-1",
+//				"PublicURL": "http://localhost:9000",
+//				"Access": "",
+//				"Secret": "",
+//			}
 //		}
-//	 db.updateUser("spider", {roles: [{ role: "readAnyDatabase", db: "admin"}
-type Config struct {
+//
+//		db.updateUser("spider", {roles: [{ role: "readAnyDatabase", db: "admin"}
+type Deploy struct {
 	// Bucket is the name of the bucket to store data
 	Bucket store.Bucket `json:"Bucket"`
 	// MongoDSN is connection string to MongoDB
 	MongoDSN string `json:"MongoDSN" validate:"trim"`
-	// VictoriaMetricsUrl // todo move to resource
+	// VictoriaMetricsUrl
 	VictoriaMetricsUrl string `json:"VictoriaMetricsUrl" validate:"trim"`
-	// VictoriaLogsUrl // todo move to resource
+	// VictoriaLogsUrl
 	VictoriaLogsUrl string `json:"VictoriaLogsUrl" validate:"trim"`
 }
 
 type Spider struct {
 	*config.Args
 	*extract.Config
-	pipe    *payload.Pipeline
-	crawler *collect.Crawler
+	pipe *payload.Pipeline
 }
 
 // UnmarshalJSON is the custom unmarshalling for Spider
@@ -110,7 +118,7 @@ func (s *Spider) withPipeline() error {
 	return nil
 }
 
-func (s *Spider) NewCrawler(deploy *Config) (*collect.Crawler, error) {
+func (s *Spider) NewCrawler(deploy *Deploy) (*collect.Crawler, error) {
 
 	if deploy.VictoriaLogsUrl != "" {
 		VictoriaLogs(deploy.VictoriaLogsUrl, "info", s.Args.ID)
@@ -151,7 +159,7 @@ func (s *Spider) NewCrawler(deploy *Config) (*collect.Crawler, error) {
 	return collect.NewCrawler(s.Args, deps)
 }
 
-func (s *Spider) withMedia(deploy *Config) error {
+func (s *Spider) withMedia(deploy *Deploy) error {
 
 	if !s.ExtractMedia {
 		return nil
@@ -179,7 +187,7 @@ func (s *Spider) withMedia(deploy *Config) error {
 	return nil
 }
 
-func (s *Spider) withDatabase(deploy *Config, deps *config.Deps) (err error) {
+func (s *Spider) withDatabase(deploy *Deploy, deps *config.Deps) (err error) {
 
 	// database
 	if deploy.MongoDSN == "" {
