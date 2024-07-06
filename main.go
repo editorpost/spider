@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/editorpost/spider/extract"
-	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"github.com/editorpost/spider/manage/setup"
 	"log/slog"
@@ -18,25 +16,18 @@ var (
 func main() {
 	cmd, spider := Flags()
 	if err := Run(cmd, spider); err != nil {
-		slog.Error("cmd:"+cmd, err)
+		slog.Error("cmd:"+cmd, slog.String("error", err.Error()))
 		return
 	}
 }
 
 func Run(cmd string, s *setup.Spider) (err error) {
 
-	extractors, err := extract.Extractors(s.ExtractFields, s.ExtractEntities...)
-	if err != nil {
-		return
-	}
-
-	pipe := payload.NewPipeline(extractors...)
-
 	switch cmd {
 	case "start":
-		return windmill.Start(s.Args, pipe)
+		return windmill.Start(s.Args, s.Pipeline())
 	case "trial":
-		return windmill.Trial(s.Args, pipe)
+		return windmill.Trial(s.Args, s.Pipeline())
 	}
 
 	return nil
@@ -53,16 +44,16 @@ func Flags() (cmd string, spider *setup.Spider) {
 		return
 	}
 
-	// argsFlag string is the JSON string of spider arguments
+	// JSON string of setup.Spider
 	spiderJson := FlagToString(fSpider)
 	if spiderJson == "" {
 		slog.Error("args flag for spider binary is not set")
 		return
 	}
 
-	spider = &setup.Spider{}
-	if err := JsonToType(spiderJson, spider); err != nil {
-		slog.Error("parse spider JSON", slog.String("arg", spiderJson), err)
+	spider, err := setup.NewSpider([]byte(spiderJson))
+	if err != nil {
+		slog.Error("parse spider JSON", slog.String("arg", spiderJson), slog.String("error", err.Error()))
 		return
 	}
 
