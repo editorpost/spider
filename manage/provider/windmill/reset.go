@@ -1,33 +1,36 @@
 package windmill
 
 import (
-	"github.com/editorpost/donq/mongodb"
+	"github.com/editorpost/spider/manage/setup"
 	"github.com/editorpost/spider/store"
 )
 
 // Reset drops the collector and extractor stores
 // All spider related data will be erased.
+//
+//goland:noinspection GoDfaNilDereference
 func Reset(name string) error {
 
-	conf, err := MongoConfig(DefaultMongoResource)
-	if err != nil {
-		return err
-	}
+	var deploy *setup.Deploy
 
-	if err := ResetCollector(name, conf); err != nil {
+	if err := DeployResource(deploy); err != nil {
 		return err
 	}
 
 	// todo reset media
 
-	return ResetExtractor(name, conf)
+	if err := ResetCollector(name, deploy.MongoDSN); err != nil {
+		return err
+	}
+
+	return ResetExtractor(name, deploy.MongoDSN)
 }
 
 // ResetCollector drops the collector store
 // Crawler Endpoint history will be erased.
-func ResetCollector(name string, cfg *mongodb.Config) error {
+func ResetCollector(name string, dsn string) error {
 
-	collector, err := store.NewCollectStore(name, cfg.DSN)
+	collector, err := store.NewCollectStore(name, dsn)
 	if err != nil {
 		return err
 	}
@@ -37,9 +40,9 @@ func ResetCollector(name string, cfg *mongodb.Config) error {
 
 // ResetExtractor drops the extractor store
 // Extracted data will be erased. All temporary data/images will be lost.
-func ResetExtractor(name string, cfg *mongodb.Config) error {
+func ResetExtractor(name string, dsn string) error {
 
-	extractor, err := store.NewExtractStore(name, cfg.DSN)
+	extractor, err := store.NewExtractStore(name, dsn)
 	if err != nil {
 		return err
 	}
