@@ -1,9 +1,9 @@
+//go:build e2e
+
 package windmill_test
 
 import (
 	"encoding/json"
-	"github.com/editorpost/spider/extract"
-	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"github.com/editorpost/spider/manage/setup"
 	"github.com/stretchr/testify/require"
@@ -13,14 +13,16 @@ import (
 func TestTrial(t *testing.T) {
 
 	s := NewSpider(t)
-	extractors, err := extract.Extractors(s.ExtractFields, s.ExtractEntities...)
-	require.NoError(t, err)
-	require.NoError(t, windmill.Trial(s.Args, payload.NewPipeline(extractors...)))
+	require.NoError(t, windmill.Trial(s))
 }
 
 func NewSpider(t *testing.T) *setup.Spider {
-	s := &setup.Spider{}
-	require.NoError(t, json.Unmarshal([]byte(spiderJSon), s))
+	tmp := &setup.Spider{}
+	require.NoError(t, json.Unmarshal([]byte(spiderJSon), tmp))
+
+	s, err := setup.NewSpider(tmp.Args, tmp.Config)
+	require.NoError(t, err)
+
 	return s
 }
 
@@ -61,6 +63,7 @@ const spiderJSon = `
         }
     ],
     "ExtractEntities": [],
+    "ExtractMedia": false,
     "ExtractSelector": ".product--details"
 }
 `
