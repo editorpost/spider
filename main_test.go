@@ -24,7 +24,8 @@ func TestFlags(t *testing.T) {
 		]
 	}`
 
-	s := &setup.Spider{}
+	s, err := setup.NewSpiderFromJSON([]byte(jsonStr))
+	require.NoError(t, err)
 	require.NoError(t, json.Unmarshal([]byte(jsonStr), s))
 
 	require.NoError(t, flag.Set("spider", jsonStr))
@@ -33,5 +34,6 @@ func TestFlags(t *testing.T) {
 	cmd, spider := Flags()
 
 	assert.Equal(t, "start", cmd)
-	assert.Equal(t, s, spider)
+	assert.Equal(t, s.Args, spider.Args)
+	assert.Equal(t, s.Config, spider.Config)
 }

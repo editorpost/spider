@@ -124,6 +124,7 @@ require (
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tdewolff/minify/v2 v2.20.33 // indirect
 	github.com/tdewolff/parse/v2 v2.7.14 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect

@@ -1,9 +1,11 @@
 package config_test
 
 import (
+	"errors"
 	"github.com/editorpost/spider/collect/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	"net/url"
 	"testing"
 )
@@ -121,4 +123,168 @@ func TestRootUrl(t *testing.T) {
 			require.Equal(t, tt.root, root)
 		})
 	}
+}
+
+type ConfigTestSuite struct {
+	suite.Suite
+}
+
+func (suite *ConfigTestSuite) TestNormalize() {
+	tests := []struct {
+		args     config.Args
+		expected error
+	}{
+		{
+			args: config.Args{
+				StartURL: "https://example.com",
+			},
+			expected: nil,
+		},
+		{
+			args: config.Args{
+				StartURL: "",
+			},
+			expected: errors.New("start url is required"),
+		},
+		{
+			args: config.Args{
+				StartURL: "invalid-url",
+			},
+			expected: errors.New("start url is invalid: parse \"invalid-url\": invalid URI for request"),
+		},
+		{
+			args: config.Args{
+				StartURL: "https://",
+			},
+			expected: errors.New("start url host is invalid, add domain name"),
+		},
+	}
+
+	for _, tt := range tests {
+		err := tt.args.Normalize()
+		if tt.expected == nil {
+			assert.NoError(suite.T(), err)
+		} else {
+			assert.EqualError(suite.T(), err, tt.expected.Error())
+		}
+	}
+}
+
+func (suite *ConfigTestSuite) TestNormalizeURLs() {
+	tests := []struct {
+		args     config.Args
+		expected error
+	}{
+		{
+			args: config.Args{
+				StartURL: "https://example.com",
+			},
+			expected: nil,
+		},
+		{
+			args: config.Args{
+				StartURL: "",
+			},
+			expected: errors.New("start url is required"),
+		},
+		{
+			args: config.Args{
+				StartURL: "invalid-url",
+			},
+			expected: errors.New("start url is invalid: parse \"invalid-url\": invalid URI for request"),
+		},
+		{
+			args: config.Args{
+				StartURL: "https://",
+			},
+			expected: errors.New("start url host is invalid, add domain name"),
+		},
+	}
+
+	for _, tt := range tests {
+		err := tt.args.NormalizeURLs()
+		if tt.expected == nil {
+			assert.NoError(suite.T(), err)
+		} else {
+			assert.EqualError(suite.T(), err, tt.expected.Error())
+		}
+	}
+}
+
+func (suite *ConfigTestSuite) TestNormalizeUserAgent() {
+	tests := []struct {
+		args     config.Args
+		expected string
+	}{
+		{
+			args: config.Args{
+				UserAgent: "Mozilla/5.0",
+			},
+			expected: "Mozilla/5.0",
+		},
+		{
+			args: config.Args{
+				UserAgent: "",
+			},
+			expected: config.DefaultUserAgent,
+		},
+	}
+
+	for _, tt := range tests {
+		err := tt.args.NormalizeUserAgent()
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), tt.expected, tt.args.UserAgent)
+	}
+}
+
+func (suite *ConfigTestSuite) TestNormalizeExtractSelector() {
+	tests := []struct {
+		args     config.Args
+		expected string
+	}{
+		{
+			args: config.Args{
+				ExtractSelector: " article ",
+			},
+			expected: "article",
+		},
+		{
+			args: config.Args{
+				ExtractSelector: "",
+			},
+			expected: "html",
+		},
+	}
+
+	for _, tt := range tests {
+		tt.args.NormalizeExtractSelector()
+		assert.Equal(suite.T(), tt.expected, tt.args.ExtractSelector)
+	}
+}
+
+func (suite *ConfigTestSuite) TestRootUrl() {
+	tests := []struct {
+		url      string
+		expected string
+	}{
+		{
+			url:      "https://example.com/articles/1234/5678",
+			expected: "https://example.com",
+		},
+		{
+			url:      "https://example.com",
+			expected: "https://example.com",
+		},
+	}
+
+	for _, tt := range tests {
+		u, err := url.Parse(tt.url)
+		assert.NoError(suite.T(), err)
+		got := config.RootUrl(u)
+		assert.Equal(suite.T(), tt.expected, got)
+	}
+}
+
+func TestConfigTestSuite(t *testing.T) {
+	suite.Run(t, new(ConfigTestSuite))
 }
