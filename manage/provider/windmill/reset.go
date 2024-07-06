@@ -8,7 +8,7 @@ import (
 // Reset drops the collector and extractor stores
 // All spider related data will be erased.
 //
-//goland:noinspection GoDfaNilDereference
+//goland:noinspection GoDfaNilDereference,GoUnusedExportedFunction
 func Reset(name string) error {
 
 	var deploy *setup.Deploy
