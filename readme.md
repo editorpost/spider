@@ -1,9 +1,14 @@
 
 # Disclaimer. Don't use it. Under development.
 
-# Usage as Windmill Script
 
-Ensure you have the Windmill Mongodb resource `f/spider/resource/mongodbdb` available in your Windmill environment.
+# Run as binary
+```bash
+go run main.go -cmd="start" -spider="{}"
+```
+
+# Usage as Windmill Script
+Ensure you have the Windmill Mongodb resource `f/spider/resource/deploy` available in your Windmill environment.
 
 Expected arguments:
 ```json 
