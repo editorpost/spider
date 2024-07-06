@@ -10,7 +10,7 @@ import (
 // It processes the selection using the specified input format and optional CSS selector.
 //
 // Parameters:
-//   - f (*Field): A pointer to an Field struct containing the extraction configuration.
+//   - f (*Field): A pointer to a Field struct containing the extraction configuration.
 //   - sel (*goquery.Selection): A goquery.Selection object representing the HTML elements to be processed.
 //
 // Returns:
@@ -47,7 +47,7 @@ func SelectionsAsStrings(f *Field, sel *goquery.Selection) []string {
 		return s.Text()
 	}
 
-	selection.Each(func(i int, s *goquery.Selection) {
+	selection.Each(func(_ int, s *goquery.Selection) {
 		data = append(data, ReduceSpaces(out(s)))
 	})
 
@@ -72,7 +72,7 @@ func SelectionsAsStrings(f *Field, sel *goquery.Selection) []string {
 func CleanStrings(entries []string) []string {
 
 	// remove empty entries
-	entries = lo.Filter(entries, func(v string, i int) bool {
+	entries = lo.Filter(entries, func(v string, _ int) bool {
 		return v != ""
 	})
 
@@ -89,7 +89,7 @@ func CleanStrings(entries []string) []string {
 // It processes each string according to the Field configuration.
 //
 // Parameters:
-//   - f (*Field): A pointer to an Field struct containing the transformation configuration.
+//   - f (*Field): A pointer to a Field struct containing the transformation configuration.
 //   - entries ([]string): A slice of strings to be transformed.
 //
 // Returns:
@@ -118,7 +118,7 @@ func FormatValues(f *Field, entries []string) []string {
 // and applies string manipulation to clean up the output.
 //
 // Parameters:
-//   - f (*Field): A pointer to an Field struct containing the transformation configuration.
+//   - f (*Field): A pointer to a Field struct containing the transformation configuration.
 //   - value (string): The input string to be transformed.
 //
 // Returns:

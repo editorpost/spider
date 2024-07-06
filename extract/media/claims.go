@@ -41,7 +41,7 @@ func NewClaims(publicURL string) *Claims {
 // ExtractAndReplace Claim for each img tag and replace src path in selection.
 func (list *Claims) ExtractAndReplace(selection *goquery.Selection) *Claims {
 
-	selection.Find("img").Each(func(i int, el *goquery.Selection) {
+	selection.Find("img").Each(func(_ int, el *goquery.Selection) {
 
 		// has src
 		src, exists := el.Attr("src")

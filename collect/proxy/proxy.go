@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	FreshUntil = time.Second * 300
+	FreshUntil            = time.Second * 300
+	DefaultProxyURLScheme = "http"
 )
 
 type Proxy struct {
@@ -44,7 +45,7 @@ func NewProxy(uri string) (*Proxy, error) {
 // NewProxies creates a new valid list from the given uris
 func NewProxies(uris ...string) []*Proxy {
 
-	var proxies []*Proxy
+	proxies := make([]*Proxy, 0, len(uris))
 
 	for _, uri := range uris {
 
@@ -111,5 +112,5 @@ func NormalizeProxyURI(uri string) string {
 		}
 	}
 
-	return "http://" + uri
+	return DefaultProxyURLScheme + "://" + uri
 }

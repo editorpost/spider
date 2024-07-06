@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestListConcurrency(t *testing.T) {
+func TestListConcurrency(_ *testing.T) {
 
 	proxies := []*proxy.Proxy{
 		NewProxy("http://proxy1.com"),

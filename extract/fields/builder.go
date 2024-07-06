@@ -53,7 +53,7 @@ func Extract(payload map[string]any, node *goquery.Selection, field *Field) {
 		}
 
 		deltas := make([]map[string]any, 0)
-		scope.Each(func(i int, selection *goquery.Selection) {
+		scope.Each(func(_ int, selection *goquery.Selection) {
 
 			delta := map[string]any{}
 			for _, child := range field.Children {
@@ -95,7 +95,7 @@ func Value(field *Field, sel *goquery.Selection) []string {
 
 func Normalize(entries []any, cardinality int) any {
 
-	entries = lo.Filter(entries, func(entry any, i int) bool {
+	entries = lo.Filter(entries, func(entry any, _ int) bool {
 		return entry != nil
 	})
 

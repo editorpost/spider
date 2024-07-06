@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"github.com/editorpost/spider/manage/setup"
@@ -65,18 +64,4 @@ func FlagToString(flag *string) string {
 		return ""
 	}
 	return *flag
-}
-
-func JsonToType[T any](str string, typ T) error {
-
-	if str == "" {
-		return nil
-	}
-
-	err := json.Unmarshal([]byte(str), typ)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

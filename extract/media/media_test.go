@@ -49,14 +49,15 @@ func TestNewMedia(t *testing.T) {
 	require.NoError(t, m.Claims(p))
 
 	// load claims from payload context
-	claims := p.Ctx.Value(media.ClaimsCtxKey).(*media.Claims)
+	claims, ok := p.Ctx.Value(media.ClaimsCtxKey).(*media.Claims)
+	require.True(t, ok)
 	require.NotZero(t, len(claims.All()))
 
 	// Upload requested media from claims
 	require.NoError(t, m.Upload(p))
 
 	count := atomic.Int32{}
-	loader.uploads.Range(func(key, value any) bool {
+	loader.uploads.Range(func(_, value any) bool {
 		src, ok := value.(string)
 		require.True(t, ok)
 		require.NotEmpty(t, src)
@@ -74,7 +75,7 @@ func TestNewMedia(t *testing.T) {
 	require.NoError(t, m.Upload(p))
 
 	count = atomic.Int32{}
-	loader.uploads.Range(func(key, value any) bool {
+	loader.uploads.Range(func(_, value any) bool {
 		src, ok := value.(string)
 		require.True(t, ok)
 		require.NotEmpty(t, src)

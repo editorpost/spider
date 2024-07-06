@@ -18,8 +18,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // copy article--ssr to article--js
-        var article1 = document.querySelector('.article--ssr');
-        var article2 = article1.cloneNode(true);
+        let article1 = document.querySelector('.article--ssr');
+        let article2 = article1.cloneNode(true);
         article2.classList.remove('article--ssr');
         article2.classList.add('article--js');
         document.body.appendChild(article2);

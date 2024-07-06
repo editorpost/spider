@@ -3,11 +3,9 @@ package article_test
 import (
 	"fmt"
 	md "github.com/JohannesKaufmann/html-to-markdown"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/article"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
-	"github.com/gocolly/colly/v2"
 	distiller "github.com/markusmobius/go-domdistiller"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -58,19 +56,19 @@ func TestDistiller(t *testing.T) {
 func TestReadability(t *testing.T) {
 
 	markup := GetArticleHTML(t)
-	article, err := readability.FromReader(strings.NewReader(markup), GetArticleURL(t))
+	read, err := readability.FromReader(strings.NewReader(markup), GetArticleURL(t))
 	require.NoError(t, err)
 
-	fmt.Printf("Title   : %s\n", article.Title)
-	fmt.Printf("Date    : %s\n", article.PublishedTime)
-	fmt.Printf("Author  : %s\n", article.Byline)
-	fmt.Printf("Length  : %d\n", article.Length)
-	fmt.Printf("Genre : %s\n", article.Excerpt)
-	fmt.Printf("SourceName: %s\n", article.SiteName)
-	fmt.Printf("Image   : %s\n", article.Image)
-	fmt.Printf("Favicon : %s\n", article.Favicon)
-	fmt.Printf("ContentText:\n %s \n", article.TextContent)
-	fmt.Printf("Content:\n %s \n", article.Content)
+	fmt.Printf("Title   : %s\n", read.Title)
+	fmt.Printf("Date    : %s\n", read.PublishedTime)
+	fmt.Printf("Author  : %s\n", read.Byline)
+	fmt.Printf("Length  : %d\n", read.Length)
+	fmt.Printf("Genre : %s\n", read.Excerpt)
+	fmt.Printf("SourceName: %s\n", read.SiteName)
+	fmt.Printf("Image   : %s\n", read.Image)
+	fmt.Printf("Favicon : %s\n", read.Favicon)
+	fmt.Printf("ContentText:\n %s \n", read.TextContent)
+	fmt.Printf("Content:\n %s \n", read.Content)
 }
 
 //goland:noinspection GoUnhandledErrorResult
@@ -82,12 +80,12 @@ func TestMarkdown(t *testing.T) {
 		Host:   "thailand-news.ru",
 		Path:   "/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/",
 	}
-	article, err := readability.FromReader(strings.NewReader(markup), u)
+	read, err := readability.FromReader(strings.NewReader(markup), u)
 	require.NoError(t, err)
 
 	converter := md.NewConverter("", true, nil)
 
-	markdown, err := converter.ConvertString(article.Content)
+	markdown, err := converter.ConvertString(read.Content)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -126,44 +124,4 @@ func GetArticleURL(t *testing.T) *url.URL {
 		Host:   "thailand-news.ru",
 		Path:   "/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/",
 	}
-}
-
-func GetArticleDocument(t *testing.T) *colly.HTMLElement {
-
-	t.Helper()
-
-	// open file `article_test.html` return as string
-	f, err := os.Open("article_test.html")
-	require.NoError(t, err)
-	defer f.Close()
-
-	// read file as a string
-	buf := new(strings.Builder)
-	_, err = io.Copy(buf, f)
-	require.NoError(t, err)
-
-	// parse html
-	query, err := goquery.NewDocumentFromReader(strings.NewReader(buf.String()))
-	require.NoError(t, err)
-
-	ctx := &colly.Context{}
-	resp := &colly.Response{
-		Request: &colly.Request{
-			Ctx: ctx,
-		},
-		Ctx: ctx,
-	}
-
-	var doc *colly.HTMLElement
-	doc = colly.NewHTMLElementFromSelectionNode(resp, query.Selection, query.Nodes[0], 0)
-
-	query.Find("html").Each(func(_ int, s *goquery.Selection) {
-		for _, n := range s.Nodes {
-			if doc != nil {
-				doc = colly.NewHTMLElementFromSelectionNode(resp, s, n, 0)
-			}
-		}
-	})
-
-	return doc
 }

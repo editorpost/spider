@@ -137,7 +137,11 @@ func (ts *MetricStore) flush() error {
 		}
 		if event.ErrorInfo != nil {
 
-			update["$set"].(bson.M)["error"] = *event.ErrorInfo
+			m, ok := update["$set"].(bson.M)
+			if !ok {
+				return fmt.Errorf("error casting update to bson.M")
+			}
+			m["error"] = *event.ErrorInfo
 		}
 		models = append(models, mongo.NewUpdateOneModel().SetFilter(filter).SetUpdate(update).SetUpsert(true))
 	}

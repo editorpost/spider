@@ -20,10 +20,11 @@ func TestNewExtract(t *testing.T) {
 
 	code := GetHTML(t)
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(code))
+	require.NoError(t, err)
 
 	// check if url replaced in selection
 	count := 0
-	doc.Find("img").Each(func(i int, el *goquery.Selection) {
+	doc.Find("img").Each(func(_ int, el *goquery.Selection) {
 		if _, ok := el.Attr("src"); ok {
 			count++
 		}
@@ -38,13 +39,13 @@ func TestNewExtract(t *testing.T) {
 	assert.Equal(t, count, claims.Len())
 
 	// check if url replaced in selection
-	sel.Find("img").Each(func(i int, el *goquery.Selection) {
+	sel.Find("img").Each(func(_ int, el *goquery.Selection) {
 		src, _ := el.Attr("src")
 		assert.True(t, strings.HasPrefix(src, prefix))
 	})
 
 	// check if url replaced in document (pointers are the same)
-	doc.Find("img").Each(func(i int, el *goquery.Selection) {
+	doc.Find("img").Each(func(_ int, el *goquery.Selection) {
 		src, _ := el.Attr("src")
 		assert.True(t, strings.HasPrefix(src, prefix))
 	})

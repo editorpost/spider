@@ -106,15 +106,3 @@ func MustHostname(fromURL string) string {
 
 	return uri.Hostname()
 }
-
-// MustRootUrl return the root url
-// e.g. https://example.com/articles/1234/5678 => https://example.com
-func MustRootUrl(fromURL string) string {
-
-	uri, err := url.Parse(fromURL)
-	if err != nil {
-		panic(err)
-	}
-
-	return uri.Scheme + "://" + uri.Host // no port explicitly
-}

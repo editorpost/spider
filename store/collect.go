@@ -104,8 +104,8 @@ func (s *CollectStore) Visited(requestID uint64) error {
 	}
 
 	_, err := s.visited.InsertOne(context.Background(), bson.D{
-		{StoreRequestIDKey, strconv.FormatUint(requestID, 10)},
-		{StoreVisitedKey, true},
+		{Key: StoreRequestIDKey, Value: strconv.FormatUint(requestID, 10)},
+		{Key: StoreVisitedKey, Value: true},
 	})
 
 	if err != nil {
@@ -128,7 +128,7 @@ func (s *CollectStore) IsVisited(requestID uint64) (bool, error) {
 
 	doc := bson.D{}
 	err := s.visited.FindOne(context.TODO(), bson.D{
-		{StoreRequestIDKey, strconv.FormatUint(requestID, 10)},
+		{Key: StoreRequestIDKey, Value: strconv.FormatUint(requestID, 10)},
 	}).Decode(&doc)
 
 	if err != nil {
@@ -157,7 +157,7 @@ func (s *CollectStore) Cookies(u *url.URL) string {
 	// check db
 	doc := bson.D{}
 	err := s.cookies.FindOne(context.TODO(), bson.D{
-		{StoreHostKey, u.Host},
+		{Key: StoreHostKey, Value: u.Host},
 	}).Decode(&doc)
 
 	if err != nil {
@@ -167,7 +167,11 @@ func (s *CollectStore) Cookies(u *url.URL) string {
 		return ""
 	}
 
-	str := doc.Map()[StoreCookiesKey].(string)
+	str, ok := doc.Map()[StoreCookiesKey].(string)
+	if !ok {
+		return ""
+	}
+
 	s._cookies.Store(u.Host, str)
 	slog.Info("Set cookies from db", slog.String("host", u.Host), slog.String("cookies", str))
 
@@ -178,8 +182,8 @@ func (s *CollectStore) Cookies(u *url.URL) string {
 func (s *CollectStore) SetCookies(u *url.URL, cookies string) {
 
 	_, err := s.cookies.InsertOne(context.TODO(), bson.D{
-		{StoreHostKey, u.Host},
-		{StoreCookiesKey, cookies},
+		{Key: StoreHostKey, Value: u.Host},
+		{Key: StoreCookiesKey, Value: cookies},
 	})
 
 	if err != nil {

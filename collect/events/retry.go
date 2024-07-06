@@ -10,7 +10,6 @@ import (
 
 const (
 	// BadProxyRetries is the number of retries for request errors from colly.onError handler.
-	// it handler network errors, timeouts, etc.
 	BadProxyRetries = 15
 	// ResponseRetries is the number of retries for response errors from crawler.visit handler.
 	// it handler http status codes, anti-scraping, captcha, etc.

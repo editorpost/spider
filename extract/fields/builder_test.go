@@ -1,6 +1,7 @@
 package fields_test
 
 import (
+	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/fields"
 	"github.com/go-playground/validator/v10"
@@ -26,8 +27,9 @@ func TestConstructValidation(t *testing.T) {
 	err := fields.Construct(&fields.Field{})
 	assert.Error(t, err)
 
-	validationErr := err.(validator.ValidationErrors)
-	assert.Len(t, validationErr, 1)
+	var validatorErr validator.ValidationErrors
+	assert.True(t, errors.As(err, &validatorErr))
+	assert.Equal(t, len(validatorErr), 1)
 }
 
 func TestConstructRegex(t *testing.T) {
@@ -531,29 +533,6 @@ func CaseHandler(c Case) func(t *testing.T) {
 
 		assert.Equal(t, c.expected, payload)
 	}
-}
-
-func AssertErrorIs(t *testing.T, expected bool, got error, want error) {
-
-	t.Helper()
-
-	if got == nil {
-		// continue test case execution
-		return
-	}
-
-	// force error if not expected
-	if !expected {
-		assert.NoError(t, got)
-	}
-
-	// check error instance
-	if want != nil {
-		assert.ErrorIs(t, got, want)
-	}
-
-	// stops test case execution
-	return
 }
 
 func BenchmarkExtract(b *testing.B) {

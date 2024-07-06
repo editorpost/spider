@@ -28,7 +28,6 @@ type Pool struct {
 	Loader func() ([]string, error)
 	// Checker is a function to check the proxy by URI string
 	Checker func(string) error
-	mute    sync.RWMutex
 	rtp     *http.Transport
 }
 
@@ -67,7 +66,7 @@ func NewPool(testURL string) *Pool {
 	pool.rtp = &http.Transport{
 		Proxy:             pool.GetProxyURL,
 		DisableKeepAlives: true,
-		OnProxyConnectResponse: func(ctx context.Context, proxyURL *url.URL, req *http.Request, resp *http.Response) error {
+		OnProxyConnectResponse: func(_ context.Context, proxyURL *url.URL, req *http.Request, resp *http.Response) error {
 
 			p := pool.valid.Get(proxyURL.String())
 			p.AddUsageMetric()

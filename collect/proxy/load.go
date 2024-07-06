@@ -12,6 +12,8 @@ import (
 
 // LoadJSONList loads the valid list from the given url
 // Returns nil if the url is empty.
+//
+//goland:noinspection GoUnusedExportedFunction
 func LoadJSONList(url string) []string {
 
 	if url == "" {
@@ -19,6 +21,7 @@ func LoadJSONList(url string) []string {
 	}
 
 	// fetch the url
+	//nolint:gosec
 	res, err := http.Get(url)
 	if err != nil {
 		fmt.Printf("error making http request: %s\n", err)
@@ -39,7 +42,7 @@ func LoadJSONList(url string) []string {
 		panic(err)
 	}
 
-	var lines []string
+	lines := make([]string, 0, len(proxies))
 	for _, p := range proxies {
 		lines = append(lines, p.String())
 	}
@@ -55,6 +58,7 @@ func LoadJSONList(url string) []string {
 func LoadStringList(sourceURL string) ([]string, error) {
 
 	// fetch the url
+	//nolint:gosec
 	res, err := http.Get(sourceURL)
 	if err != nil {
 		return nil, fmt.Errorf("can not load proxy list from proxyscrape.com: %w", err)

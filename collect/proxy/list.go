@@ -173,7 +173,8 @@ func (lst *List) Strings() []string {
 	lst.mute.RLock()
 	defer lst.mute.RUnlock()
 
-	var lines []string
+	lines := make([]string, 0, len(lst.proxies))
+
 	for _, p := range lst.proxies {
 		lines = append(lines, p.String())
 	}

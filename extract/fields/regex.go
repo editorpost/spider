@@ -25,7 +25,7 @@ import (
 //	fmt.Println(result) // Output: ["123", "Item", "456", "Product", "789", "Service"]
 func RegexExtracts(selections []string, expressions ...*regexp.Regexp) (entries []string) {
 
-	expressions = lo.Filter(expressions, func(v *regexp.Regexp, i int) bool {
+	expressions = lo.Filter(expressions, func(v *regexp.Regexp, _ int) bool {
 		return v != nil
 	})
 
@@ -78,15 +78,15 @@ func RegexExtract(re *regexp.Regexp, data string) []string {
 }
 
 // RegexCompile compiles regular expressions based on the Field configuration.
-// It validates the Field and then compiles regex patterns for between and final matching.
+// It validates the Field and then compiles regexp patterns for between and final matching.
 //
 // Parameters:
-//   - f (*Field): A pointer to an Field struct containing the configuration for regex compilation.
+//   - f (*Field): A pointer to a Field struct containing the configuration for regexp compilation.
 //
 // Returns:
 //   - between (*regexp.Regexp): The compiled regular expression for matching text between BetweenStart and BetweenEnd.
-//   - regex (*regexp.Regexp): The compiled user-defined regular expression from FinalRegex.
-//   - err (error): An error that occurred during validation or regex compilation, or nil if successful.
+//   - regexp (*regexp.Regexp): The compiled user-defined regular expression from FinalRegex.
+//   - err (error): An error that occurred during validation or regexp compilation, or nil if successful.
 //
 // Example:
 //
@@ -97,22 +97,22 @@ func RegexExtract(re *regexp.Regexp, data string) []string {
 //	}
 //	between, regex, err := RegexCompile(field)
 //	if err != nil {
-//	    log.Fatalf("Failed to compile regex: %v", err)
+//	    log.Fatalf("Failed to compile regexp: %v", err)
 //	}
 //	fmt.Println(between) // Output: regexp that matches "start" and "end" with any text between
 //	fmt.Println(regex)   // Output: regexp that matches one or more digits
-func RegexCompile(f *Field) (between *regexp.Regexp, regex *regexp.Regexp, err error) {
+func RegexCompile(f *Field) (between *regexp.Regexp, userDefined *regexp.Regexp, err error) {
 
-	// regex retrieves the text between BetweenStart and next entry BetweenEnd
+	// userDefined retrieves the text between BetweenStart and next entry BetweenEnd
 	if f.BetweenStart != "" && f.BetweenEnd != "" {
 		between = regexp.MustCompile(regexp.QuoteMeta(f.BetweenStart) + "(?s)(.*?)" + regexp.QuoteMeta(f.BetweenEnd))
 	}
 
-	// compile the user defined regex, if provided
+	// compile the user defined userDefined, if provided
 	if f.FinalRegex == "" {
 		return
 	}
 
-	regex, err = regexp.Compile(f.FinalRegex)
+	userDefined, err = regexp.Compile(f.FinalRegex)
 	return
 }

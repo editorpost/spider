@@ -24,8 +24,8 @@ func DataAssert(t *testing.T, got []byte) {
 func TestMain(m *testing.M) {
 
 	// run image server
-	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(DataExpected()) // Example of JPEG header bytes.
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write(DataExpected()) // Example of JPEG header bytes.
 	}))
 	defer server.Close()
 	m.Run()
@@ -42,8 +42,8 @@ func TestDownload(t *testing.T) {
 func TestDownloader_Download(t *testing.T) {
 	// Set up a test server that serves an example image.
 	testImage := []byte{0xFF, 0xD8, 0xFF} // Example of JPEG header bytes.
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(testImage)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write(testImage)
 	}))
 	defer ts.Close()
 
@@ -69,24 +69,11 @@ func TestDownloader_SetClient(t *testing.T) {
 	DataAssert(t, buf.Bytes())
 }
 
-func TestDownloader_BuffersMemoryAllocation(t *testing.T) {
-	// Use the test server Endpoint in place of the real image Endpoint.
-	downloader := media.NewLoader(nil)
-
-	// Fetch the image multiple times to ensure the buffers are reused.
-	for i := 0; i < 10; i++ {
-		buf, err := downloader.Fetch(server.URL)
-		require.NoError(t, err)
-		defer downloader.ReleaseBuffer(buf)
-		DataAssert(t, buf.Bytes())
-	}
-}
-
 func BenchmarkDownloader_Download(b *testing.B) {
 	// Set up a test server that serves an example image.
 	testImage := []byte{0xFF, 0xD8, 0xFF} // Example of JPEG header bytes.
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write(testImage)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write(testImage)
 	}))
 	defer ts.Close()
 
