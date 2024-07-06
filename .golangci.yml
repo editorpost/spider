@@ -11,14 +11,12 @@ linters:
     - forcetypeassert
     - gosec
     - gosimple
-    - maligned
     - misspell
     - nilerr
     - nolintlint
     - prealloc
     - revive
     - staticcheck
-    - structcheck
     - wastedassign
 issues:
   exclude-rules:
