@@ -149,7 +149,7 @@ func TestRealForbidden(t *testing.T) {
 }
 
 var (
-	collector *CollectStore
+	collector *MongoCollectStore
 )
 
 // ServeFile serves the file at the given path and returns the Endpoint
