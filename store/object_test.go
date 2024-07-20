@@ -49,12 +49,22 @@ func TestBucketFolder_Save(t *testing.T) {
 	client, err := store.NewS3Client(bucket)
 	require.NoError(t, err)
 
-	bf, err := store.NewBucketStore("test", client)
+	bf := store.NewBucketStore("ep-spider", "test_dir", client)
 	require.NoError(t, err)
 
 	data := []byte("test data")
 	filename := "testfile.txt"
 
 	err = bf.Save(data, filename)
+	assert.NoError(t, err)
+
+	// read
+	b, err := bf.Load(filename)
+	assert.NoError(t, err)
+
+	assert.Equal(t, data, b)
+
+	// delete
+	err = bf.Delete(filename)
 	assert.NoError(t, err)
 }

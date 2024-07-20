@@ -17,9 +17,7 @@ type (
 	Media struct {
 		// publicURL for public media storagePath
 		publicURL string
-		// storagePath for media storage
-		storagePath string
-		loader      Uploader
+		loader    Uploader
 	}
 
 	Uploader interface {
@@ -30,11 +28,10 @@ type (
 // NewMedia creates a new media extractors.
 // Claims extracts and replaces image urls in the document. Must be called before extractors got access to document content.
 // Uploads requested media to the destination. Must be called right before saving the payload. Adds upload result to the payload.
-func NewMedia(publicURL, storagePath string, loader Uploader) *Media {
+func NewMedia(publicURL string, loader Uploader) *Media {
 	return &Media{
-		publicURL:   publicURL,
-		storagePath: storagePath,
-		loader:      loader,
+		publicURL: publicURL,
+		loader:    loader,
 	}
 }
 
@@ -76,10 +73,18 @@ func (m *Media) Upload(payload *payload.Payload) error {
 
 	// download source and upload to destination
 	for _, claim := range requested {
-		if err := m.loader.Upload(claim.Src, m.storagePath); err != nil {
+
+		filename, err := Filename(claim.Src)
+		if err != nil {
+			slog.Error("failed to hash filename", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
+			continue
+		}
+
+		if err = m.loader.Upload(claim.Src, filename); err != nil {
 			slog.Error("failed to download media", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
 			continue
 		}
+
 		claims.Done(claim.Dst)
 	}
 

@@ -175,11 +175,11 @@ func (s *Spider) withMedia(deploy *Deploy) error {
 		return err
 	}
 
-	bucketStore := store.NewBucketStore(deploy.Bucket.Name, s3)
-
 	path := fmt.Sprintf(SpiderMediaPath, s.Args.ID)
+	bucketStore := store.NewBucketStore(deploy.Bucket.Name, path, s3)
+
 	publicURL := fmt.Sprintf("%s/%s", deploy.Bucket.PublicURL, path)
-	uploader := media.NewMedia(publicURL, path, media.NewLoader(bucketStore))
+	uploader := media.NewMedia(publicURL, media.NewLoader(bucketStore))
 
 	s.pipe.Starter(uploader.Claims)
 	s.pipe.Finisher(uploader.Upload)

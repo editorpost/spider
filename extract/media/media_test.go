@@ -35,7 +35,7 @@ func TestNewMedia(t *testing.T) {
 	doc := GetDocument(t)
 
 	loader := NewLoader()
-	m := media.NewMedia("https://dst.com/static/media", "static/media", loader)
+	m := media.NewMedia("https://dst.com/static/media", loader)
 
 	p := &payload.Payload{
 		Ctx:       context.Background(),
