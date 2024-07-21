@@ -22,6 +22,8 @@ func NewSpiderWith(t *testing.T, server *TestServer) *setup.Spider {
 	args.StartURL = server.URL + "/index.html"
 	args.AllowedURL = server.URL
 	args.ExtractURL = server.URL + "/{dir}/{some}-{num}.html"
+	args.ExtractLimit = 5
+	args.Depth = 3
 
 	s, err := setup.NewSpider(args, NewExtractConfig())
 	require.NoError(t, err)
