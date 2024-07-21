@@ -1,8 +1,10 @@
 package store
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const LocalBucket = "local"
@@ -15,40 +17,75 @@ func IsLocalBucket(bucket Bucket) bool {
 	return bucket.Name == LocalBucket
 }
 
-func NewLocalBucket(publicURL string) Bucket {
-	return Bucket{
-		Name:      LocalBucket,
-		PublicURL: publicURL,
-	}
-}
+func NewFolderStorage(bucket Bucket) (*LocalStorage, error) {
 
-func NewFolderStorage(bucket Bucket) *LocalStorage {
+	folder, err := filepath.Abs(bucket.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
 	return &LocalStorage{
-		folder: bucket.Endpoint,
-	}
+		folder: folder,
+	}, nil
 }
 
+// Save writes or overwrites file
 func (f *LocalStorage) Save(data []byte, filename string) error {
-	return os.WriteFile(f.path(filename), data, 0644)
+
+	path, err := f.path(filename)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, data, 0644)
 }
 
 func (f *LocalStorage) Load(filename string) ([]byte, error) {
-	return os.ReadFile(f.path(filename))
+
+	path, err := f.path(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return []byte("{}"), nil
+	}
+	return b, err
 }
 
 func (f *LocalStorage) Delete(filename string) error {
-	return os.Remove(f.path(filename))
+
+	path, err := f.path(filename)
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }
 
 func (f *LocalStorage) Reset() error {
 	return os.RemoveAll(f.folder)
 }
 
-func (f *LocalStorage) path(filename string) string {
+func (f *LocalStorage) path(filename string) (string, error) {
 
 	if len(f.folder) == 0 {
-		return filename
+		return filename, nil
 	}
 
-	return fmt.Sprintf("%s/%s", f.folder, filename)
+	// get folder path from filename
+	dir := filepath.Dir(filename)
+
+	// create folders recursively if not exists
+	err := os.MkdirAll(filepath.Join(f.folder, dir), 0755)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s/%s", f.folder, filename), nil
 }

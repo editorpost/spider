@@ -74,7 +74,7 @@ func NewBucketStorage(bucket, folder string, client *s3.Client) *BucketStorage {
 func NewStorage(bucket Bucket, folder string) (Storage, error) {
 
 	if IsLocalBucket(bucket) {
-		return NewFolderStorage(bucket), nil
+		return NewFolderStorage(bucket)
 	}
 
 	client, err := NewS3Client(bucket)
