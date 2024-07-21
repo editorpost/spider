@@ -1,6 +1,7 @@
 package windmill
 
 import (
+	"github.com/editorpost/spider/manage/console"
 	"github.com/editorpost/spider/manage/setup"
 )
 
@@ -11,15 +12,9 @@ import (
 func Start(s *setup.Spider) (err error) {
 
 	deploy := &setup.Deploy{}
-
-	if err = DeployResource(deploy); err != nil {
+	if err = LoadDeployResource(deploy); err != nil {
 		return err
 	}
 
-	crawler, err := s.NewCrawler(deploy)
-	if err != nil {
-		return err
-	}
-
-	return crawler.Run()
+	return console.Start(s, deploy)
 }

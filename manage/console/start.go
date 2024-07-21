@@ -1,4 +1,4 @@
-package manage
+package console
 
 import (
 	"github.com/editorpost/spider/manage/setup"
@@ -13,5 +13,6 @@ func Start(s *setup.Spider, deploy *setup.Deploy) error {
 		return err
 	}
 
+	defer s.Shutdown()
 	return crawler.Run()
 }

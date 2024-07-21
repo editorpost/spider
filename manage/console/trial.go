@@ -1,12 +1,12 @@
-package manage
+package console
 
 import (
 	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/manage/setup"
 )
 
-// Trial spider against limited and return extracted data
-// It does not store the data, but uses proxy pool for requests.
+// Trial runs spider and return extracted data without storing it.
+// It is allowed to use proxy pool for requests.
 func Trial(s *setup.Spider) ([]*payload.Payload, error) {
 
 	s.Args.ID = "trial"
@@ -17,14 +17,20 @@ func Trial(s *setup.Spider) ([]*payload.Payload, error) {
 		s.Args.ExtractLimit = 30
 	}
 
-	// the queue will stop automatically
-	// after args.ExtractLimit is reached
 	s.Pipeline().Append(func(payload *payload.Payload) error {
 		items = append(items, payload)
 		return nil
 	})
 
-	err := Start(s, &setup.Deploy{})
+	crawler, err := s.NewCrawler(&setup.Deploy{})
+	if err != nil {
+		return items, err
+	}
+
+	defer s.Shutdown()
+	if err = crawler.Run(); err != nil {
+		return items, err
+	}
 
 	return items, err
 }

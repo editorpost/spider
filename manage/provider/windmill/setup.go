@@ -9,8 +9,8 @@ const (
 	DefaultSpiderDeploy = "f/spider/resource/deploy"
 )
 
-// DeployResource returns the config or panic
-func DeployResource(deploy *setup.Deploy) error {
+// LoadDeployResource returns the config or panic
+func LoadDeployResource(deploy *setup.Deploy) error {
 
 	if err := vars.FromResource(DefaultSpiderDeploy, deploy); err != nil {
 		return err

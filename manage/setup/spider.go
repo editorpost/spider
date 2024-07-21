@@ -11,10 +11,7 @@ import (
 	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/extract/payload"
 	"github.com/editorpost/spider/store"
-)
-
-const (
-	SpiderMediaPath = "spiders/%s/media/"
+	"github.com/google/uuid"
 )
 
 // Deploy is the configuration for the spider
@@ -38,8 +35,6 @@ const (
 type Deploy struct {
 	// Bucket is the name of the bucket to store data
 	Bucket store.Bucket `json:"Bucket"`
-	// MongoDSN is connection string to MongoDB
-	MongoDSN string `json:"MongoDSN" validate:"trim"`
 	// VictoriaMetricsUrl
 	VictoriaMetricsUrl string `json:"VictoriaMetricsUrl" validate:"trim"`
 	// VictoriaLogsUrl
@@ -49,7 +44,8 @@ type Deploy struct {
 type Spider struct {
 	*config.Args
 	*extract.Config
-	pipe *payload.Pipeline
+	pipe     *payload.Pipeline
+	shutdown []func() error
 }
 
 // UnmarshalJSON is the custom unmarshalling for Spider
@@ -77,6 +73,15 @@ func NewSpiderFromJSON(data []byte) (*Spider, error) {
 }
 
 func NewSpider(args *config.Args, cfg *extract.Config) (*Spider, error) {
+
+	if args.ID == "" {
+		return nil, fmt.Errorf("spider ID is empty")
+	}
+
+	_, err := uuid.Parse(args.ID)
+	if err != nil {
+		return nil, fmt.Errorf("spider ID is invalid: %w", err)
+	}
 
 	s := &Spider{
 		Args:   args,
@@ -120,43 +125,106 @@ func (s *Spider) withPipeline() error {
 
 func (s *Spider) NewCrawler(deploy *Deploy) (*collect.Crawler, error) {
 
-	if deploy.VictoriaLogsUrl != "" {
-		VictoriaLogs(deploy.VictoriaLogsUrl, "info", s.Args.ID)
+	deps := &config.Deps{}
+
+	s.withVictoriaLogs(deploy.VictoriaLogsUrl)
+
+	if err := s.withVictoriaMetrics(deploy.VictoriaMetricsUrl, deps); err != nil {
+		return nil, err
+	}
+
+	if err := s.withProxy(deps); err != nil {
+		return nil, err
+	}
+
+	if err := s.withStorage(deploy, deps); err != nil {
+		return nil, err
 	}
 
 	s.pipe.Starter(extract.WindmillMeta)
-
-	if err := s.withMedia(deploy); err != nil {
-		return nil, err
-	}
-
-	deps := &config.Deps{}
-
-	if err := s.withDatabase(deploy, deps); err != nil {
-		return nil, err
-	}
-
 	deps.Extractor = s.pipe.Extract
 
-	// metrics
-	if deploy.VictoriaMetricsUrl != "" {
-		metrics, err := NewMetrics(vars.FromEnv().JobID, s.Args.ID, deploy.VictoriaMetricsUrl)
-		if err != nil {
-			return nil, err
-		}
-		deps.Monitor = metrics
-	}
-
-	// proxy
-	if s.Args.ProxyEnabled {
-		proxies, err := proxy.StartPool(s.Args.StartURL, s.Args.ProxySources...)
-		if err != nil {
-			return nil, err
-		}
-		deps.RoundTripper = proxies.Transport()
-	}
-
 	return collect.NewCrawler(s.Args, deps)
+}
+
+func (s *Spider) withVictoriaLogs(uri string) {
+	if uri != "" {
+		VictoriaLogs(uri, "info", s.Args.ID)
+	}
+}
+
+func (s *Spider) withVictoriaMetrics(uri string, deps *config.Deps) (err error) {
+
+	if len(uri) == 0 {
+		return nil
+	}
+
+	deps.Monitor, err = NewMetrics(vars.FromEnv().JobID, s.Args.ID, uri)
+	return err
+}
+
+func (s *Spider) withProxy(deps *config.Deps) error {
+
+	if !s.Args.ProxyEnabled {
+		return nil
+	}
+
+	proxies, err := proxy.StartPool(s.Args.StartURL, s.Args.ProxySources...)
+	if err != nil {
+		return err
+	}
+
+	deps.RoundTripper = proxies.Transport()
+
+	return nil
+}
+
+func (s *Spider) withStorage(deploy *Deploy, deps *config.Deps) error {
+
+	// s3
+	if deploy.Bucket.Name == "" {
+		return nil
+	}
+
+	if err := s.withCollectStore(deploy, deps); err != nil {
+		return err
+	}
+
+	if err := s.withExtractStore(deploy, deps); err != nil {
+		return err
+	}
+
+	if err := s.withMedia(deploy); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Spider) withCollectStore(deploy *Deploy, deps *config.Deps) error {
+
+	st, err := store.NewCollectStorage(s.Args.ID, deploy.Bucket)
+	if err != nil {
+		return err
+	}
+
+	s.onShutdown(st.Shutdown) // upload visited urls to S3
+	deps.Storage = st
+
+	return err
+}
+
+func (s *Spider) withExtractStore(deploy *Deploy, deps *config.Deps) (err error) {
+
+	extractStore, err := store.NewExtractStorage(s.Args.ID, deploy.Bucket)
+	if err != nil {
+		return fmt.Errorf("failed to create extract S3 storage: %w", err)
+	}
+
+	// provide save extractor func
+	s.pipe.Finisher(extractStore.Save)
+
+	return nil
 }
 
 func (s *Spider) withMedia(deploy *Deploy) error {
@@ -165,47 +233,20 @@ func (s *Spider) withMedia(deploy *Deploy) error {
 		return nil
 	}
 
-	if deploy.Bucket.Name != "" {
-		return nil
-	}
-
-	s3, err := store.NewS3Client(deploy.Bucket)
-
+	bucketStore, err := store.NewMediaStorage(s.Args.ID, deploy.Bucket)
 	if err != nil {
 		return err
 	}
 
-	path := fmt.Sprintf(SpiderMediaPath, s.Args.ID)
-	bucketStore := store.NewBucketStore(deploy.Bucket.Name, path, s3)
-
-	publicURL := fmt.Sprintf("%s/%s", deploy.Bucket.PublicURL, path)
+	// public url prefix for media files, e.g. http://my-proxy:8080
+	// join public url with bucket folder, e.g. spider/%/media/123.jpg
+	// to simplify further proxying the bucket, e.g. http://my-proxy:8080/spider/%/media/123.jpg
+	folder := store.GetMediaStorageFolder(s.Args.ID)
+	publicURL := fmt.Sprintf("%s/%s", deploy.Bucket.PublicURL, folder)
 	uploader := media.NewMedia(publicURL, media.NewLoader(bucketStore))
 
 	s.pipe.Starter(uploader.Claims)
 	s.pipe.Finisher(uploader.Upload)
-
-	return nil
-}
-
-func (s *Spider) withDatabase(deploy *Deploy, deps *config.Deps) (err error) {
-
-	// database
-	if deploy.MongoDSN == "" {
-		return nil
-	}
-
-	deps.Storage, err = store.NewCollectStore(s.Args.ID, deploy.MongoDSN)
-	if err != nil {
-		return err
-	}
-
-	extractStore, err := store.NewExtractStore(s.Args.ID, deploy.MongoDSN)
-	if err != nil {
-		return fmt.Errorf("failed to create extract store: %w", err)
-	}
-
-	// provide save extractor func
-	s.pipe.Finisher(extractStore.Save)
 
 	return nil
 }

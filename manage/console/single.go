@@ -1,4 +1,4 @@
-package manage
+package console
 
 import (
 	"github.com/editorpost/spider/collect/config"
@@ -44,5 +44,6 @@ func Single(uri, selector string, extractor payload.Extractor) (*payload.Payload
 		return result, err
 	}
 
+	defer s.Shutdown()
 	return result, crawler.Run()
 }
