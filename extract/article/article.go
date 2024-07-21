@@ -4,6 +4,7 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/PuerkitoBio/goquery"
 	dto "github.com/editorpost/article"
+	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
@@ -39,6 +40,13 @@ func Article(p *pipe.Payload) error {
 	// set the dto to the payload
 	for k, v := range art.Map() {
 		p.Data[k] = v
+	}
+
+	// extract media
+	if claims, ok := p.Ctx.Value(media.ClaimsCtxKey).(*media.Claims); ok {
+		for _, img := range art.Images.Slice() {
+			claims.Request(img.URL)
+		}
 	}
 
 	slog.Debug("extract success", slog.String("title", art.Title))
@@ -139,11 +147,8 @@ func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
 
 	images := dto.NewImages()
 
-	for _, src := range distill.MarkupInfo.Images {
-		image := dto.NewImage(AbsoluteUrl(resource, src.URL))
-		image.Width = src.Width
-		image.Height = src.Height
-		image.Title = src.Caption
+	for _, src := range distill.ContentImages {
+		image := dto.NewImage(AbsoluteUrl(resource, src))
 		images.Add(image)
 	}
 
@@ -203,6 +208,11 @@ func AbsoluteUrl(base *url.URL, href string) string {
 	rel, err := url.Parse(href)
 	if err != nil {
 		return ""
+	}
+
+	// already absolute
+	if rel.Scheme != "" {
+		return rel.String()
 	}
 
 	// resolve the base with the relative href
