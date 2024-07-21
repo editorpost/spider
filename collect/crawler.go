@@ -6,7 +6,6 @@ import (
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 	"log/slog"
-	"time"
 )
 
 // Crawler for scraping a website
@@ -57,12 +56,7 @@ func (crawler *Crawler) Run() error {
 		return err
 	}
 
-	slog.Info("collector running")
-
 	crawler.collect.Wait()
-
-	slog.Info("collector finishing")
-	time.Sleep(500 * time.Millisecond) // todo: remove after ensuring graceful shutdown works as expected
 
 	return nil
 }
