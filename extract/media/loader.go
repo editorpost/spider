@@ -3,8 +3,7 @@ package media
 import (
 	"bytes"
 	"errors"
-	"fmt"
-	"hash/fnv"
+	"github.com/editorpost/spider/extract/payload"
 	"io"
 	"net/http"
 	"net/url"
@@ -97,16 +96,6 @@ func (dl *Loader) ReleaseBuffer(buf *bytes.Buffer) {
 	dl.pool.Put(buf)
 }
 
-// StorageHash generates an FNV hash from the source Endpoint.
-func StorageHash(sourceURL string) (string, error) {
-	h := fnv.New64a()
-	_, err := h.Write([]byte(sourceURL))
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", h.Sum64()), nil
-}
-
 // Filename generates a unique filename hash for the media based on the source Endpoint.
 func Filename(srcURL string) (string, error) {
 
@@ -115,15 +104,12 @@ func Filename(srcURL string) (string, error) {
 	}
 
 	// Generate upload path from the source Endpoint using FNV hash.
-	name, err := StorageHash(srcURL)
+	name, err := payload.Hash(srcURL)
 	if err != nil {
 		return "", err
 	}
 
-	// add file extension from srcURL to the upload pat
-	name += filepath.Ext(srcURL)
-
-	return name, nil
+	return name + filepath.Ext(srcURL), nil
 }
 
 // Download downloads an image from the specified Endpoint using the provided http.Transport.

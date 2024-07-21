@@ -3,15 +3,20 @@ package payload
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
+	"hash/fnv"
 	"net/url"
+	"time"
 )
 
 const (
-	HtmlField = "spider__html"
-	UrlField  = "spider__url"
-	HostField = "spider__host"
+	SpiderIDField = "spider__id"
+	HtmlField     = "spider__html"
+	UrlField      = "spider__url"
+	HostField     = "spider__host"
+	DateField     = "spider__date"
 )
 
 var (
@@ -23,6 +28,8 @@ type (
 	Extractor func(*Payload) error
 	//goland:noinspection GoNameStartsWithPackageName
 	Payload struct {
+		// ID is document url hash
+		ID  string
 		Ctx context.Context
 		// Doc is full document
 		Doc *colly.HTMLElement `json:"-"`
@@ -74,18 +81,47 @@ func (p *Pipeline) Extract(doc *colly.HTMLElement, s *goquery.Selection) error {
 		return errors.New("document is nil")
 	}
 
+	id, err := Hash(doc.Request.URL.String())
+	if err != nil {
+		return fmt.Errorf("url FNV hash error: %w", err)
+	}
+
 	payload := &Payload{
+		ID:        id,
 		Ctx:       context.Background(),
 		Doc:       doc,
 		Selection: s,
 		URL:       doc.Request.URL,
 		Data: map[string]any{
-			UrlField:  doc.Request.URL.String(),
-			HostField: doc.Request.URL.Host,
+			SpiderIDField: id,
+			DateField:     time.Now().UTC().String(),
+			HostField:     doc.Request.URL.Host,
+			UrlField:      doc.Request.URL.String(),
 		},
 	}
 
-	for _, extractor := range p.extractors {
+	// starter
+	if err := p.exec(payload, p.starter...); err != nil {
+		return err
+	}
+
+	// main
+	if err := p.exec(payload, p.extractors...); err != nil {
+		return err
+	}
+
+	// finisher
+	if err := p.exec(payload, p.finisher...); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Pipeline) exec(payload *Payload, extractors ...Extractor) error {
+
+	for _, extractor := range extractors {
+
 		err := extractor(payload)
 
 		// stop the extractor chain if required data is missing
@@ -102,6 +138,7 @@ func (p *Pipeline) Extract(doc *colly.HTMLElement, s *goquery.Selection) error {
 }
 
 // PipelineFn of Processors. Order matters.
+// @deprecated
 func PipelineFn(extractors ...Extractor) CollectorHook {
 
 	return func(doc *colly.HTMLElement, s *goquery.Selection) error {
@@ -110,7 +147,13 @@ func PipelineFn(extractors ...Extractor) CollectorHook {
 			return errors.New("document is nil")
 		}
 
+		id, err := Hash(doc.Request.URL.String())
+		if err != nil {
+			return fmt.Errorf("url FNV hash error: %w", err)
+		}
+
 		payload := &Payload{
+			ID:        id,
 			Doc:       doc,
 			Selection: s,
 			URL:       doc.Request.URL,
@@ -135,4 +178,14 @@ func PipelineFn(extractors ...Extractor) CollectorHook {
 
 		return nil
 	}
+}
+
+// Hash generates an FNV hash from the source Endpoint.
+func Hash(uri string) (string, error) {
+	h := fnv.New64a()
+	_, err := h.Write([]byte(uri))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", h.Sum64()), nil
 }
