@@ -17,15 +17,15 @@ func IsLocalBucket(bucket Bucket) bool {
 	return bucket.Name == LocalBucket
 }
 
-func NewFolderStorage(bucket Bucket) (*LocalStorage, error) {
+func NewFolderStorage(bucket Bucket, folder string) (*LocalStorage, error) {
 
-	folder, err := filepath.Abs(bucket.Endpoint)
+	root, err := filepath.Abs(bucket.Endpoint)
 	if err != nil {
 		return nil, err
 	}
 
 	return &LocalStorage{
-		folder: folder,
+		folder: filepath.Join(root, folder),
 	}, nil
 }
 
@@ -37,7 +37,7 @@ func (f *LocalStorage) Save(data []byte, filename string) error {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0644) //nolint:gosec
 }
 
 func (f *LocalStorage) Load(filename string) ([]byte, error) {
