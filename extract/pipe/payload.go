@@ -43,50 +43,18 @@ type (
 	CollectorHook func(doc *colly.HTMLElement, s *goquery.Selection) error
 )
 
-type Pipeline struct {
-	// starter extractors called before the main extractors
-	starter []Extractor
-	// finisher extractors called after the main extractors
-	finisher []Extractor
-	// extractors is a list of main extractors
-	extractors []Extractor
-}
-
-func NewPipeline(extractors ...Extractor) *Pipeline {
-	return &Pipeline{
-		extractors: extractors,
-		starter:    make([]Extractor, 0),
-		finisher:   make([]Extractor, 0),
-	}
-}
-
-func (p *Pipeline) Append(extractors ...Extractor) *Pipeline {
-	p.extractors = append(p.extractors, extractors...)
-	return p
-}
-
-func (p *Pipeline) Starter(extractors ...Extractor) *Pipeline {
-	p.starter = append(p.starter, extractors...)
-	return p
-}
-
-func (p *Pipeline) Finisher(extractors ...Extractor) *Pipeline {
-	p.finisher = append(p.finisher, extractors...)
-	return p
-}
-
-func (p *Pipeline) Extract(doc *colly.HTMLElement, s *goquery.Selection) error {
+func NewPayload(doc *colly.HTMLElement, s *goquery.Selection) (*Payload, error) {
 
 	if s == nil {
-		return errors.New("document is nil")
+		return nil, errors.New("document is nil")
 	}
 
 	id, err := Hash(doc.Request.URL.String())
 	if err != nil {
-		return fmt.Errorf("url FNV hash error: %w", err)
+		return nil, fmt.Errorf("url FNV hash error: %w", err)
 	}
 
-	payload := &Payload{
+	return &Payload{
 		ID:        id,
 		Ctx:       context.Background(),
 		Doc:       doc,
@@ -98,86 +66,7 @@ func (p *Pipeline) Extract(doc *colly.HTMLElement, s *goquery.Selection) error {
 			HostField:     doc.Request.URL.Host,
 			UrlField:      doc.Request.URL.String(),
 		},
-	}
-
-	// starter
-	if err := p.exec(payload, p.starter...); err != nil {
-		return err
-	}
-
-	// main
-	if err := p.exec(payload, p.extractors...); err != nil {
-		return err
-	}
-
-	// finisher
-	if err := p.exec(payload, p.finisher...); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *Pipeline) exec(payload *Payload, extractors ...Extractor) error {
-
-	for _, extractor := range extractors {
-
-		err := extractor(payload)
-
-		// stop the extractor chain if required data is missing
-		if errors.Is(err, ErrDataNotFound) {
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// PipelineFn of Processors. Order matters.
-// @deprecated
-func PipelineFn(extractors ...Extractor) CollectorHook {
-
-	return func(doc *colly.HTMLElement, s *goquery.Selection) error {
-
-		if s == nil {
-			return errors.New("document is nil")
-		}
-
-		id, err := Hash(doc.Request.URL.String())
-		if err != nil {
-			return fmt.Errorf("url FNV hash error: %w", err)
-		}
-
-		payload := &Payload{
-			ID:        id,
-			Doc:       doc,
-			Selection: s,
-			URL:       doc.Request.URL,
-			Data: map[string]any{
-				UrlField:  doc.Request.URL.String(),
-				HostField: doc.Request.URL.Host,
-			},
-		}
-
-		for _, extractor := range extractors {
-			err := extractor(payload)
-
-			// stop the extractor chain if required data is missing
-			if errors.Is(err, ErrDataNotFound) {
-				return nil
-			}
-
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
+	}, nil
 }
 
 // Hash generates an FNV hash from the source Endpoint.
