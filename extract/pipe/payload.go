@@ -1,4 +1,4 @@
-package payload
+package pipe
 
 import (
 	"context"

@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bits-and-blooms/bloom/v3"
-	"github.com/editorpost/spider/extract/payload"
+	"github.com/editorpost/spider/extract/pipe"
 )
 
 const ()
 
 type (
 	ExtractStore interface {
-		Save(p *payload.Payload) error
+		Save(p *pipe.Payload) error
 		Reset() error
 		Close() error
 	}
@@ -42,7 +42,7 @@ func (s *ExtractStorage) Load(filename string) ([]byte, error) {
 	return s.store.Load(filename)
 }
 
-func (s *ExtractStorage) Save(p *payload.Payload) (err error) {
+func (s *ExtractStorage) Save(p *pipe.Payload) (err error) {
 
 	key := p.URL.String()
 
@@ -57,7 +57,7 @@ func (s *ExtractStorage) Save(p *payload.Payload) (err error) {
 	return nil
 }
 
-func (s *ExtractStorage) save(p *payload.Payload) error {
+func (s *ExtractStorage) save(p *pipe.Payload) error {
 
 	b, err := json.Marshal(p.Data)
 	if err != nil {

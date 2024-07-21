@@ -1,23 +1,23 @@
 package console
 
 import (
-	"github.com/editorpost/spider/extract/payload"
+	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/manage/setup"
 )
 
 // Trial runs spider and return extracted data without storing it.
 // It is allowed to use proxy pool for requests.
-func Trial(s *setup.Spider) ([]*payload.Payload, error) {
+func Trial(s *setup.Spider) ([]*pipe.Payload, error) {
 
 	s.Args.ID = "trial"
-	items := []*payload.Payload{}
+	items := []*pipe.Payload{}
 
 	// force low limit for trial
 	if s.Args.ExtractLimit == 0 && s.Args.ExtractLimit > 30 {
 		s.Args.ExtractLimit = 30
 	}
 
-	s.Pipeline().Append(func(payload *payload.Payload) error {
+	s.Pipeline().Append(func(payload *pipe.Payload) error {
 		items = append(items, payload)
 		return nil
 	})

@@ -3,7 +3,7 @@ package media
 import (
 	"bytes"
 	"errors"
-	"github.com/editorpost/spider/extract/payload"
+	"github.com/editorpost/spider/extract/pipe"
 	"io"
 	"net/http"
 	"net/url"
@@ -104,7 +104,7 @@ func Filename(srcURL string) (string, error) {
 	}
 
 	// Generate upload path from the source Endpoint using FNV hash.
-	name, err := payload.Hash(srcURL)
+	name, err := pipe.Hash(srcURL)
 	if err != nil {
 		return "", err
 	}

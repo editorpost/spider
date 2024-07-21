@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/extract/media"
-	"github.com/editorpost/spider/extract/payload"
+	"github.com/editorpost/spider/extract/pipe"
 	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -37,7 +37,7 @@ func TestNewMedia(t *testing.T) {
 	loader := NewLoader()
 	m := media.NewMedia("https://dst.com/static/media", loader)
 
-	p := &payload.Payload{
+	p := &pipe.Payload{
 		Ctx:       context.Background(),
 		Doc:       doc,
 		Selection: doc.DOM,

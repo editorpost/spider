@@ -3,13 +3,13 @@ package extract
 import (
 	"github.com/editorpost/spider/extract/article"
 	"github.com/editorpost/spider/extract/fields"
-	"github.com/editorpost/spider/extract/payload"
+	"github.com/editorpost/spider/extract/pipe"
 	"log/slog"
 )
 
 //goland:noinspection GoNameStartsWithPackageName
 
-func Extractors(ff []*fields.Field, entities ...string) ([]payload.Extractor, error) {
+func Extractors(ff []*fields.Field, entities ...string) ([]pipe.Extractor, error) {
 
 	// entity extractors
 	extractors := ExtractorsByName(entities...)
@@ -29,13 +29,13 @@ func Extractors(ff []*fields.Field, entities ...string) ([]payload.Extractor, er
 
 // ExtractorsByName creates slice of extractors by name.
 // The string is a string like "html,article", e.g.: extract.Html, extract.Article
-func ExtractorsByName(names ...string) []payload.Extractor {
+func ExtractorsByName(names ...string) []pipe.Extractor {
 
 	if len(names) == 0 {
-		return []payload.Extractor{}
+		return []pipe.Extractor{}
 	}
 
-	extractors := make([]payload.Extractor, 0)
+	extractors := make([]pipe.Extractor, 0)
 	for _, key := range names {
 		switch key {
 		case "html":
@@ -51,9 +51,9 @@ func ExtractorsByName(names ...string) []payload.Extractor {
 // ExtractorsByJsonString creates slice of extractors by name.
 //
 //goland:noinspection GoUnusedExportedFunction
-func ExtractorsByJsonString(js string) []payload.Extractor {
+func ExtractorsByJsonString(js string) []pipe.Extractor {
 	if js == "" {
-		return []payload.Extractor{}
+		return []pipe.Extractor{}
 	}
-	return []payload.Extractor{}
+	return []pipe.Extractor{}
 }

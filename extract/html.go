@@ -1,8 +1,8 @@
 package extract
 
-import "github.com/editorpost/spider/extract/payload"
+import "github.com/editorpost/spider/extract/pipe"
 
-func Html(p *payload.Payload) (err error) {
-	p.Data[payload.HtmlField], err = p.Doc.DOM.Html()
+func Html(p *pipe.Payload) (err error) {
+	p.Data[pipe.HtmlField], err = p.Doc.DOM.Html()
 	return err
 }

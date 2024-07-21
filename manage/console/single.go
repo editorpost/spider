@@ -3,15 +3,15 @@ package console
 import (
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract"
-	"github.com/editorpost/spider/extract/payload"
+	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/manage/setup"
 )
 
 // Single spider against one url and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Single(uri, selector string, extractor payload.Extractor) (*payload.Payload, error) {
+func Single(uri, selector string, extractor pipe.Extractor) (*pipe.Payload, error) {
 
-	result := &payload.Payload{}
+	result := &pipe.Payload{}
 
 	args := &config.Args{
 		// Any name since no data is stored
@@ -33,7 +33,7 @@ func Single(uri, selector string, extractor payload.Extractor) (*payload.Payload
 	}
 
 	s.Pipeline().Append(extractor)
-	s.Pipeline().Finisher(func(p *payload.Payload) error {
+	s.Pipeline().Finisher(func(p *pipe.Payload) error {
 		result = p
 		return nil
 	})

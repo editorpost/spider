@@ -9,7 +9,7 @@ import (
 	"github.com/editorpost/spider/collect/proxy"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/extract/media"
-	"github.com/editorpost/spider/extract/payload"
+	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/store"
 	"github.com/google/uuid"
 )
@@ -44,7 +44,7 @@ type Deploy struct {
 type Spider struct {
 	*config.Args
 	*extract.Config
-	pipe     *payload.Pipeline
+	pipe     *pipe.Pipeline
 	shutdown []func() error
 }
 
@@ -103,7 +103,7 @@ func NewSpider(args *config.Args, cfg *extract.Config) (*Spider, error) {
 // Pipeline for a crawler hooks with extractor functions.
 // Might have prepopulated extractors or extractors added later.
 // Empty by default.
-func (s *Spider) Pipeline() *payload.Pipeline {
+func (s *Spider) Pipeline() *pipe.Pipeline {
 	return s.pipe
 }
 
@@ -119,7 +119,7 @@ func (s *Spider) withPipeline() error {
 		return err
 	}
 
-	s.pipe = payload.NewPipeline(extractors...)
+	s.pipe = pipe.NewPipeline(extractors...)
 	return nil
 }
 

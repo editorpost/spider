@@ -2,7 +2,7 @@ package media
 
 import (
 	"context"
-	"github.com/editorpost/spider/extract/payload"
+	"github.com/editorpost/spider/extract/pipe"
 	"log/slog"
 )
 
@@ -48,7 +48,7 @@ func NewMedia(publicURL string, loader Uploader) *Media {
 //		payload.Claims.Request(uri)
 //		return nil
 //	}
-func (m *Media) Claims(payload *payload.Payload) error {
+func (m *Media) Claims(payload *pipe.Payload) error {
 
 	claims := NewClaims(m.publicURL).ExtractAndReplace(payload.Doc.DOM)
 	payload.Ctx = context.WithValue(payload.Ctx, ClaimsCtxKey, claims)
@@ -57,7 +57,7 @@ func (m *Media) Claims(payload *payload.Payload) error {
 }
 
 // Upload creates Fn to upload requested media from claims.
-func (m *Media) Upload(payload *payload.Payload) error {
+func (m *Media) Upload(payload *pipe.Payload) error {
 
 	claims, ok := payload.Ctx.Value(ClaimsCtxKey).(*Claims)
 	if !ok {

@@ -32,6 +32,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
 	github.com/markusmobius/go-domdistiller v0.0.0-20230515154422-71af71939ff3
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/samber/lo v1.39.0
 	github.com/stretchr/testify v1.9.0
 )
