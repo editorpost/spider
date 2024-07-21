@@ -64,6 +64,10 @@ func (crawler *Dispatch) WatchLimit() {
 // selections matching the query (with JS browse if Args.ExtractSelector is not found in GET response)
 func (crawler *Dispatch) selections(e *colly.HTMLElement) []*goquery.Selection {
 
+	if crawler.args.ExtractSelector == "html" {
+		return []*goquery.Selection{e.DOM}
+	}
+
 	selections := e.DOM.Find(crawler.args.ExtractSelector)
 
 	// if the ExtractSelector is not found in the GET response,
@@ -78,6 +82,7 @@ func (crawler *Dispatch) selections(e *colly.HTMLElement) []*goquery.Selection {
 	}
 
 	var nodes []*goquery.Selection
+
 	selections.Each(func(i int, s *goquery.Selection) {
 		nodes = append(nodes, s)
 	})
