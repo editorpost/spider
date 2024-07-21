@@ -14,16 +14,16 @@ const (
 	Label = "extract_index"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldPayloadID holds the string denoting the payload_id field in the database.
-	FieldPayloadID = "payload_id"
 	// FieldSpiderID holds the string denoting the spider_id field in the database.
 	FieldSpiderID = "spider_id"
-	// FieldTitle holds the string denoting the title field in the database.
-	FieldTitle = "title"
+	// FieldPayloadID holds the string denoting the payload_id field in the database.
+	FieldPayloadID = "payload_id"
 	// FieldExtractedAt holds the string denoting the extracted_at field in the database.
 	FieldExtractedAt = "extracted_at"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
 	// Table holds the table name of the extractindex in the database.
 	Table = "extract_indexes"
 )
@@ -31,11 +31,11 @@ const (
 // Columns holds all SQL columns for extractindex fields.
 var Columns = []string{
 	FieldID,
-	FieldPayloadID,
 	FieldSpiderID,
-	FieldTitle,
+	FieldPayloadID,
 	FieldExtractedAt,
 	FieldStatus,
+	FieldTitle,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -49,6 +49,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// PayloadIDValidator is a validator for the "payload_id" field. It is called by the builders before save.
+	PayloadIDValidator func(string) error
 	// DefaultExtractedAt holds the default value on creation for the "extracted_at" field.
 	DefaultExtractedAt func() time.Time
 	// DefaultStatus holds the default value on creation for the "status" field.
@@ -65,19 +67,14 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByPayloadID orders the results by the payload_id field.
-func ByPayloadID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPayloadID, opts...).ToFunc()
-}
-
 // BySpiderID orders the results by the spider_id field.
 func BySpiderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSpiderID, opts...).ToFunc()
 }
 
-// ByTitle orders the results by the title field.
-func ByTitle(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+// ByPayloadID orders the results by the payload_id field.
+func ByPayloadID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPayloadID, opts...).ToFunc()
 }
 
 // ByExtractedAt orders the results by the extracted_at field.
@@ -88,4 +85,9 @@ func ByExtractedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByTitle orders the results by the title field.
+func ByTitle(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTitle, opts...).ToFunc()
 }

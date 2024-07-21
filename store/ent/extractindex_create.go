@@ -21,21 +21,15 @@ type ExtractIndexCreate struct {
 	hooks    []Hook
 }
 
-// SetPayloadID sets the "payload_id" field.
-func (eic *ExtractIndexCreate) SetPayloadID(u uuid.UUID) *ExtractIndexCreate {
-	eic.mutation.SetPayloadID(u)
-	return eic
-}
-
 // SetSpiderID sets the "spider_id" field.
 func (eic *ExtractIndexCreate) SetSpiderID(u uuid.UUID) *ExtractIndexCreate {
 	eic.mutation.SetSpiderID(u)
 	return eic
 }
 
-// SetTitle sets the "title" field.
-func (eic *ExtractIndexCreate) SetTitle(s string) *ExtractIndexCreate {
-	eic.mutation.SetTitle(s)
+// SetPayloadID sets the "payload_id" field.
+func (eic *ExtractIndexCreate) SetPayloadID(s string) *ExtractIndexCreate {
+	eic.mutation.SetPayloadID(s)
 	return eic
 }
 
@@ -64,6 +58,12 @@ func (eic *ExtractIndexCreate) SetNillableStatus(u *uint8) *ExtractIndexCreate {
 	if u != nil {
 		eic.SetStatus(*u)
 	}
+	return eic
+}
+
+// SetTitle sets the "title" field.
+func (eic *ExtractIndexCreate) SetTitle(s string) *ExtractIndexCreate {
+	eic.mutation.SetTitle(s)
 	return eic
 }
 
@@ -132,20 +132,25 @@ func (eic *ExtractIndexCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (eic *ExtractIndexCreate) check() error {
-	if _, ok := eic.mutation.PayloadID(); !ok {
-		return &ValidationError{Name: "payload_id", err: errors.New(`ent: missing required field "ExtractIndex.payload_id"`)}
-	}
 	if _, ok := eic.mutation.SpiderID(); !ok {
 		return &ValidationError{Name: "spider_id", err: errors.New(`ent: missing required field "ExtractIndex.spider_id"`)}
 	}
-	if _, ok := eic.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "ExtractIndex.title"`)}
+	if _, ok := eic.mutation.PayloadID(); !ok {
+		return &ValidationError{Name: "payload_id", err: errors.New(`ent: missing required field "ExtractIndex.payload_id"`)}
+	}
+	if v, ok := eic.mutation.PayloadID(); ok {
+		if err := extractindex.PayloadIDValidator(v); err != nil {
+			return &ValidationError{Name: "payload_id", err: fmt.Errorf(`ent: validator failed for field "ExtractIndex.payload_id": %w`, err)}
+		}
 	}
 	if _, ok := eic.mutation.ExtractedAt(); !ok {
 		return &ValidationError{Name: "extracted_at", err: errors.New(`ent: missing required field "ExtractIndex.extracted_at"`)}
 	}
 	if _, ok := eic.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "ExtractIndex.status"`)}
+	}
+	if _, ok := eic.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "ExtractIndex.title"`)}
 	}
 	return nil
 }
@@ -182,17 +187,13 @@ func (eic *ExtractIndexCreate) createSpec() (*ExtractIndex, *sqlgraph.CreateSpec
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := eic.mutation.PayloadID(); ok {
-		_spec.SetField(extractindex.FieldPayloadID, field.TypeUUID, value)
-		_node.PayloadID = value
-	}
 	if value, ok := eic.mutation.SpiderID(); ok {
 		_spec.SetField(extractindex.FieldSpiderID, field.TypeUUID, value)
 		_node.SpiderID = value
 	}
-	if value, ok := eic.mutation.Title(); ok {
-		_spec.SetField(extractindex.FieldTitle, field.TypeString, value)
-		_node.Title = value
+	if value, ok := eic.mutation.PayloadID(); ok {
+		_spec.SetField(extractindex.FieldPayloadID, field.TypeString, value)
+		_node.PayloadID = value
 	}
 	if value, ok := eic.mutation.ExtractedAt(); ok {
 		_spec.SetField(extractindex.FieldExtractedAt, field.TypeTime, value)
@@ -201,6 +202,10 @@ func (eic *ExtractIndexCreate) createSpec() (*ExtractIndex, *sqlgraph.CreateSpec
 	if value, ok := eic.mutation.Status(); ok {
 		_spec.SetField(extractindex.FieldStatus, field.TypeUint8, value)
 		_node.Status = value
+	}
+	if value, ok := eic.mutation.Title(); ok {
+		_spec.SetField(extractindex.FieldTitle, field.TypeString, value)
+		_node.Title = value
 	}
 	return _node, _spec
 }

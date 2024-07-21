@@ -262,12 +262,12 @@ func (eiq *ExtractIndexQuery) Clone() *ExtractIndexQuery {
 // Example:
 //
 //	var v []struct {
-//		PayloadID uuid.UUID `json:"payload_id,omitempty"`
+//		SpiderID uuid.UUID `json:"spider_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ExtractIndex.Query().
-//		GroupBy(extractindex.FieldPayloadID).
+//		GroupBy(extractindex.FieldSpiderID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (eiq *ExtractIndexQuery) GroupBy(field string, fields ...string) *ExtractIndexGroupBy {
@@ -285,11 +285,11 @@ func (eiq *ExtractIndexQuery) GroupBy(field string, fields ...string) *ExtractIn
 // Example:
 //
 //	var v []struct {
-//		PayloadID uuid.UUID `json:"payload_id,omitempty"`
+//		SpiderID uuid.UUID `json:"spider_id,omitempty"`
 //	}
 //
 //	client.ExtractIndex.Query().
-//		Select(extractindex.FieldPayloadID).
+//		Select(extractindex.FieldSpiderID).
 //		Scan(ctx, &v)
 func (eiq *ExtractIndexQuery) Select(fields ...string) *ExtractIndexSelect {
 	eiq.ctx.Fields = append(eiq.ctx.Fields, fields...)

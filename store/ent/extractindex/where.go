@@ -55,19 +55,14 @@ func IDLTE(id uuid.UUID) predicate.ExtractIndex {
 	return predicate.ExtractIndex(sql.FieldLTE(FieldID, id))
 }
 
-// PayloadID applies equality check predicate on the "payload_id" field. It's identical to PayloadIDEQ.
-func PayloadID(v uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldEQ(FieldPayloadID, v))
-}
-
 // SpiderID applies equality check predicate on the "spider_id" field. It's identical to SpiderIDEQ.
 func SpiderID(v uuid.UUID) predicate.ExtractIndex {
 	return predicate.ExtractIndex(sql.FieldEQ(FieldSpiderID, v))
 }
 
-// Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
-func Title(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldEQ(FieldTitle, v))
+// PayloadID applies equality check predicate on the "payload_id" field. It's identical to PayloadIDEQ.
+func PayloadID(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldEQ(FieldPayloadID, v))
 }
 
 // ExtractedAt applies equality check predicate on the "extracted_at" field. It's identical to ExtractedAtEQ.
@@ -80,44 +75,9 @@ func Status(v uint8) predicate.ExtractIndex {
 	return predicate.ExtractIndex(sql.FieldEQ(FieldStatus, v))
 }
 
-// PayloadIDEQ applies the EQ predicate on the "payload_id" field.
-func PayloadIDEQ(v uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldEQ(FieldPayloadID, v))
-}
-
-// PayloadIDNEQ applies the NEQ predicate on the "payload_id" field.
-func PayloadIDNEQ(v uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldNEQ(FieldPayloadID, v))
-}
-
-// PayloadIDIn applies the In predicate on the "payload_id" field.
-func PayloadIDIn(vs ...uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldIn(FieldPayloadID, vs...))
-}
-
-// PayloadIDNotIn applies the NotIn predicate on the "payload_id" field.
-func PayloadIDNotIn(vs ...uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldNotIn(FieldPayloadID, vs...))
-}
-
-// PayloadIDGT applies the GT predicate on the "payload_id" field.
-func PayloadIDGT(v uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldGT(FieldPayloadID, v))
-}
-
-// PayloadIDGTE applies the GTE predicate on the "payload_id" field.
-func PayloadIDGTE(v uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldGTE(FieldPayloadID, v))
-}
-
-// PayloadIDLT applies the LT predicate on the "payload_id" field.
-func PayloadIDLT(v uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldLT(FieldPayloadID, v))
-}
-
-// PayloadIDLTE applies the LTE predicate on the "payload_id" field.
-func PayloadIDLTE(v uuid.UUID) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldLTE(FieldPayloadID, v))
+// Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
+func Title(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldEQ(FieldTitle, v))
 }
 
 // SpiderIDEQ applies the EQ predicate on the "spider_id" field.
@@ -160,69 +120,69 @@ func SpiderIDLTE(v uuid.UUID) predicate.ExtractIndex {
 	return predicate.ExtractIndex(sql.FieldLTE(FieldSpiderID, v))
 }
 
-// TitleEQ applies the EQ predicate on the "title" field.
-func TitleEQ(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldEQ(FieldTitle, v))
+// PayloadIDEQ applies the EQ predicate on the "payload_id" field.
+func PayloadIDEQ(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldEQ(FieldPayloadID, v))
 }
 
-// TitleNEQ applies the NEQ predicate on the "title" field.
-func TitleNEQ(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldNEQ(FieldTitle, v))
+// PayloadIDNEQ applies the NEQ predicate on the "payload_id" field.
+func PayloadIDNEQ(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldNEQ(FieldPayloadID, v))
 }
 
-// TitleIn applies the In predicate on the "title" field.
-func TitleIn(vs ...string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldIn(FieldTitle, vs...))
+// PayloadIDIn applies the In predicate on the "payload_id" field.
+func PayloadIDIn(vs ...string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldIn(FieldPayloadID, vs...))
 }
 
-// TitleNotIn applies the NotIn predicate on the "title" field.
-func TitleNotIn(vs ...string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldNotIn(FieldTitle, vs...))
+// PayloadIDNotIn applies the NotIn predicate on the "payload_id" field.
+func PayloadIDNotIn(vs ...string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldNotIn(FieldPayloadID, vs...))
 }
 
-// TitleGT applies the GT predicate on the "title" field.
-func TitleGT(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldGT(FieldTitle, v))
+// PayloadIDGT applies the GT predicate on the "payload_id" field.
+func PayloadIDGT(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldGT(FieldPayloadID, v))
 }
 
-// TitleGTE applies the GTE predicate on the "title" field.
-func TitleGTE(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldGTE(FieldTitle, v))
+// PayloadIDGTE applies the GTE predicate on the "payload_id" field.
+func PayloadIDGTE(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldGTE(FieldPayloadID, v))
 }
 
-// TitleLT applies the LT predicate on the "title" field.
-func TitleLT(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldLT(FieldTitle, v))
+// PayloadIDLT applies the LT predicate on the "payload_id" field.
+func PayloadIDLT(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldLT(FieldPayloadID, v))
 }
 
-// TitleLTE applies the LTE predicate on the "title" field.
-func TitleLTE(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldLTE(FieldTitle, v))
+// PayloadIDLTE applies the LTE predicate on the "payload_id" field.
+func PayloadIDLTE(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldLTE(FieldPayloadID, v))
 }
 
-// TitleContains applies the Contains predicate on the "title" field.
-func TitleContains(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldContains(FieldTitle, v))
+// PayloadIDContains applies the Contains predicate on the "payload_id" field.
+func PayloadIDContains(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldContains(FieldPayloadID, v))
 }
 
-// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
-func TitleHasPrefix(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldHasPrefix(FieldTitle, v))
+// PayloadIDHasPrefix applies the HasPrefix predicate on the "payload_id" field.
+func PayloadIDHasPrefix(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldHasPrefix(FieldPayloadID, v))
 }
 
-// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
-func TitleHasSuffix(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldHasSuffix(FieldTitle, v))
+// PayloadIDHasSuffix applies the HasSuffix predicate on the "payload_id" field.
+func PayloadIDHasSuffix(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldHasSuffix(FieldPayloadID, v))
 }
 
-// TitleEqualFold applies the EqualFold predicate on the "title" field.
-func TitleEqualFold(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldEqualFold(FieldTitle, v))
+// PayloadIDEqualFold applies the EqualFold predicate on the "payload_id" field.
+func PayloadIDEqualFold(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldEqualFold(FieldPayloadID, v))
 }
 
-// TitleContainsFold applies the ContainsFold predicate on the "title" field.
-func TitleContainsFold(v string) predicate.ExtractIndex {
-	return predicate.ExtractIndex(sql.FieldContainsFold(FieldTitle, v))
+// PayloadIDContainsFold applies the ContainsFold predicate on the "payload_id" field.
+func PayloadIDContainsFold(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldContainsFold(FieldPayloadID, v))
 }
 
 // ExtractedAtEQ applies the EQ predicate on the "extracted_at" field.
@@ -303,6 +263,71 @@ func StatusLT(v uint8) predicate.ExtractIndex {
 // StatusLTE applies the LTE predicate on the "status" field.
 func StatusLTE(v uint8) predicate.ExtractIndex {
 	return predicate.ExtractIndex(sql.FieldLTE(FieldStatus, v))
+}
+
+// TitleEQ applies the EQ predicate on the "title" field.
+func TitleEQ(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldEQ(FieldTitle, v))
+}
+
+// TitleNEQ applies the NEQ predicate on the "title" field.
+func TitleNEQ(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldNEQ(FieldTitle, v))
+}
+
+// TitleIn applies the In predicate on the "title" field.
+func TitleIn(vs ...string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldIn(FieldTitle, vs...))
+}
+
+// TitleNotIn applies the NotIn predicate on the "title" field.
+func TitleNotIn(vs ...string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldNotIn(FieldTitle, vs...))
+}
+
+// TitleGT applies the GT predicate on the "title" field.
+func TitleGT(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldGT(FieldTitle, v))
+}
+
+// TitleGTE applies the GTE predicate on the "title" field.
+func TitleGTE(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldGTE(FieldTitle, v))
+}
+
+// TitleLT applies the LT predicate on the "title" field.
+func TitleLT(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldLT(FieldTitle, v))
+}
+
+// TitleLTE applies the LTE predicate on the "title" field.
+func TitleLTE(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldLTE(FieldTitle, v))
+}
+
+// TitleContains applies the Contains predicate on the "title" field.
+func TitleContains(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldContains(FieldTitle, v))
+}
+
+// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
+func TitleHasPrefix(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldHasPrefix(FieldTitle, v))
+}
+
+// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
+func TitleHasSuffix(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldHasSuffix(FieldTitle, v))
+}
+
+// TitleEqualFold applies the EqualFold predicate on the "title" field.
+func TitleEqualFold(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldEqualFold(FieldTitle, v))
+}
+
+// TitleContainsFold applies the ContainsFold predicate on the "title" field.
+func TitleContainsFold(v string) predicate.ExtractIndex {
+	return predicate.ExtractIndex(sql.FieldContainsFold(FieldTitle, v))
 }
 
 // And groups predicates with the AND operator between them.

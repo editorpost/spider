@@ -29,20 +29,6 @@ func (eiu *ExtractIndexUpdate) Where(ps ...predicate.ExtractIndex) *ExtractIndex
 	return eiu
 }
 
-// SetPayloadID sets the "payload_id" field.
-func (eiu *ExtractIndexUpdate) SetPayloadID(u uuid.UUID) *ExtractIndexUpdate {
-	eiu.mutation.SetPayloadID(u)
-	return eiu
-}
-
-// SetNillablePayloadID sets the "payload_id" field if the given value is not nil.
-func (eiu *ExtractIndexUpdate) SetNillablePayloadID(u *uuid.UUID) *ExtractIndexUpdate {
-	if u != nil {
-		eiu.SetPayloadID(*u)
-	}
-	return eiu
-}
-
 // SetSpiderID sets the "spider_id" field.
 func (eiu *ExtractIndexUpdate) SetSpiderID(u uuid.UUID) *ExtractIndexUpdate {
 	eiu.mutation.SetSpiderID(u)
@@ -57,16 +43,16 @@ func (eiu *ExtractIndexUpdate) SetNillableSpiderID(u *uuid.UUID) *ExtractIndexUp
 	return eiu
 }
 
-// SetTitle sets the "title" field.
-func (eiu *ExtractIndexUpdate) SetTitle(s string) *ExtractIndexUpdate {
-	eiu.mutation.SetTitle(s)
+// SetPayloadID sets the "payload_id" field.
+func (eiu *ExtractIndexUpdate) SetPayloadID(s string) *ExtractIndexUpdate {
+	eiu.mutation.SetPayloadID(s)
 	return eiu
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (eiu *ExtractIndexUpdate) SetNillableTitle(s *string) *ExtractIndexUpdate {
+// SetNillablePayloadID sets the "payload_id" field if the given value is not nil.
+func (eiu *ExtractIndexUpdate) SetNillablePayloadID(s *string) *ExtractIndexUpdate {
 	if s != nil {
-		eiu.SetTitle(*s)
+		eiu.SetPayloadID(*s)
 	}
 	return eiu
 }
@@ -106,6 +92,20 @@ func (eiu *ExtractIndexUpdate) AddStatus(u int8) *ExtractIndexUpdate {
 	return eiu
 }
 
+// SetTitle sets the "title" field.
+func (eiu *ExtractIndexUpdate) SetTitle(s string) *ExtractIndexUpdate {
+	eiu.mutation.SetTitle(s)
+	return eiu
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (eiu *ExtractIndexUpdate) SetNillableTitle(s *string) *ExtractIndexUpdate {
+	if s != nil {
+		eiu.SetTitle(*s)
+	}
+	return eiu
+}
+
 // Mutation returns the ExtractIndexMutation object of the builder.
 func (eiu *ExtractIndexUpdate) Mutation() *ExtractIndexMutation {
 	return eiu.mutation
@@ -138,7 +138,20 @@ func (eiu *ExtractIndexUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (eiu *ExtractIndexUpdate) check() error {
+	if v, ok := eiu.mutation.PayloadID(); ok {
+		if err := extractindex.PayloadIDValidator(v); err != nil {
+			return &ValidationError{Name: "payload_id", err: fmt.Errorf(`ent: validator failed for field "ExtractIndex.payload_id": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (eiu *ExtractIndexUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := eiu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(extractindex.Table, extractindex.Columns, sqlgraph.NewFieldSpec(extractindex.FieldID, field.TypeUUID))
 	if ps := eiu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -147,14 +160,11 @@ func (eiu *ExtractIndexUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := eiu.mutation.PayloadID(); ok {
-		_spec.SetField(extractindex.FieldPayloadID, field.TypeUUID, value)
-	}
 	if value, ok := eiu.mutation.SpiderID(); ok {
 		_spec.SetField(extractindex.FieldSpiderID, field.TypeUUID, value)
 	}
-	if value, ok := eiu.mutation.Title(); ok {
-		_spec.SetField(extractindex.FieldTitle, field.TypeString, value)
+	if value, ok := eiu.mutation.PayloadID(); ok {
+		_spec.SetField(extractindex.FieldPayloadID, field.TypeString, value)
 	}
 	if value, ok := eiu.mutation.ExtractedAt(); ok {
 		_spec.SetField(extractindex.FieldExtractedAt, field.TypeTime, value)
@@ -164,6 +174,9 @@ func (eiu *ExtractIndexUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := eiu.mutation.AddedStatus(); ok {
 		_spec.AddField(extractindex.FieldStatus, field.TypeUint8, value)
+	}
+	if value, ok := eiu.mutation.Title(); ok {
+		_spec.SetField(extractindex.FieldTitle, field.TypeString, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eiu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -185,20 +198,6 @@ type ExtractIndexUpdateOne struct {
 	mutation *ExtractIndexMutation
 }
 
-// SetPayloadID sets the "payload_id" field.
-func (eiuo *ExtractIndexUpdateOne) SetPayloadID(u uuid.UUID) *ExtractIndexUpdateOne {
-	eiuo.mutation.SetPayloadID(u)
-	return eiuo
-}
-
-// SetNillablePayloadID sets the "payload_id" field if the given value is not nil.
-func (eiuo *ExtractIndexUpdateOne) SetNillablePayloadID(u *uuid.UUID) *ExtractIndexUpdateOne {
-	if u != nil {
-		eiuo.SetPayloadID(*u)
-	}
-	return eiuo
-}
-
 // SetSpiderID sets the "spider_id" field.
 func (eiuo *ExtractIndexUpdateOne) SetSpiderID(u uuid.UUID) *ExtractIndexUpdateOne {
 	eiuo.mutation.SetSpiderID(u)
@@ -213,16 +212,16 @@ func (eiuo *ExtractIndexUpdateOne) SetNillableSpiderID(u *uuid.UUID) *ExtractInd
 	return eiuo
 }
 
-// SetTitle sets the "title" field.
-func (eiuo *ExtractIndexUpdateOne) SetTitle(s string) *ExtractIndexUpdateOne {
-	eiuo.mutation.SetTitle(s)
+// SetPayloadID sets the "payload_id" field.
+func (eiuo *ExtractIndexUpdateOne) SetPayloadID(s string) *ExtractIndexUpdateOne {
+	eiuo.mutation.SetPayloadID(s)
 	return eiuo
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (eiuo *ExtractIndexUpdateOne) SetNillableTitle(s *string) *ExtractIndexUpdateOne {
+// SetNillablePayloadID sets the "payload_id" field if the given value is not nil.
+func (eiuo *ExtractIndexUpdateOne) SetNillablePayloadID(s *string) *ExtractIndexUpdateOne {
 	if s != nil {
-		eiuo.SetTitle(*s)
+		eiuo.SetPayloadID(*s)
 	}
 	return eiuo
 }
@@ -259,6 +258,20 @@ func (eiuo *ExtractIndexUpdateOne) SetNillableStatus(u *uint8) *ExtractIndexUpda
 // AddStatus adds u to the "status" field.
 func (eiuo *ExtractIndexUpdateOne) AddStatus(u int8) *ExtractIndexUpdateOne {
 	eiuo.mutation.AddStatus(u)
+	return eiuo
+}
+
+// SetTitle sets the "title" field.
+func (eiuo *ExtractIndexUpdateOne) SetTitle(s string) *ExtractIndexUpdateOne {
+	eiuo.mutation.SetTitle(s)
+	return eiuo
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (eiuo *ExtractIndexUpdateOne) SetNillableTitle(s *string) *ExtractIndexUpdateOne {
+	if s != nil {
+		eiuo.SetTitle(*s)
+	}
 	return eiuo
 }
 
@@ -307,7 +320,20 @@ func (eiuo *ExtractIndexUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (eiuo *ExtractIndexUpdateOne) check() error {
+	if v, ok := eiuo.mutation.PayloadID(); ok {
+		if err := extractindex.PayloadIDValidator(v); err != nil {
+			return &ValidationError{Name: "payload_id", err: fmt.Errorf(`ent: validator failed for field "ExtractIndex.payload_id": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (eiuo *ExtractIndexUpdateOne) sqlSave(ctx context.Context) (_node *ExtractIndex, err error) {
+	if err := eiuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(extractindex.Table, extractindex.Columns, sqlgraph.NewFieldSpec(extractindex.FieldID, field.TypeUUID))
 	id, ok := eiuo.mutation.ID()
 	if !ok {
@@ -333,14 +359,11 @@ func (eiuo *ExtractIndexUpdateOne) sqlSave(ctx context.Context) (_node *ExtractI
 			}
 		}
 	}
-	if value, ok := eiuo.mutation.PayloadID(); ok {
-		_spec.SetField(extractindex.FieldPayloadID, field.TypeUUID, value)
-	}
 	if value, ok := eiuo.mutation.SpiderID(); ok {
 		_spec.SetField(extractindex.FieldSpiderID, field.TypeUUID, value)
 	}
-	if value, ok := eiuo.mutation.Title(); ok {
-		_spec.SetField(extractindex.FieldTitle, field.TypeString, value)
+	if value, ok := eiuo.mutation.PayloadID(); ok {
+		_spec.SetField(extractindex.FieldPayloadID, field.TypeString, value)
 	}
 	if value, ok := eiuo.mutation.ExtractedAt(); ok {
 		_spec.SetField(extractindex.FieldExtractedAt, field.TypeTime, value)
@@ -350,6 +373,9 @@ func (eiuo *ExtractIndexUpdateOne) sqlSave(ctx context.Context) (_node *ExtractI
 	}
 	if value, ok := eiuo.mutation.AddedStatus(); ok {
 		_spec.AddField(extractindex.FieldStatus, field.TypeUint8, value)
+	}
+	if value, ok := eiuo.mutation.Title(); ok {
+		_spec.SetField(extractindex.FieldTitle, field.TypeString, value)
 	}
 	_node = &ExtractIndex{config: eiuo.config}
 	_spec.Assign = _node.assignValues

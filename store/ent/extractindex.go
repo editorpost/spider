@@ -18,16 +18,16 @@ type ExtractIndex struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// PayloadID holds the value of the "payload_id" field.
-	PayloadID uuid.UUID `json:"payload_id,omitempty"`
 	// SpiderID holds the value of the "spider_id" field.
 	SpiderID uuid.UUID `json:"spider_id,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
+	// PayloadID holds the value of the "payload_id" field.
+	PayloadID string `json:"payload_id,omitempty"`
 	// ExtractedAt holds the value of the "extracted_at" field.
 	ExtractedAt time.Time `json:"extracted_at,omitempty"`
 	// Status holds the value of the "status" field.
-	Status       uint8 `json:"status,omitempty"`
+	Status uint8 `json:"status,omitempty"`
+	// Title holds the value of the "title" field.
+	Title        string `json:"title,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -38,11 +38,11 @@ func (*ExtractIndex) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case extractindex.FieldStatus:
 			values[i] = new(sql.NullInt64)
-		case extractindex.FieldTitle:
+		case extractindex.FieldPayloadID, extractindex.FieldTitle:
 			values[i] = new(sql.NullString)
 		case extractindex.FieldExtractedAt:
 			values[i] = new(sql.NullTime)
-		case extractindex.FieldID, extractindex.FieldPayloadID, extractindex.FieldSpiderID:
+		case extractindex.FieldID, extractindex.FieldSpiderID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -65,23 +65,17 @@ func (ei *ExtractIndex) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				ei.ID = *value
 			}
-		case extractindex.FieldPayloadID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field payload_id", values[i])
-			} else if value != nil {
-				ei.PayloadID = *value
-			}
 		case extractindex.FieldSpiderID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field spider_id", values[i])
 			} else if value != nil {
 				ei.SpiderID = *value
 			}
-		case extractindex.FieldTitle:
+		case extractindex.FieldPayloadID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
+				return fmt.Errorf("unexpected type %T for field payload_id", values[i])
 			} else if value.Valid {
-				ei.Title = value.String
+				ei.PayloadID = value.String
 			}
 		case extractindex.FieldExtractedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -94,6 +88,12 @@ func (ei *ExtractIndex) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				ei.Status = uint8(value.Int64)
+			}
+		case extractindex.FieldTitle:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field title", values[i])
+			} else if value.Valid {
+				ei.Title = value.String
 			}
 		default:
 			ei.selectValues.Set(columns[i], values[i])
@@ -131,20 +131,20 @@ func (ei *ExtractIndex) String() string {
 	var builder strings.Builder
 	builder.WriteString("ExtractIndex(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ei.ID))
-	builder.WriteString("payload_id=")
-	builder.WriteString(fmt.Sprintf("%v", ei.PayloadID))
-	builder.WriteString(", ")
 	builder.WriteString("spider_id=")
 	builder.WriteString(fmt.Sprintf("%v", ei.SpiderID))
 	builder.WriteString(", ")
-	builder.WriteString("title=")
-	builder.WriteString(ei.Title)
+	builder.WriteString("payload_id=")
+	builder.WriteString(ei.PayloadID)
 	builder.WriteString(", ")
 	builder.WriteString("extracted_at=")
 	builder.WriteString(ei.ExtractedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", ei.Status))
+	builder.WriteString(", ")
+	builder.WriteString("title=")
+	builder.WriteString(ei.Title)
 	builder.WriteByte(')')
 	return builder.String()
 }

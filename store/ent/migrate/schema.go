@@ -11,17 +11,24 @@ var (
 	// ExtractIndexesColumns holds the columns for the "extract_indexes" table.
 	ExtractIndexesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "payload_id", Type: field.TypeUUID},
 		{Name: "spider_id", Type: field.TypeUUID},
-		{Name: "title", Type: field.TypeString},
+		{Name: "payload_id", Type: field.TypeString},
 		{Name: "extracted_at", Type: field.TypeTime},
 		{Name: "status", Type: field.TypeUint8, Default: 1},
+		{Name: "title", Type: field.TypeString},
 	}
 	// ExtractIndexesTable holds the schema information for the "extract_indexes" table.
 	ExtractIndexesTable = &schema.Table{
 		Name:       "extract_indexes",
 		Columns:    ExtractIndexesColumns,
 		PrimaryKey: []*schema.Column{ExtractIndexesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "extractindex_spider_id_extracted_at",
+				Unique:  true,
+				Columns: []*schema.Column{ExtractIndexesColumns[1], ExtractIndexesColumns[3]},
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

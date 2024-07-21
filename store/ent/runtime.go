@@ -16,12 +16,16 @@ import (
 func init() {
 	extractindexFields := schema.ExtractIndex{}.Fields()
 	_ = extractindexFields
+	// extractindexDescPayloadID is the schema descriptor for payload_id field.
+	extractindexDescPayloadID := extractindexFields[2].Descriptor()
+	// extractindex.PayloadIDValidator is a validator for the "payload_id" field. It is called by the builders before save.
+	extractindex.PayloadIDValidator = extractindexDescPayloadID.Validators[0].(func(string) error)
 	// extractindexDescExtractedAt is the schema descriptor for extracted_at field.
-	extractindexDescExtractedAt := extractindexFields[4].Descriptor()
+	extractindexDescExtractedAt := extractindexFields[3].Descriptor()
 	// extractindex.DefaultExtractedAt holds the default value on creation for the extracted_at field.
 	extractindex.DefaultExtractedAt = extractindexDescExtractedAt.Default.(func() time.Time)
 	// extractindexDescStatus is the schema descriptor for status field.
-	extractindexDescStatus := extractindexFields[5].Descriptor()
+	extractindexDescStatus := extractindexFields[4].Descriptor()
 	// extractindex.DefaultStatus holds the default value on creation for the status field.
 	extractindex.DefaultStatus = extractindexDescStatus.Default.(uint8)
 	// extractindexDescID is the schema descriptor for id field.
