@@ -14,22 +14,10 @@ var (
 
 func main() {
 	cmd, spider := Flags()
-	if err := Run(cmd, spider); err != nil {
+	if err := windmill.Command(cmd, spider); err != nil {
 		slog.Error("cmd:"+cmd, slog.String("error", err.Error()))
 		return
 	}
-}
-
-func Run(cmd string, s *setup.Spider) (err error) {
-
-	switch cmd {
-	case "start":
-		return windmill.Start(s)
-	case "trial":
-		return windmill.Trial(s)
-	}
-
-	return nil
 }
 
 func Flags() (cmd string, spider *setup.Spider) {
