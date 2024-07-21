@@ -17,11 +17,6 @@ var bucket = store.Bucket{
 	Region:   "ap-southeast-1",
 }
 
-func TestMain(m *testing.M) {
-
-	m.Run()
-}
-
 func TestNewS3Client(t *testing.T) {
 
 	tests := []struct {
@@ -49,7 +44,7 @@ func TestBucketFolder_Save(t *testing.T) {
 	client, err := store.NewS3Client(bucket)
 	require.NoError(t, err)
 
-	bf := store.NewBucketStore("ep-spider", "test_dir", client)
+	bf := store.NewBucketStorage("ep-spider", "test_dir", client)
 	require.NoError(t, err)
 
 	data := []byte("test data")
