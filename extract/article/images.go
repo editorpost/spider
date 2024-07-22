@@ -2,6 +2,7 @@ package article
 
 import (
 	dto "github.com/editorpost/article"
+	"github.com/editorpost/spider/extract/media"
 	"log/slog"
 	"regexp"
 	"strings"
@@ -12,7 +13,7 @@ var markdownImgTag = regexp.MustCompile(`!\[.*?\]\((.*?)\)`)
 
 // MediaClaims is the interface for downloading images
 type MediaClaims interface {
-	Add(payloadID string, srcAbsoluteUrl string) (dst string, err error)
+	Add(payloadID string, srcAbsoluteUrl string) (media.Claim, error)
 }
 
 func Images(payloadID string, a *dto.Article, d MediaClaims) {
@@ -22,16 +23,16 @@ func Images(payloadID string, a *dto.Article, d MediaClaims) {
 		return
 	}
 
-	srcDst := ImageClaims(payloadID, matches, d)
-	if len(srcDst) == 0 {
+	claims := ImageClaims(payloadID, matches, d)
+	if len(claims) == 0 {
 		return
 	}
 
-	a.Markup = MarkdownReplaceUrls(a.Markup, srcDst)
+	a.Markup = MarkdownReplaceUrls(a.Markup, claims)
 
 	images := dto.NewImages()
-	for _, dst := range srcDst {
-		image := dto.NewImage(dst)
+	for _, dst := range claims {
+		image := dto.NewImage(dst.DstPath)
 		images.Add(image)
 	}
 
@@ -53,27 +54,27 @@ func MarkdownSourceUrls(md string) []string {
 	return urls
 }
 
-func MarkdownReplaceUrls(md string, srcDst map[string]string) string {
+func MarkdownReplaceUrls(md string, claims []media.Claim) string {
 
-	for src, dst := range srcDst {
-		md = strings.ReplaceAll(md, src, dst)
+	for _, claim := range claims {
+		md = strings.ReplaceAll(md, claim.Src, claim.Dst)
 	}
 
 	return md
 }
 
-func ImageClaims(payloadID string, srcUrls []string, d MediaClaims) map[string]string {
+func ImageClaims(payloadID string, srcUrls []string, d MediaClaims) []media.Claim {
 
-	m := map[string]string{}
+	claims := []media.Claim{}
 
 	for _, src := range srcUrls {
-		dst, err := d.Add(payloadID, src)
+		claim, err := d.Add(payloadID, src)
 		if err != nil {
 			slog.Warn("failed to add download claim", slog.String("src", src), slog.String("err", err.Error()))
 			continue
 		}
-		m[src] = dst
+		claims = append(claims, claim)
 	}
 
-	return m
+	return claims
 }

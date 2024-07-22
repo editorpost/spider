@@ -1,6 +1,7 @@
 package media
 
 import (
+	"errors"
 	"net/url"
 	"strings"
 	"sync"
@@ -12,6 +13,8 @@ type Claim struct {
 	Src string `json:"Src"`
 	// Dst is the path to save the downloaded media.
 	Dst string `json:"Dst"`
+	// DstPath relative path to media downloaded
+	DstPath string `json:"DstPath"`
 	// Requested is true if the media is requested to download.
 	Requested bool `json:"Requested"`
 	// Done is true if the media is downloaded to destination.
@@ -39,38 +42,49 @@ func NewClaims(publicURL string) *Claims {
 	return claims
 }
 
-func (list *Claims) Add(payloadID string, src string) (string, error) {
+func (list *Claims) Add(payloadID string, src string) (Claim, error) {
 
 	// already replaced
 	if strings.HasPrefix(src, list.publicURL) {
-		return src, nil
+		// look by destination url
+		if claim := list.byDestinationUrl(src); claim != nil {
+			return *claim, nil
+		}
+		return Claim{}, errors.New("parsed url replaced, but not found in claims")
 	}
 
 	// already claimed
-	if claim := list.bySource(src); claim != nil {
-		return claim.Dst, nil
+	if claim := list.bySourceUrl(src); claim != nil {
+		return *claim, nil
 	}
 
 	// filename as src url hash
 	filename, err := Filename(src)
 	if err != nil {
-		return "", err
+		return Claim{}, err
 	}
 
-	// full url
-	dst, err := url.JoinPath(list.publicURL, payloadID, "media", filename)
+	// destination path
+	dstPath, err := url.JoinPath(payloadID, "media", filename)
 	if err != nil {
-		return "", err
+		return Claim{}, err
+	}
+
+	// destination url
+	dstUrl, err := url.JoinPath(list.publicURL, dstPath)
+	if err != nil {
+		return Claim{}, err
 	}
 
 	c := &Claim{
-		Src: src,
-		Dst: dst,
+		Src:     src,
+		Dst:     dstUrl,
+		DstPath: dstPath,
 	}
 
 	list.add(c)
 
-	return c.Dst, nil
+	return *c, nil
 }
 
 // Done Claim marks Claim as uploaded.
@@ -97,10 +111,20 @@ func (list *Claims) Uploaded() []*Claim {
 	return uploaded
 }
 
-func (list *Claims) bySource(u string) *Claim {
+func (list *Claims) bySourceUrl(u string) *Claim {
 
 	for _, claim := range list.All() {
 		if claim.Src == u {
+			return claim
+		}
+	}
+	return nil
+}
+
+func (list *Claims) byDestinationUrl(u string) *Claim {
+
+	for _, claim := range list.All() {
+		if claim.Dst == u {
 			return claim
 		}
 	}
