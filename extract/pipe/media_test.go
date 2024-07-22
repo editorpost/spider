@@ -1,14 +1,12 @@
-package media_test
+package pipe_test
 
 import (
-	"context"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/extract/pipe"
+	"github.com/editorpost/spider/tester"
 	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/require"
 	"io"
-	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -32,29 +30,21 @@ func (dl *Loader) Upload(src, dst string) error {
 
 func TestNewMedia(t *testing.T) {
 
-	doc := GetDocument(t)
-
 	loader := NewLoader()
-	m := media.NewMedia("https://dst.com/static/media", loader)
+	m := pipe.NewMedia("https://dst.com/static/media", loader)
 
-	p := &pipe.Payload{
-		Ctx:       context.Background(),
-		Doc:       doc,
-		Selection: doc.DOM,
-		URL:       &url.URL{},
-		Data:      map[string]any{},
-	}
+	payload := tester.TestPayload(t, "../../tester/fixtures/news/article-1.html")
 
-	// Claims extracts all images urls from `src` attribute in the document.
-	require.NoError(t, m.Claims(p))
+	// download extracts all images urls from `src` attribute in the document.
+	require.NoError(t, m.Claims(payload))
 
 	// load claims from payload context
-	claims, ok := p.Ctx.Value(media.ClaimsCtxKey).(*media.Claims)
+	claims, ok := payload.Ctx.Value(pipe.ClaimsCtxKey).(*pipe.Claims)
 	require.True(t, ok)
 	require.NotZero(t, len(claims.All()))
 
 	// Upload requested media from claims
-	require.NoError(t, m.Upload(p))
+	require.NoError(t, m.Upload(payload))
 
 	count := atomic.Int32{}
 	loader.uploads.Range(func(_, value any) bool {
@@ -72,7 +62,7 @@ func TestNewMedia(t *testing.T) {
 	claims.Request(claims.All()[0].Dst)
 
 	// Upload requested media from claims
-	require.NoError(t, m.Upload(p))
+	require.NoError(t, m.Upload(payload))
 
 	count = atomic.Int32{}
 	loader.uploads.Range(func(_, value any) bool {

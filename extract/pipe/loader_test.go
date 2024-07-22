@@ -1,7 +1,7 @@
-package media_test
+package pipe_test
 
 import (
-	"github.com/editorpost/spider/extract/media"
+	"github.com/editorpost/spider/extract/pipe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 
 // TestDownloadImage tests the DownloadImage function.
 func TestDownload(t *testing.T) {
-	data, err := media.Download(server.URL, &http.Transport{})
+	data, err := pipe.Download(server.URL, &http.Transport{})
 	require.NoError(t, err)
 	DataAssert(t, data)
 }
@@ -48,7 +48,7 @@ func TestDownloader_Download(t *testing.T) {
 	defer ts.Close()
 
 	// Use the test server Endpoint in place of the real image Endpoint.
-	downloader := media.NewLoader(nil)
+	downloader := pipe.NewLoader(nil)
 	downloader.SetClient(ts.Client())
 
 	buf, err := downloader.Fetch(ts.URL)
@@ -60,7 +60,7 @@ func TestDownloader_Download(t *testing.T) {
 // TestDownloadImage tests the DownloadImage function.
 func TestDownloader_SetClient(t *testing.T) {
 
-	downloader := media.NewLoader(nil)
+	downloader := pipe.NewLoader(nil)
 	downloader.SetClient(server.Client())
 
 	buf, err := downloader.Fetch(server.URL)
@@ -78,7 +78,7 @@ func BenchmarkDownloader_Download(b *testing.B) {
 	defer ts.Close()
 
 	// Use the test server Endpoint in place of the real image Endpoint.
-	downloader := media.NewLoader(nil)
+	downloader := pipe.NewLoader(nil)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -91,7 +91,7 @@ func TestDownloader_Copy(t *testing.T) {
 
 	// Use the test server Endpoint in place of the real image Endpoint.
 	storage := NewMockStorage()
-	downloader := media.NewLoader(storage)
+	downloader := pipe.NewLoader(storage)
 
 	// Perform the download and upload.
 	path := "static/media/test.jpg"

@@ -1,8 +1,6 @@
-package media
+package pipe
 
 import (
-	"context"
-	"github.com/editorpost/spider/extract/pipe"
 	"log/slog"
 )
 
@@ -10,7 +8,7 @@ type ClaimsCtx string
 
 const (
 	// ClaimsCtxKey is a key for media claims in the payload context.
-	ClaimsCtxKey ClaimsCtx = "extract.media.claims"
+	ClaimsCtxKey ClaimsCtx = "pipe.claims"
 )
 
 type (
@@ -45,34 +43,30 @@ func NewMedia(publicURL string, loader Uploader) *Media {
 //
 //	func(payload *Context) error {
 //		uri := getImageUrlFromDocumentToUpload()
-//		payload.Claims.Request(uri)
+//		payload.download.Request(uri)
 //		return nil
 //	}
-func (m *Media) Claims(payload *pipe.Payload) error {
-
-	claims := NewClaims(m.publicURL).ExtractAndReplace(payload)
-	payload.Ctx = context.WithValue(payload.Ctx, ClaimsCtxKey, claims)
-
+func (m *Media) Claims(payload *Payload) error {
+	// set download claims implementation
+	payload.claims = NewClaims(m.publicURL)
 	return nil
 }
 
 // Upload creates Fn to upload requested media from claims.
-func (m *Media) Upload(payload *pipe.Payload) error {
+func (m *Media) Upload(payload *Payload) error {
 
-	claims, ok := payload.Ctx.Value(ClaimsCtxKey).(*Claims)
-	if !ok {
-		slog.Error("claims not found in payload context")
+	// no media claims
+	if payload.claims == nil {
+		slog.Error("unexpected nil claims")
 		return nil
 	}
 
-	// skip if no requested claims
-	requested := claims.Requested()
-	if len(requested) == 0 {
+	if payload.claims.Empty() {
 		return nil
 	}
 
 	// download source and upload to destination
-	for _, claim := range requested {
+	for _, claim := range payload.claims.All() {
 
 		filename, err := Filename(claim.Src)
 		if err != nil {
@@ -85,11 +79,11 @@ func (m *Media) Upload(payload *pipe.Payload) error {
 			continue
 		}
 
-		claims.Done(claim.Dst)
+		payload.claims.Done(claim.Dst)
 	}
 
 	// set uploaded media mapping to payload
-	payload.Data["extract_media"] = claims.Uploaded()
+	payload.Data["extract_media"] = payload.claims.Uploaded()
 
 	return nil
 }

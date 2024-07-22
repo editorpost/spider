@@ -1,25 +1,10 @@
-package media
+package pipe
 
 import (
-	"github.com/PuerkitoBio/goquery"
-	"github.com/editorpost/spider/extract/pipe"
-	"log/slog"
 	"net/url"
 	"strings"
 	"sync"
 )
-
-// Claim claim to get src media and save it to dst.
-type Claim struct {
-	// Src is the Endpoint of the media to download.
-	Src string `json:"Src"`
-	// Dst is the path to save the downloaded media.
-	Dst string `json:"Dst"`
-	// Requested is true if the media is requested to download.
-	Requested bool `json:"Requested"`
-	// Done is true if the media is downloaded to destination.
-	Done bool `json:"Done"`
-}
 
 type Claims struct {
 	// publicURL is a prefix of the replaced media url.
@@ -42,53 +27,6 @@ func NewClaims(publicURL string) *Claims {
 	return claims
 }
 
-// ExtractAndReplace Claim for each img tag and replace src path in selection.
-func (list *Claims) ExtractAndReplace(payload *pipe.Payload) *Claims {
-
-	selection := payload.Doc.DOM
-
-	// selection is nil
-	if selection == nil {
-		slog.Error("extracting media claims: payload DOM selection is nil")
-		return list
-	}
-
-	// og:image
-	selection.Find("meta").Each(func(i int, el *goquery.Selection) {
-
-		key, _ := el.Attr("property")
-		if key != "og:image" {
-			return
-		}
-
-		src, _ := el.Attr("content")
-		src = payload.Doc.Request.AbsoluteURL(src)
-
-		if dst, err := list.Add(src); err != nil {
-			el.SetAttr("content", dst)
-		}
-	})
-
-	// img tag
-	selection.Find("img").Each(func(_ int, el *goquery.Selection) {
-
-		// has src
-		src, exists := el.Attr("src")
-		if !exists {
-			return
-		}
-
-		// add claim
-		src = payload.Doc.Request.AbsoluteURL(src)
-		// replace src with claimed destination
-		if dst, err := list.Add(src); err != nil {
-			el.SetAttr("src", dst)
-		}
-	})
-
-	return list
-}
-
 func (list *Claims) Add(src string) (string, error) {
 
 	// already replaced
@@ -96,17 +34,20 @@ func (list *Claims) Add(src string) (string, error) {
 		return src, nil
 	}
 
+	// already claimed
+	if claim := list.bySource(src); claim != nil {
+		return claim.Dst, nil
+	}
+
 	// filename as src url hash
 	filename, err := Filename(src)
 	if err != nil {
-		slog.Error("failed to hash filename", slog.String("src", src), slog.String("err", err.Error()))
 		return "", err
 	}
 
 	// full url
 	dst, err := url.JoinPath(list.publicURL, filename)
 	if err != nil {
-		slog.Error("failed to join url", slog.String("dst", list.publicURL), slog.String("filename", filename), slog.String("err", err.Error()))
 		return "", err
 	}
 
@@ -120,24 +61,6 @@ func (list *Claims) Add(src string) (string, error) {
 	list.claims[src] = c
 
 	return c.Dst, nil
-}
-
-// Request Claim for uploading by Dst url.
-func (list *Claims) Request(uri string) *Claims {
-
-	list.mute.Lock()
-	defer list.mute.Unlock()
-
-	if claim := list.byDestination(uri); claim != nil {
-		claim.Requested = true
-		return list
-	}
-
-	if claim := list.bySource(uri); claim != nil {
-		claim.Requested = true
-	}
-
-	return list
 }
 
 func (list *Claims) byDestination(u string) *Claim {
@@ -173,18 +96,6 @@ func (list *Claims) Done(byDestinationURL string) *Claims {
 	return list
 }
 
-// Requested returns a list of requested claims.
-func (list *Claims) Requested() []*Claim {
-
-	requested := make([]*Claim, 0, len(list.claims))
-	for _, claim := range list.claims {
-		if claim.Requested {
-			requested = append(requested, claim)
-		}
-	}
-	return requested
-}
-
 // Uploaded returns a list of uploaded claims.
 func (list *Claims) Uploaded() []*Claim {
 
@@ -208,6 +119,10 @@ func (list *Claims) All() []*Claim {
 
 func (list *Claims) Len() int {
 	return len(list.claims)
+}
+
+func (list *Claims) Empty() bool {
+	return list.Len() == 0
 }
 
 func AbsoluteUrl(base *url.URL, href string) string {

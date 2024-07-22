@@ -4,7 +4,6 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/PuerkitoBio/goquery"
 	dto "github.com/editorpost/article"
-	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
@@ -19,34 +18,34 @@ import (
 
 // Article extracts the dto from the HTML
 // and sets the dto fields to the payload
-func Article(p *pipe.Payload) error {
+func Article(payload *pipe.Payload) error {
 
-	if p.Selection == nil {
-		p.Selection = p.Doc.DOM
+	if payload.Selection == nil {
+		payload.Selection = payload.Doc.DOM
 	}
 
-	htmlStr, err := p.Selection.Html()
+	htmlStr, err := payload.Selection.Html()
 	if err != nil {
 		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
 		return err
 	}
 
-	art, err := ArticleFromHTML(htmlStr, p.URL)
+	art, err := ArticleFromHTML(htmlStr, payload.URL)
 	if err != nil {
 		slog.Warn("failed to extract dto", slog.String("err", err.Error()))
 		return err
 	}
 
-	// set the dto to the payload
-	for k, v := range art.Map() {
-		p.Data[k] = v
+	// extract media
+	err = ArticleImages(art, payload)
+	if err != nil {
+		slog.Warn("failed to extract images", slog.String("err", err.Error()))
+		return err
 	}
 
-	// extract media
-	if claims, ok := p.Ctx.Value(media.ClaimsCtxKey).(*media.Claims); ok {
-		for _, img := range art.Images.Slice() {
-			claims.Request(img.URL)
-		}
+	// set the dto to the payload
+	for k, v := range art.Map() {
+		payload.Data[k] = v
 	}
 
 	slog.Debug("extract success", slog.String("title", art.Title))
@@ -88,7 +87,6 @@ func readabilityArticle(html string, resource *url.URL, a *dto.Article) {
 		return
 	}
 
-	// set the dto fields
 	a.Title = read.Title
 	a.Text = read.TextContent
 	a.Markup = read.Content
@@ -120,7 +118,6 @@ func distillArticle(html string, resource *url.URL, a *dto.Article) {
 	info := distill.MarkupInfo
 
 	// set the dto fields
-	a.Category = info.Article.Section
 	a.SourceName = info.Publisher
 	a.Images = distillImages(distill, resource)
 	a.Author = info.Author
@@ -148,7 +145,7 @@ func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
 	images := dto.NewImages()
 
 	for _, src := range distill.ContentImages {
-		image := dto.NewImage(media.AbsoluteUrl(resource, src))
+		image := dto.NewImage(pipe.AbsoluteUrl(resource, src))
 		images.Add(image)
 	}
 
