@@ -39,11 +39,6 @@ type (
 		URL *url.URL `json:"-"`
 		// Data is a map of extracted data
 		Data map[string]any `json:"Data"`
-		// download list of media urls
-		claims *Claims
-	}
-	DownloadClaims interface {
-		Add(src string) (dst string, err error)
 	}
 	CollectorHook func(doc *colly.HTMLElement, s *goquery.Selection) error
 )
@@ -71,24 +66,7 @@ func NewPayload(doc *colly.HTMLElement, s *goquery.Selection) (*Payload, error) 
 			HostField:     doc.Request.URL.Host,
 			UrlField:      doc.Request.URL.String(),
 		},
-		// claims provided in starter pipeline if required
-		claims: nil,
 	}, nil
-}
-
-func (p *Payload) Download(src string) (dst string, err error) {
-
-	// no media download required
-	if p.claims == nil {
-		return src, nil
-	}
-
-	// add download claim
-	return p.claims.Add(src)
-}
-
-func (p *Payload) Claims() *Claims {
-	return p.claims
 }
 
 // Hash generates an FNV hash from the source Endpoint.

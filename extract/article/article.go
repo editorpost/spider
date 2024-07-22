@@ -4,6 +4,7 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/PuerkitoBio/goquery"
 	dto "github.com/editorpost/article"
+	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
@@ -36,12 +37,8 @@ func Article(payload *pipe.Payload) error {
 		return err
 	}
 
-	// extract media
-	err = ArticleImages(art, payload)
-	if err != nil {
-		slog.Warn("failed to extract images", slog.String("err", err.Error()))
-		return err
-	}
+	// extracted images to download queue
+	Images(art, media.ClaimsFromContext(payload.Ctx))
 
 	// set the dto to the payload
 	for k, v := range art.Map() {
@@ -119,7 +116,6 @@ func distillArticle(html string, resource *url.URL, a *dto.Article) {
 
 	// set the dto fields
 	a.SourceName = info.Publisher
-	a.Images = distillImages(distill, resource)
 	a.Author = info.Author
 
 	// fallback fields applied only if the fields are empty
@@ -145,7 +141,7 @@ func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
 	images := dto.NewImages()
 
 	for _, src := range distill.ContentImages {
-		image := dto.NewImage(pipe.AbsoluteUrl(resource, src))
+		image := dto.NewImage(media.AbsoluteUrl(resource, src))
 		images.Add(image)
 	}
 

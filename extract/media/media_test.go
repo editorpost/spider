@@ -1,4 +1,4 @@
-package pipe_test
+package media_test
 
 import (
 	"github.com/PuerkitoBio/goquery"

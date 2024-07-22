@@ -19,7 +19,7 @@ func TestMarkdownImages(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			name: "No Images",
+			name: "No ImageDownloader",
 			markdown: `# Sample Markdown
 
 This is a sample markdown without images.`,
@@ -39,7 +39,7 @@ This is a sample markdown without images.`,
 			expectedErr: nil,
 		},
 		{
-			name: "Multiple Images",
+			name: "Multiple ImageDownloader",
 			markdown: `# Sample Markdown
 
 ![Alt text](http://example.com/image1.png)
@@ -76,10 +76,10 @@ This is a sample markdown without images.`,
 	}
 }
 
-// Mock implementation of DownloadClaims for testing
+// Mock implementation of MediaClaims for testing
 type MockDownloadClaims struct{}
 
-func (m MockDownloadClaims) Download(src string) (string, error) {
+func (m MockDownloadClaims) Add(src string) (string, error) {
 	// Mock implementation: Just prepend "downloaded_" to the src URL
 	if src == "http://example.com/fail.jpg" {
 		return "", errors.New("failed to download image")

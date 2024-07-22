@@ -1,10 +1,16 @@
-package pipe
+package media
 
 import (
+	"context"
+	"github.com/editorpost/spider/extract/pipe"
 	"log/slog"
 )
 
+var ClaimsCtxKey ClaimsCtx = "media.claims"
+
 type (
+	ClaimsCtx string
+
 	Media struct {
 		// publicURL for public media storagePath
 		publicURL string
@@ -16,9 +22,6 @@ type (
 	}
 )
 
-// NewMedia creates a new media extractors.
-// Claims extracts and replaces image urls in the document. Must be called before extractors got access to document content.
-// Uploads requested media to the destination. Must be called right before saving the payload. Adds upload result to the payload.
 func NewMedia(publicURL string, loader Downloader) *Media {
 	return &Media{
 		publicURL: publicURL,
@@ -28,38 +31,27 @@ func NewMedia(publicURL string, loader Downloader) *Media {
 
 // Claims extracts all images urls from `src` attribute in the document.
 // Creates a claim for each image with the source and desired destination publicURL.
-// DOM source urls are replaced with the destination publicURL.
-//
-// Url replacement affected to every next extract.Fn in the pipeline.
-// Any extract.Fn might mark media.Claim as required to upload.
-// For example:
-//
-//	func(payload *Context) error {
-//		uri := getImageUrlFromDocumentToUpload()
-//		payload.download.Request(uri)
-//		return nil
-//	}
-func (m *Media) Claims(payload *Payload) error {
-	// set download claims implementation
-	payload.claims = NewClaims(m.publicURL)
+func (m *Media) Claims(payload *pipe.Payload) error {
+	// set claims to payload context
+	payload.Ctx = context.WithValue(payload.Ctx, ClaimsCtxKey, NewClaims(m.publicURL))
 	return nil
 }
 
 // Upload creates Fn to upload requested media from claims.
-func (m *Media) Upload(payload *Payload) error {
+func (m *Media) Upload(payload *pipe.Payload) error {
 
 	// no media claims
-	if payload.claims == nil {
-		slog.Error("unexpected nil claims")
+	claims := ClaimsFromContext(payload.Ctx)
+	if claims == nil {
 		return nil
 	}
 
-	if payload.claims.Empty() {
+	if claims.Empty() {
 		return nil
 	}
 
 	// download source and upload to destination
-	for _, claim := range payload.claims.All() {
+	for _, claim := range claims.All() {
 
 		filename, err := Filename(claim.Src)
 		if err != nil {
@@ -72,11 +64,19 @@ func (m *Media) Upload(payload *Payload) error {
 			continue
 		}
 
-		payload.claims.Done(claim.Dst)
+		claims.Done(claim.Dst)
 	}
 
 	// set uploaded media mapping to payload
-	payload.Data["extract_media"] = payload.claims.Uploaded()
+	payload.Data["extract_media"] = claims.Uploaded()
 
 	return nil
+}
+
+func ClaimsFromContext(ctx context.Context) *Claims {
+	claims, ok := ctx.Value(ClaimsCtxKey).(*Claims)
+	if !ok {
+		return nil
+	}
+	return claims
 }

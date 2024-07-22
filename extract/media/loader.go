@@ -1,8 +1,9 @@
-package pipe
+package media
 
 import (
 	"bytes"
 	"errors"
+	"github.com/editorpost/spider/extract/pipe"
 	"io"
 	"net/http"
 	"net/url"
@@ -41,7 +42,7 @@ func (dl *Loader) SetClient(client *http.Client) {
 	dl.client = client
 }
 
-// Upload fetches the media from the specified Endpoint and uploads it to the store.
+// Download fetches the media from the specified Endpoint and uploads it to the store.
 func (dl *Loader) Download(src, dst string) error {
 
 	// download
@@ -103,7 +104,7 @@ func Filename(srcURL string) (string, error) {
 	}
 
 	// Generate upload path from the source Endpoint using FNV hash.
-	name, err := Hash(srcURL)
+	name, err := pipe.Hash(srcURL)
 	if err != nil {
 		return "", err
 	}

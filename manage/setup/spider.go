@@ -8,6 +8,7 @@ import (
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/collect/proxy"
 	"github.com/editorpost/spider/extract"
+	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/store"
 	"github.com/google/uuid"
@@ -242,7 +243,7 @@ func (s *Spider) withMedia(deploy *Deploy) error {
 	// to simplify further proxying the bucket, e.g. http://my-proxy:8080/spider/%/media/123.jpg
 	folder := store.GetMediaStorageFolder(s.Args.ID)
 	publicURL := fmt.Sprintf("%s/%s", deploy.Bucket.PublicURL, folder)
-	uploader := pipe.NewMedia(publicURL, pipe.NewLoader(bucketStore))
+	uploader := media.NewMedia(publicURL, media.NewLoader(bucketStore))
 
 	s.pipe.Starter(uploader.Claims)
 	s.pipe.Finisher(uploader.Upload)
