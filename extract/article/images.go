@@ -12,17 +12,17 @@ var markdownImgTag = regexp.MustCompile(`!\[.*?\]\((.*?)\)`)
 
 // MediaClaims is the interface for downloading images
 type MediaClaims interface {
-	Add(srcAbsoluteUrl string) (dst string, err error)
+	Add(payloadID string, srcAbsoluteUrl string) (dst string, err error)
 }
 
-func Images(a *dto.Article, d MediaClaims) {
+func Images(payloadID string, a *dto.Article, d MediaClaims) {
 
 	matches := MarkdownSourceUrls(a.Markup)
 	if matches == nil {
 		return
 	}
 
-	srcDst := ImageClaims(matches, d)
+	srcDst := ImageClaims(payloadID, matches, d)
 	if len(srcDst) == 0 {
 		return
 	}
@@ -62,12 +62,12 @@ func MarkdownReplaceUrls(md string, srcDst map[string]string) string {
 	return md
 }
 
-func ImageClaims(srcUrls []string, d MediaClaims) map[string]string {
+func ImageClaims(payloadID string, srcUrls []string, d MediaClaims) map[string]string {
 
 	m := map[string]string{}
 
 	for _, src := range srcUrls {
-		dst, err := d.Add(src)
+		dst, err := d.Add(payloadID, src)
 		if err != nil {
 			slog.Warn("failed to add download claim", slog.String("src", src), slog.String("err", err.Error()))
 			continue

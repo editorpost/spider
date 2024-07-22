@@ -79,7 +79,7 @@ This is a sample markdown without images.`,
 // Mock implementation of MediaClaims for testing
 type MockDownloadClaims struct{}
 
-func (m MockDownloadClaims) Add(src string) (string, error) {
+func (m MockDownloadClaims) Add(payloadID string, src string) (string, error) {
 	// Mock implementation: Just prepend "downloaded_" to the src URL
 	if src == "http://example.com/fail.jpg" {
 		return "", errors.New("failed to download image")

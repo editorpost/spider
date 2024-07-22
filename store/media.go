@@ -8,5 +8,5 @@ func NewMediaStorage(spiderID string, bucket Bucket) (Storage, error) {
 }
 
 func GetMediaStorageFolder(spiderID string) string {
-	return fmt.Sprintf(MediaFolder, spiderID)
+	return fmt.Sprintf(PayloadFolder, spiderID)
 }

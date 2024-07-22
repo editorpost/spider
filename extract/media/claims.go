@@ -39,7 +39,7 @@ func NewClaims(publicURL string) *Claims {
 	return claims
 }
 
-func (list *Claims) Add(src string) (string, error) {
+func (list *Claims) Add(payloadID string, src string) (string, error) {
 
 	// already replaced
 	if strings.HasPrefix(src, list.publicURL) {
@@ -58,7 +58,7 @@ func (list *Claims) Add(src string) (string, error) {
 	}
 
 	// full url
-	dst, err := url.JoinPath(list.publicURL, filename)
+	dst, err := url.JoinPath(list.publicURL, payloadID, "media", filename)
 	if err != nil {
 		return "", err
 	}

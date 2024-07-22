@@ -40,7 +40,7 @@ func Article(payload *pipe.Payload) error {
 	// download claims
 	if claims := media.ClaimsFromContext(payload.Ctx); claims != nil {
 		// set article images, replace links in markdown
-		Images(art, claims)
+		Images(payload.ID, art, claims)
 	}
 
 	// set the dto to the payload

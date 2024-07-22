@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/editorpost/spider/extract/pipe"
 	"log/slog"
+	"strings"
 )
 
 var ClaimsCtxKey ClaimsCtx = "media.claims"
@@ -53,13 +54,9 @@ func (m *Media) Upload(payload *pipe.Payload) error {
 	// download source and upload to destination
 	for _, claim := range claims.All() {
 
-		filename, err := Filename(claim.Src)
-		if err != nil {
-			slog.Error("failed to hash filename", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
-			continue
-		}
+		dst := strings.TrimPrefix(claim.Dst, m.publicURL)
 
-		if err = m.loader.Download(claim.Src, filename); err != nil {
+		if err := m.loader.Download(claim.Src, dst); err != nil {
 			slog.Error("failed to download media", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
 			continue
 		}
