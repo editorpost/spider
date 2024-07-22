@@ -17,10 +17,6 @@ type MediaClaims interface {
 
 func Images(a *dto.Article, d MediaClaims) {
 
-	if d == nil {
-		return
-	}
-
 	matches := MarkdownSourceUrls(a.Markup)
 	if matches == nil {
 		return

@@ -1,13 +1,13 @@
 package media_test
 
 import (
-	"github.com/editorpost/spider/extract/pipe"
+	"github.com/editorpost/spider/extract/media"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestNewClaims(t *testing.T) {
-	claims := pipe.NewClaims("http://example.com")
+	claims := media.NewClaims("http://example.com")
 	assert.NotNil(t, claims)
 }
 

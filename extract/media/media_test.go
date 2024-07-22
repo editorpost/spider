@@ -3,7 +3,7 @@ package media_test
 import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/editorpost/spider/extract/pipe"
+	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/tester"
 	"github.com/gocolly/colly/v2"
 	"github.com/stretchr/testify/assert"
@@ -47,7 +47,7 @@ func (dl *Loader) Len() int {
 func TestNewMedia(t *testing.T) {
 
 	loader := NewLoader()
-	m := pipe.NewMedia("https://dst.com/static/media", loader)
+	m := media.NewMedia("https://dst.com/static/media", loader)
 
 	// create payload
 	payload := tester.TestPayload(t, "../../tester/fixtures/news/article-1.html")
@@ -57,14 +57,17 @@ func TestNewMedia(t *testing.T) {
 	require.NoError(t, m.Upload(payload))
 	assert.Zero(t, loader.Len())
 
+	claims := media.ClaimsFromContext(payload.Ctx)
+	require.NotNil(t, claims)
+
 	// add claim
 	src := gofakeit.URL()
-	dst, err := payload.Download(src)
+	dst, err := claims.Add(src)
 	require.NoError(t, err)
 	assert.NotEmpty(t, dst)
 
 	// claim added
-	require.Equal(t, 1, payload.Claims().Len())
+	require.Equal(t, 1, claims.Len())
 	// claim not uploaded yet
 	require.Equal(t, 0, loader.Len())
 	// upload

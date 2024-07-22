@@ -37,8 +37,11 @@ func Article(payload *pipe.Payload) error {
 		return err
 	}
 
-	// extracted images to download queue
-	Images(art, media.ClaimsFromContext(payload.Ctx))
+	// download claims
+	if claims := media.ClaimsFromContext(payload.Ctx); claims != nil {
+		// set article images, replace links in markdown
+		Images(art, claims)
+	}
 
 	// set the dto to the payload
 	for k, v := range art.Map() {
