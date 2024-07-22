@@ -42,7 +42,7 @@ func (dl *Loader) SetClient(client *http.Client) {
 }
 
 // Upload fetches the media from the specified Endpoint and uploads it to the store.
-func (dl *Loader) Upload(src, dst string) error {
+func (dl *Loader) Download(src, dst string) error {
 
 	// download
 	buf, err := dl.Fetch(src)
@@ -108,7 +108,20 @@ func Filename(srcURL string) (string, error) {
 		return "", err
 	}
 
-	return name + filepath.Ext(srcURL), nil
+	ext, err := FileExtension(srcURL)
+	if err != nil {
+		return "", err
+	}
+
+	return name + ext, nil
+}
+
+func FileExtension(uri string) (string, error) {
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Ext(u.Path), nil
 }
 
 // Download downloads an image from the specified Endpoint using the provided http.Transport.

@@ -1,6 +1,7 @@
 package pipe_test
 
 import (
+	"fmt"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -95,7 +96,7 @@ func TestDownloader_Copy(t *testing.T) {
 
 	// Perform the download and upload.
 	path := "static/media/test.jpg"
-	require.NoError(t, downloader.Upload(server.URL, path))
+	require.NoError(t, downloader.Download(server.URL, path))
 
 	// Assert the data was uploaded correctly.
 	uploadedData, exists := storage.data[path]
@@ -122,4 +123,38 @@ func (ms *MockStorage) Save(data []byte, name string) (err error) {
 	}
 	ms.data[name] = data
 	return nil
+}
+
+func TestFileExtension(t *testing.T) {
+	type args struct {
+		uri string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "Empty URI",
+			args:    args{uri: ""},
+			want:    "",
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Empty URI",
+			args:    args{uri: "https://example.com/expected.jpg?some=unwanted.png"},
+			want:    ".jpg",
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := pipe.FileExtension(tt.args.uri)
+			if !tt.wantErr(t, err, fmt.Sprintf("FileExtension(%v)", tt.args.uri)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "FileExtension(%v)", tt.args.uri)
+		})
+	}
 }

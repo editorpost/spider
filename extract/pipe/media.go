@@ -4,29 +4,22 @@ import (
 	"log/slog"
 )
 
-type ClaimsCtx string
-
-const (
-	// ClaimsCtxKey is a key for media claims in the payload context.
-	ClaimsCtxKey ClaimsCtx = "pipe.claims"
-)
-
 type (
 	Media struct {
 		// publicURL for public media storagePath
 		publicURL string
-		loader    Uploader
+		loader    Downloader
 	}
 
-	Uploader interface {
-		Upload(src, dst string) error
+	Downloader interface {
+		Download(src, dst string) error
 	}
 )
 
 // NewMedia creates a new media extractors.
 // Claims extracts and replaces image urls in the document. Must be called before extractors got access to document content.
 // Uploads requested media to the destination. Must be called right before saving the payload. Adds upload result to the payload.
-func NewMedia(publicURL string, loader Uploader) *Media {
+func NewMedia(publicURL string, loader Downloader) *Media {
 	return &Media{
 		publicURL: publicURL,
 		loader:    loader,
@@ -74,7 +67,7 @@ func (m *Media) Upload(payload *Payload) error {
 			continue
 		}
 
-		if err = m.loader.Upload(claim.Src, filename); err != nil {
+		if err = m.loader.Download(claim.Src, filename); err != nil {
 			slog.Error("failed to download media", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
 			continue
 		}
