@@ -148,7 +148,7 @@ func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
 	images := dto.NewImages()
 
 	for _, src := range distill.ContentImages {
-		image := dto.NewImage(AbsoluteUrl(resource, src))
+		image := dto.NewImage(media.AbsoluteUrl(resource, src))
 		images.Add(image)
 	}
 
@@ -200,23 +200,4 @@ func legacyAuthor(html string) (name string) {
 	}
 
 	return
-}
-
-func AbsoluteUrl(base *url.URL, href string) string {
-
-	// parse the href
-	rel, err := url.Parse(href)
-	if err != nil {
-		return ""
-	}
-
-	// already absolute
-	if rel.Scheme != "" {
-		return rel.String()
-	}
-
-	// resolve the base with the relative href
-	abs := base.ResolveReference(rel)
-
-	return abs.String()
 }
