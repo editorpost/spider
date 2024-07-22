@@ -50,7 +50,7 @@ func NewMedia(publicURL string, loader Uploader) *Media {
 //	}
 func (m *Media) Claims(payload *pipe.Payload) error {
 
-	claims := NewClaims(m.publicURL).ExtractAndReplace(payload.Doc.DOM)
+	claims := NewClaims(m.publicURL).ExtractAndReplace(payload)
 	payload.Ctx = context.WithValue(payload.Ctx, ClaimsCtxKey, claims)
 
 	return nil

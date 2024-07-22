@@ -2,6 +2,7 @@ package media
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"github.com/editorpost/spider/extract/pipe"
 	"log/slog"
 	"net/url"
 	"strings"
@@ -42,8 +43,33 @@ func NewClaims(publicURL string) *Claims {
 }
 
 // ExtractAndReplace Claim for each img tag and replace src path in selection.
-func (list *Claims) ExtractAndReplace(selection *goquery.Selection) *Claims {
+func (list *Claims) ExtractAndReplace(payload *pipe.Payload) *Claims {
 
+	selection := payload.Doc.DOM
+
+	// selection is nil
+	if selection == nil {
+		slog.Error("extracting media claims: payload DOM selection is nil")
+		return list
+	}
+
+	// og:image
+	selection.Find("meta").Each(func(i int, el *goquery.Selection) {
+
+		key, _ := el.Attr("property")
+		if key != "og:image" {
+			return
+		}
+
+		src, _ := el.Attr("content")
+		src = payload.Doc.Request.AbsoluteURL(src)
+
+		if dst, err := list.Add(src); err != nil {
+			el.SetAttr("content", dst)
+		}
+	})
+
+	// img tag
 	selection.Find("img").Each(func(_ int, el *goquery.Selection) {
 
 		// has src
@@ -52,50 +78,48 @@ func (list *Claims) ExtractAndReplace(selection *goquery.Selection) *Claims {
 			return
 		}
 
-		// already claimed
-		if _, exists = list.claims[src]; exists {
-			return
-		}
-
-		// already replaced
-		if strings.HasPrefix(src, list.publicURL) {
-			return
-		}
-
-		// filename as src url hash
-		filename, err := Filename(src)
-		if err != nil {
-			slog.Error("failed to hash filename", slog.String("src", src), slog.String("err", err.Error()))
-			return
-		}
-
-		// full url
-		dst, err := url.JoinPath(list.publicURL, filename)
-		if err != nil {
-			slog.Error("failed to join url", slog.String("dst", list.publicURL), slog.String("filename", filename), slog.String("err", err.Error()))
-			return
-		}
-
-		// replace url in selection
-		el.SetAttr("src", dst)
-
 		// add claim
-		list.Add(Claim{
-			Src: src,
-			Dst: dst,
-		})
+		src = payload.Doc.Request.AbsoluteURL(src)
+		// replace src with claimed destination
+		if dst, err := list.Add(src); err != nil {
+			el.SetAttr("src", dst)
+		}
 	})
 
 	return list
 }
 
-func (list *Claims) Add(c Claim) *Claims {
+func (list *Claims) Add(src string) (string, error) {
+
+	// already replaced
+	if strings.HasPrefix(src, list.publicURL) {
+		return src, nil
+	}
+
+	// filename as src url hash
+	filename, err := Filename(src)
+	if err != nil {
+		slog.Error("failed to hash filename", slog.String("src", src), slog.String("err", err.Error()))
+		return "", err
+	}
+
+	// full url
+	dst, err := url.JoinPath(list.publicURL, filename)
+	if err != nil {
+		slog.Error("failed to join url", slog.String("dst", list.publicURL), slog.String("filename", filename), slog.String("err", err.Error()))
+		return "", err
+	}
+
+	c := &Claim{
+		Src: src,
+		Dst: dst,
+	}
 
 	list.mute.Lock()
 	defer list.mute.Unlock()
+	list.claims[src] = c
 
-	list.claims[c.Src] = &c
-	return list
+	return c.Dst, nil
 }
 
 // Request Claim for uploading by Dst url.
@@ -184,4 +208,23 @@ func (list *Claims) All() []*Claim {
 
 func (list *Claims) Len() int {
 	return len(list.claims)
+}
+
+func AbsoluteUrl(base *url.URL, href string) string {
+
+	// parse the href
+	rel, err := url.Parse(href)
+	if err != nil {
+		return ""
+	}
+
+	// already absolute
+	if rel.Scheme != "" {
+		return rel.String()
+	}
+
+	// resolve the base with the relative href
+	abs := base.ResolveReference(rel)
+
+	return abs.String()
 }
