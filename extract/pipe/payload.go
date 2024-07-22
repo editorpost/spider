@@ -87,6 +87,10 @@ func (p *Payload) Download(src string) (dst string, err error) {
 	return p.claims.Add(src)
 }
 
+func (p *Payload) Claims() *Claims {
+	return p.claims
+}
+
 // Hash generates an FNV hash from the source Endpoint.
 func Hash(uri string) (string, error) {
 	h := fnv.New64a()

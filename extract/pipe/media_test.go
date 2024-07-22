@@ -2,15 +2,16 @@ package pipe_test
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/tester"
 	"github.com/gocolly/colly/v2"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
 	"os"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"testing"
 )
 
@@ -28,53 +29,47 @@ func (dl *Loader) Upload(src, dst string) error {
 	return nil
 }
 
+// Upload fetches the media from the specified Endpoint and uploads it to the store.
+func (dl *Loader) Has(dst string) bool {
+	_, ok := dl.uploads.Load(dst)
+	return ok
+}
+
+func (dl *Loader) Len() int {
+	count := 0
+	dl.uploads.Range(func(_, _ any) bool {
+		count++
+		return true
+	})
+	return count
+}
+
 func TestNewMedia(t *testing.T) {
 
 	loader := NewLoader()
 	m := pipe.NewMedia("https://dst.com/static/media", loader)
 
+	// create payload
 	payload := tester.TestPayload(t, "../../tester/fixtures/news/article-1.html")
-
-	// download extracts all images urls from `src` attribute in the document.
 	require.NoError(t, m.Claims(payload))
 
-	// load claims from payload context
-	claims, ok := payload.Ctx.Value(pipe.ClaimsCtxKey).(*pipe.Claims)
-	require.True(t, ok)
-	require.NotZero(t, len(claims.All()))
-
-	// Upload requested media from claims
+	// empty
 	require.NoError(t, m.Upload(payload))
+	assert.Zero(t, loader.Len())
 
-	count := atomic.Int32{}
-	loader.uploads.Range(func(_, value any) bool {
-		src, ok := value.(string)
-		require.True(t, ok)
-		require.NotEmpty(t, src)
-		count.Add(1)
-		return true
-	})
+	// add claim
+	src := gofakeit.URL()
+	dst, err := payload.Download(src)
+	require.NoError(t, err)
+	assert.NotEmpty(t, dst)
 
-	// no claims requested
-	require.Zero(t, count.Load())
-
-	// request claims to upload
-	claims.Request(claims.All()[0].Dst)
-
-	// Upload requested media from claims
+	// claim added
+	require.Equal(t, 1, payload.Claims().Len())
+	// claim not uploaded yet
+	require.Equal(t, 0, loader.Len())
+	// upload
 	require.NoError(t, m.Upload(payload))
-
-	count = atomic.Int32{}
-	loader.uploads.Range(func(_, value any) bool {
-		src, ok := value.(string)
-		require.True(t, ok)
-		require.NotEmpty(t, src)
-		count.Add(1)
-		return true
-	})
-
-	// 1 claim requested and uploaded
-	require.Zero(t, count.Load())
+	require.Equal(t, 1, loader.Len())
 }
 
 func GetHTML(t *testing.T) string {
