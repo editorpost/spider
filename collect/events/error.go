@@ -20,12 +20,7 @@ func (crawler *Dispatch) error(resp *colly.Response, err error) {
 			return
 		}
 
-		slog.Debug("bad proxy",
-			slog.String("url", resp.Request.URL.String()),
-			slog.String("proxy", resp.Request.ProxyURL),
-			slog.Int("status", resp.StatusCode),
-		)
-
+		LogRespError("bad proxy", resp, err)
 		return
 	}
 
@@ -38,16 +33,15 @@ func (crawler *Dispatch) error(resp *colly.Response, err error) {
 			return
 		}
 
-		slog.Debug("url error",
-			slog.String("err", err.Error()),
-			slog.String("url", resp.Request.URL.String()),
-			slog.String("proxy", resp.Request.ProxyURL),
-			slog.Int("status", resp.StatusCode),
-		)
+		LogRespError("url error", resp, err)
 		return
 	}
 
-	slog.Debug("response failed",
+	LogRespError("response error", resp, err)
+}
+
+func LogRespError(msg string, resp *colly.Response, err error) {
+	slog.Debug(msg,
 		slog.String("err", err.Error()),
 		slog.String("url", resp.Request.URL.String()),
 		slog.String("proxy", resp.Request.ProxyURL),
