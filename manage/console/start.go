@@ -13,6 +13,9 @@ func Start(s *setup.Spider, deploy *setup.Deploy) error {
 		return err
 	}
 
+	// shutdown required by stores
+	// to finish writing queued data
 	defer s.Shutdown()
+
 	return crawler.Run()
 }
