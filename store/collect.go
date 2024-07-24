@@ -26,26 +26,32 @@ type CollectStorage struct {
 	jar         *cookiejar.Jar
 }
 
-func NewCollectStorage(spiderID string, b Bucket) (*CollectStorage, error) {
+func NewCollectStorage(spiderID string, b Bucket) (*CollectStorage, func() error, error) {
 
 	jar, _ := cookiejar.New(nil)
 	folder := fmt.Sprintf(CollectFolder, spiderID)
 
 	store, err := NewStorage(b, folder)
 	if err != nil {
-		return nil, fmt.Errorf("extract store s3 client: %w", err)
+		return nil, nil, fmt.Errorf("extract store s3 client: %w", err)
 	}
 
-	return &CollectStorage{
+	s := &CollectStorage{
 		b:           b,
 		store:       store,
 		visitedURLs: make(map[uint64]bool),
 		lock:        &sync.RWMutex{},
 		jar:         jar,
-	}, nil
+	}
+
+	return s, s.shutdown, nil
 }
 
-func (s *CollectStorage) Shutdown() error {
+func (s *CollectStorage) shutdown() error {
+
+	if len(s.visitedURLs) == 0 {
+		return nil
+	}
 
 	b, err := json.Marshal(s.visitedURLs)
 	if err != nil {

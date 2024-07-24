@@ -190,7 +190,7 @@ func (s *Spider) withStorage(deploy *Deploy, deps *config.Deps) error {
 		return err
 	}
 
-	if err := s.withExtractStore(deploy, deps); err != nil {
+	if err := s.withExtractStore(deploy); err != nil {
 		return err
 	}
 
@@ -203,18 +203,19 @@ func (s *Spider) withStorage(deploy *Deploy, deps *config.Deps) error {
 
 func (s *Spider) withCollectStore(deploy *Deploy, deps *config.Deps) error {
 
-	st, err := store.NewCollectStorage(s.Args.ID, deploy.Bucket)
+	storage, upload, err := store.NewCollectStorage(s.Args.ID, deploy.Bucket)
 	if err != nil {
 		return err
 	}
 
-	s.onShutdown(st.Shutdown) // upload visited urls to S3
-	deps.Storage = st
+	// upload visited urls to S3
+	s.onShutdown(upload)
+	deps.Storage = storage
 
 	return err
 }
 
-func (s *Spider) withExtractStore(deploy *Deploy, deps *config.Deps) (err error) {
+func (s *Spider) withExtractStore(deploy *Deploy) (err error) {
 
 	extractStore, err := store.NewExtractStorage(s.Args.ID, deploy.Bucket)
 	if err != nil {

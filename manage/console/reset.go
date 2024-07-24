@@ -26,7 +26,7 @@ func Reset(spiderID string, deploy *setup.Deploy) error {
 // Crawler Endpoint history will be erased.
 func ResetCollector(spiderID string, bucket store.Bucket) error {
 
-	collector, err := store.NewCollectStorage(spiderID, bucket)
+	collector, _, err := store.NewCollectStorage(spiderID, bucket)
 	if err != nil {
 		return err
 	}
