@@ -21,10 +21,6 @@ import (
 // and sets the dto fields to the payload
 func Article(payload *pipe.Payload) error {
 
-	if payload.Selection == nil {
-		payload.Selection = payload.Doc.DOM
-	}
-
 	htmlStr, err := payload.Selection.Html()
 	if err != nil {
 		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
@@ -62,8 +58,9 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 	// readability: title, summary, text, html, language
 	readabilityArticle(html, resource, a)
 
+	// todo decide if we need to use distiller, since images are not used
 	// distiller: category, images, source name, author
-	distillArticle(html, resource, a)
+	// distillArticle(html, resource, a)
 
 	// fallback: published
 	a.Published = lo.Ternary(a.Published.IsZero(), legacyPublished(html), a.Published)
