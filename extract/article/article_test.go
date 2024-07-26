@@ -31,10 +31,6 @@ func TestFromHTML(t *testing.T) {
 
 	// validation
 	assert.NoError(t, a.Normalize())
-
-	m := a.Map()
-	_ = m
-	fmt.Println(m)
 }
 
 func TestDistiller(t *testing.T) {
@@ -50,7 +46,7 @@ func TestDistiller(t *testing.T) {
 	}
 
 	rawHTML := dom.OuterHTML(result.Node)
-	fmt.Println(rawHTML)
+	assert.NotEmpty(t, rawHTML)
 }
 
 func TestReadability(t *testing.T) {

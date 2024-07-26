@@ -62,7 +62,7 @@ func TestNewMedia(t *testing.T) {
 
 	// add claim
 	src := gofakeit.URL()
-	dst, err := claims.Add(src)
+	dst, err := claims.Add(payload.ID, src)
 	require.NoError(t, err)
 	assert.NotEmpty(t, dst)
 
