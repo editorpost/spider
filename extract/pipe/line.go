@@ -47,17 +47,17 @@ func (p *Pipeline) Extract(doc *colly.HTMLElement, s *goquery.Selection) error {
 	}
 
 	// starter
-	if err := p.exec(payload, p.starter...); err != nil {
+	if err = p.exec(payload, p.starter...); err != nil {
 		return err
 	}
 
 	// main
-	if err := p.exec(payload, p.extractors...); err != nil {
+	if err = p.exec(payload, p.extractors...); err != nil {
 		return err
 	}
 
 	// finisher
-	if err := p.exec(payload, p.finisher...); err != nil {
+	if err = p.exec(payload, p.finisher...); err != nil {
 		return err
 	}
 
