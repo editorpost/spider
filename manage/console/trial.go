@@ -9,12 +9,12 @@ import (
 // It is allowed to use proxy pool for requests.
 func Trial(s *setup.Spider) ([]*pipe.Payload, error) {
 
-	s.Args.ID = "trial"
+	s.Collect.ID = "trial"
 	items := []*pipe.Payload{}
 
 	// force low limit for trial
-	if s.Args.ExtractLimit == 0 && s.Args.ExtractLimit > 30 {
-		s.Args.ExtractLimit = 30
+	if s.Collect.ExtractLimit == 0 && s.Collect.ExtractLimit > 30 {
+		s.Collect.ExtractLimit = 30
 	}
 
 	s.Pipeline().Append(func(payload *pipe.Payload) error {

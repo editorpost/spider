@@ -12,16 +12,20 @@ import (
 func TestFlags(t *testing.T) {
 
 	jsonStr := `{
-		"ID": "4c62e925-2e3e-4ff6-a92b-305b85d6281a",
-		"StartURL": "http://example.com",
-		"ExtractLimit": 10,
-		"ExtractEntities": ["person", "organization"],
-		"ExtractFields": [
-			{
-				"Name": "name",
-				"Selector": "h1"
-			}
-		]
+		"Collect": {
+			"ID": "4c62e925-2e3e-4ff6-a92b-305b85d6281a",
+			"StartURL": "http://example.com",
+			"ExtractLimit": 10
+		},
+		"Extract": {
+			"ExtractEntities": ["person", "organization"],
+			"ExtractFields": [
+				{
+					"Name": "name",
+					"Selector": "h1"
+				}
+			]
+		}
 	}`
 
 	s, err := setup.NewSpiderFromJSON([]byte(jsonStr))
@@ -34,6 +38,6 @@ func TestFlags(t *testing.T) {
 	cmd, spider := Flags()
 
 	assert.Equal(t, "start", cmd)
-	assert.Equal(t, s.Args, spider.Args)
-	assert.Equal(t, s.Config, spider.Config)
+	assert.Equal(t, s.Collect, spider.Collect)
+	assert.Equal(t, s.Extract, spider.Extract)
 }

@@ -11,23 +11,27 @@ import (
 func TestSpiderFromJSONString(t *testing.T) {
 
 	jsonStr := `{
-		"ID": "test",
-		"StartURL": "http://example.com",
-		"ExtractLimit": 10,
-		"ExtractEntities": ["person", "organization"],
-		"ExtractFields": [
-			{
-				"Name": "name",
-				"Selector": "h1"
-			}
-		]
+		"Collect": {
+			"ID": "test",
+			"StartURL": "http://example.com",
+			"ExtractLimit": 10
+		},
+		"Extract": {
+			"ExtractEntities": ["person", "organization"],
+			"ExtractFields": [
+				{
+					"Name": "name",
+					"Selector": "h1"
+				}
+			]
+		}
 	}`
 
 	s := &setup.Spider{}
 	require.NoError(t, json.Unmarshal([]byte(jsonStr), s))
-	require.Equal(t, "test", s.ID)
-	require.Equal(t, "http://example.com", s.StartURL)
-	require.Equal(t, 10, s.ExtractLimit)
-	require.Len(t, s.ExtractEntities, 2)
-	require.Len(t, s.ExtractFields, 1)
+	require.Equal(t, "test", s.Collect.ID)
+	require.Equal(t, "http://example.com", s.Collect.StartURL)
+	require.Equal(t, 10, s.Collect.ExtractLimit)
+	require.Len(t, s.Extract.ExtractEntities, 2)
+	require.Len(t, s.Extract.ExtractFields, 1)
 }

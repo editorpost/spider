@@ -42,8 +42,8 @@ type Deploy struct {
 }
 
 type Spider struct {
-	*config.Args
-	*extract.Config
+	Collect  *config.Args
+	Extract  *extract.Config
 	pipe     *pipe.Pipeline
 	shutdown []func() error
 }
@@ -69,7 +69,7 @@ func NewSpiderFromJSON(data []byte) (*Spider, error) {
 		return nil, err
 	}
 
-	return NewSpider(s.Args, s.Config)
+	return NewSpider(s.Collect, s.Extract)
 }
 
 func NewSpider(args *config.Args, cfg *extract.Config) (*Spider, error) {
@@ -84,11 +84,11 @@ func NewSpider(args *config.Args, cfg *extract.Config) (*Spider, error) {
 	}
 
 	s := &Spider{
-		Args:   args,
-		Config: cfg,
+		Collect: args,
+		Extract: cfg,
 	}
 
-	if err := s.Args.Normalize(); err != nil {
+	if err := s.Collect.Normalize(); err != nil {
 		return nil, err
 	}
 
@@ -114,7 +114,7 @@ func (s *Spider) withPipeline() error {
 		return nil
 	}
 
-	extractors, err := extract.Extractors(s.ExtractFields, s.ExtractEntities...)
+	extractors, err := extract.Extractors(s.Extract.ExtractFields, s.Extract.ExtractEntities...)
 	if err != nil {
 		return err
 	}
@@ -144,12 +144,12 @@ func (s *Spider) NewCrawler(deploy *Deploy) (*collect.Crawler, error) {
 	s.pipe.Starter(extract.WindmillMeta)
 	deps.Extractor = s.pipe.Extract
 
-	return collect.NewCrawler(s.Args, deps)
+	return collect.NewCrawler(s.Collect, deps)
 }
 
 func (s *Spider) withVictoriaLogs(uri string) {
 	if uri != "" {
-		VictoriaLogs(uri, "info", s.Args.ID)
+		VictoriaLogs(uri, "info", s.Collect.ID)
 	}
 }
 
@@ -159,17 +159,17 @@ func (s *Spider) withVictoriaMetrics(uri string, deps *config.Deps) (err error) 
 		return nil
 	}
 
-	deps.Monitor, err = NewMetrics(vars.FromEnv().JobID, s.Args.ID, uri)
+	deps.Monitor, err = NewMetrics(vars.FromEnv().JobID, s.Collect.ID, uri)
 	return err
 }
 
 func (s *Spider) withProxy(deps *config.Deps) error {
 
-	if !s.Args.ProxyEnabled {
+	if !s.Collect.ProxyEnabled {
 		return nil
 	}
 
-	proxies, err := proxy.StartPool(s.Args.StartURL, s.Args.ProxySources...)
+	proxies, err := proxy.StartPool(s.Collect.StartURL, s.Collect.ProxySources...)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func (s *Spider) withStorage(deploy *Deploy, deps *config.Deps) error {
 
 func (s *Spider) withCollectStore(deploy *Deploy, deps *config.Deps) error {
 
-	storage, upload, err := store.NewCollectStorage(s.Args.ID, deploy.Bucket)
+	storage, upload, err := store.NewCollectStorage(s.Collect.ID, deploy.Bucket)
 	if err != nil {
 		return err
 	}
@@ -217,7 +217,7 @@ func (s *Spider) withCollectStore(deploy *Deploy, deps *config.Deps) error {
 
 func (s *Spider) withExtractStore(deploy *Deploy) (err error) {
 
-	extractStore, err := store.NewExtractStorage(s.Args.ID, deploy.Bucket)
+	extractStore, err := store.NewExtractStorage(s.Collect.ID, deploy.Bucket)
 	if err != nil {
 		return fmt.Errorf("failed to create extract S3 storage: %w", err)
 	}
@@ -230,11 +230,11 @@ func (s *Spider) withExtractStore(deploy *Deploy) (err error) {
 
 func (s *Spider) withMedia(deploy *Deploy) error {
 
-	if !s.ExtractMedia {
+	if !s.Extract.ExtractMedia {
 		return nil
 	}
 
-	bucketStore, err := store.NewMediaStorage(s.Args.ID, deploy.Bucket)
+	bucketStore, err := store.NewMediaStorage(s.Collect.ID, deploy.Bucket)
 	if err != nil {
 		return err
 	}
@@ -242,7 +242,7 @@ func (s *Spider) withMedia(deploy *Deploy) error {
 	// public url prefix for media files, e.g. http://my-proxy:8080
 	// join public url with bucket folder, e.g. spider/%/media/123.jpg
 	// to simplify further proxying the bucket, e.g. http://my-proxy:8080/spider/%/media/123.jpg
-	folder := store.GetMediaStorageFolder(s.Args.ID)
+	folder := store.GetMediaStorageFolder(s.Collect.ID)
 	publicURL := fmt.Sprintf("%s/%s", deploy.Bucket.PublicURL, folder)
 	uploader := media.NewMedia(publicURL, media.NewLoader(bucketStore))
 
