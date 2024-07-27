@@ -24,7 +24,7 @@ func TestDeploy(t *testing.T) *setup.Deploy {
 				Bucket:   "local",
 				EndPoint: DeployBucketFolder,
 			},
-			PublicURL: "",
+			PublicURL: "https://cdn.example.com",
 		},
 		Metrics: &res.Metrics{
 			URL: "http://metrics.spider.svc:8429/api/v1/import/prometheus",
