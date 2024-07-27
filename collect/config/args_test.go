@@ -48,7 +48,7 @@ func TestNormalizeURLs(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 
-			args := &config.Args{
+			args := &config.Config{
 				StartURL:   tt.start,
 				AllowedURL: tt.allow,
 			}
@@ -83,7 +83,7 @@ func TestNormalizeUserAgent(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 
-			args := &config.Args{
+			args := &config.Config{
 				UserAgent: tt.ua,
 			}
 
@@ -131,29 +131,29 @@ type ConfigTestSuite struct {
 
 func (suite *ConfigTestSuite) TestNormalize() {
 	tests := []struct {
-		args     config.Args
+		args     config.Config
 		expected error
 	}{
 		{
-			args: config.Args{
+			args: config.Config{
 				StartURL: "https://example.com",
 			},
 			expected: nil,
 		},
 		{
-			args: config.Args{
+			args: config.Config{
 				StartURL: "",
 			},
 			expected: errors.New("start url is required"),
 		},
 		{
-			args: config.Args{
+			args: config.Config{
 				StartURL: "invalid-url",
 			},
 			expected: errors.New("start url is invalid: parse \"invalid-url\": invalid URI for request"),
 		},
 		{
-			args: config.Args{
+			args: config.Config{
 				StartURL: "https://",
 			},
 			expected: errors.New("start url host is invalid, add domain name"),
@@ -172,29 +172,29 @@ func (suite *ConfigTestSuite) TestNormalize() {
 
 func (suite *ConfigTestSuite) TestNormalizeURLs() {
 	tests := []struct {
-		args     config.Args
+		args     config.Config
 		expected error
 	}{
 		{
-			args: config.Args{
+			args: config.Config{
 				StartURL: "https://example.com",
 			},
 			expected: nil,
 		},
 		{
-			args: config.Args{
+			args: config.Config{
 				StartURL: "",
 			},
 			expected: errors.New("start url is required"),
 		},
 		{
-			args: config.Args{
+			args: config.Config{
 				StartURL: "invalid-url",
 			},
 			expected: errors.New("start url is invalid: parse \"invalid-url\": invalid URI for request"),
 		},
 		{
-			args: config.Args{
+			args: config.Config{
 				StartURL: "https://",
 			},
 			expected: errors.New("start url host is invalid, add domain name"),
@@ -213,17 +213,17 @@ func (suite *ConfigTestSuite) TestNormalizeURLs() {
 
 func (suite *ConfigTestSuite) TestNormalizeUserAgent() {
 	tests := []struct {
-		args     config.Args
+		args     config.Config
 		expected string
 	}{
 		{
-			args: config.Args{
+			args: config.Config{
 				UserAgent: "Mozilla/5.0",
 			},
 			expected: "Mozilla/5.0",
 		},
 		{
-			args: config.Args{
+			args: config.Config{
 				UserAgent: "",
 			},
 			expected: config.DefaultUserAgent,
@@ -239,17 +239,17 @@ func (suite *ConfigTestSuite) TestNormalizeUserAgent() {
 
 func (suite *ConfigTestSuite) TestNormalizeExtractSelector() {
 	tests := []struct {
-		args     config.Args
+		args     config.Config
 		expected string
 	}{
 		{
-			args: config.Args{
+			args: config.Config{
 				ExtractSelector: " article ",
 			},
 			expected: "article",
 		},
 		{
-			args: config.Args{
+			args: config.Config{
 				ExtractSelector: "",
 			},
 			expected: "html",

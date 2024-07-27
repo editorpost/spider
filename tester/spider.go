@@ -33,8 +33,8 @@ func NewSpiderWith(t *testing.T, server *TestServer) *setup.Spider {
 	return s
 }
 
-func NewArgs() *config.Args {
-	return &config.Args{
+func NewArgs() *config.Config {
+	return &config.Config{
 		ID:              gofakeit.UUID(),
 		Name:            gofakeit.AppName(),
 		StartURL:        "",

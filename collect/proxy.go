@@ -15,7 +15,7 @@ import (
 // - default request timeout is 15 seconds
 // - enable cookies (on error - log and skip setting cookies)
 // - finally, it sets up retries for response and proxy errors.
-func WithProxyPool(args *config.Args) (colly.CollectorOption, error) {
+func WithProxyPool(args *config.Config) (colly.CollectorOption, error) {
 
 	var (
 		err       error

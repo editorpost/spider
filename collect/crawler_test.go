@@ -24,7 +24,7 @@ func TestCollect(t *testing.T) {
 	dispatched := false
 
 	crawler, err := collect.NewCrawler(
-		&config.Args{
+		&config.Config{
 			StartURL:        srv.URL,
 			AllowedURL:      ".*",
 			Depth:           1,
@@ -53,7 +53,7 @@ func TestJSCollect(t *testing.T) {
 	dispatched := false
 
 	crawler, err := collect.NewCrawler(
-		&config.Args{
+		&config.Config{
 			StartURL:        srv.URL,
 			AllowedURL:      ".*",
 			Depth:           1,

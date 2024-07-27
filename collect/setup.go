@@ -60,7 +60,7 @@ func (crawler *Crawler) collector() (*colly.Collector, error) {
 // It applies a regular expression filter to the URLs visited by the collector.
 // Allowed Endpoint pattern is used to extract links in hope to find entity URLs.
 // In other hand, ExtractURL is used to run extractors on the page.
-func (crawler *Crawler) VisitUrlFilter(args *config.Args) colly.CollectorOption {
+func (crawler *Crawler) VisitUrlFilter(args *config.Config) colly.CollectorOption {
 	return func(collector *colly.Collector) {
 
 		// Generate regular expressions from the start, allowed, and entity URLs

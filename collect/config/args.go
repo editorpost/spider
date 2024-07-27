@@ -12,7 +12,7 @@ const (
 	DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
 )
 
-type Args struct {
+type Config struct {
 
 	// required
 
@@ -63,7 +63,7 @@ type Args struct {
 
 }
 
-// The Args JSON representation:
+// The Config JSON representation:
 // {
 // 	"ID": "ready-check",
 //  "Name": "Ready Check",
@@ -79,7 +79,7 @@ type Args struct {
 // 	"ProxySources": []
 // }
 
-func (args *Args) Normalize() error {
+func (args *Config) Normalize() error {
 
 	if err := args.NormalizeURLs(); err != nil {
 		return err
@@ -94,7 +94,7 @@ func (args *Args) Normalize() error {
 	return nil
 }
 
-func (args *Args) Log() slog.Attr {
+func (args *Config) Log() slog.Attr {
 	return slog.Group("args",
 		slog.String("start_url", args.StartURL),
 		slog.String("allowed_url", args.AllowedURL),
@@ -106,14 +106,14 @@ func (args *Args) Log() slog.Attr {
 	)
 }
 
-func (args *Args) NormalizeExtractSelector() {
+func (args *Config) NormalizeExtractSelector() {
 	args.ExtractSelector = strings.TrimSpace(args.ExtractSelector)
 	if len(args.ExtractSelector) == 0 {
 		args.ExtractSelector = "html"
 	}
 }
 
-func (args *Args) NormalizeURLs() error {
+func (args *Config) NormalizeURLs() error {
 
 	// start url is required
 	args.StartURL = strings.TrimSpace(args.StartURL)
@@ -147,7 +147,7 @@ func (args *Args) NormalizeURLs() error {
 }
 
 // NormalizeUserAgent sets the default user agent
-func (args *Args) NormalizeUserAgent() error {
+func (args *Config) NormalizeUserAgent() error {
 
 	args.UserAgent = strings.TrimSpace(args.UserAgent)
 	if len(args.UserAgent) == 0 {

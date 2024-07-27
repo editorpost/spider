@@ -26,13 +26,13 @@ type Deploy struct {
 
 // Spider aggregates configs and create collect.Crawler.
 type Spider struct {
-	Collect  *config.Args
+	Collect  *config.Config
 	Extract  *extract.Config
 	pipe     *pipe.Pipeline
 	shutdown []func() error
 }
 
-func NewSpider(args *config.Args, cfg *extract.Config) (*Spider, error) {
+func NewSpider(args *config.Config, cfg *extract.Config) (*Spider, error) {
 
 	if args.ID == "" {
 		return nil, fmt.Errorf("spider ID is empty")

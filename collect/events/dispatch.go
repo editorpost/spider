@@ -9,7 +9,7 @@ import (
 
 type (
 	Dispatch struct {
-		args           *config.Args
+		args           *config.Config
 		deps           *config.Deps
 		queue          Queue
 		browser        Browser
@@ -28,7 +28,7 @@ type (
 	}
 )
 
-func NewDispatcher(args *config.Args, deps *config.Deps, queue Queue, browser Browser) *Dispatch { // long miles away...
+func NewDispatcher(args *config.Config, deps *config.Deps, queue Queue, browser Browser) *Dispatch { // long miles away...
 	return &Dispatch{
 		args:           args,
 		deps:           deps,
@@ -43,7 +43,7 @@ func NewDispatcher(args *config.Args, deps *config.Deps, queue Queue, browser Br
 // WithDispatcher sets up the event handlers for the crawler.
 // It sets handlers for HTML elements, errors, requests, and responses.
 // noinspection GoUnusedExportedFunction
-func WithDispatcher(args *config.Args, deps *config.Deps, queue Queue, browser Browser) func(*colly.Collector) {
+func WithDispatcher(args *config.Config, deps *config.Deps, queue Queue, browser Browser) func(*colly.Collector) {
 
 	d := NewDispatcher(args, deps, queue, browser)
 

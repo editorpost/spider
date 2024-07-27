@@ -10,14 +10,14 @@ import (
 
 // Crawler for scraping a website
 type Crawler struct {
-	args      *config.Args
+	args      *config.Config
 	deps      *config.Deps
 	queue     *queue.Queue
 	collect   *colly.Collector
 	chromeCtx context.Context
 }
 
-func NewCrawler(args *config.Args, deps *config.Deps) (*Crawler, error) {
+func NewCrawler(args *config.Config, deps *config.Deps) (*Crawler, error) {
 
 	if err := args.Normalize(); err != nil {
 		return nil, err
