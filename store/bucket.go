@@ -45,7 +45,7 @@ type (
 	}
 )
 
-func NewS3Client(bucket *res.S3) (*s3.Client, error) {
+func NewS3Client(bucket res.S3) (*s3.Client, error) {
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(bucket.AccessKey, bucket.SecretKey, "")),
@@ -72,7 +72,7 @@ func NewBucketStorage(bucket, folder string, client *s3.Client) *BucketStorage {
 	}
 }
 
-func NewStorage(bucket *res.S3, folder string) (Storage, error) {
+func NewStorage(bucket res.S3, folder string) (Storage, error) {
 
 	if IsLocalBucket(bucket) {
 		return NewFolderStorage(bucket, folder)

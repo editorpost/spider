@@ -14,11 +14,11 @@ type LocalStorage struct {
 	folder string
 }
 
-func IsLocalBucket(bucket *res.S3) bool {
+func IsLocalBucket(bucket res.S3) bool {
 	return bucket.Bucket == LocalBucket
 }
 
-func NewFolderStorage(bucket *res.S3, folder string) (*LocalStorage, error) {
+func NewFolderStorage(bucket res.S3, folder string) (*LocalStorage, error) {
 
 	root, err := filepath.Abs(bucket.EndPoint)
 	if err != nil {

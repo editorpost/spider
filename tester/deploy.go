@@ -10,26 +10,26 @@ import (
 
 const DeployBucketFolder = "./testdata"
 
-func TestDeploy(t *testing.T) *setup.Deploy {
+func TestDeploy(t *testing.T) setup.Deploy {
 
 	t.Helper()
 
-	return &setup.Deploy{
-		Storage: &res.S3{
+	return setup.Deploy{
+		Storage: res.S3{
 			Bucket:   "local",
 			EndPoint: DeployBucketFolder,
 		},
-		Media: &res.S3Public{
+		Media: res.S3Public{
 			S3: res.S3{
 				Bucket:   "local",
 				EndPoint: DeployBucketFolder,
 			},
 			PublicURL: "https://cdn.example.com",
 		},
-		Metrics: &res.Metrics{
+		Metrics: res.Metrics{
 			URL: "http://metrics.spider.svc:8429/api/v1/import/prometheus",
 		},
-		Logs: &res.Logs{
+		Logs: res.Logs{
 			URL: "http://logs.spider.svc:9428",
 		},
 	}

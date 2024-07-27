@@ -11,8 +11,8 @@ import (
 //goland:noinspection GoUnusedExportedFunction
 func Start(s *setup.Spider) (err error) {
 
-	deploy := &setup.Deploy{}
-	if err = LoadDeployResource(deploy); err != nil {
+	deploy := setup.Deploy{}
+	if err = LoadDeployResource(&deploy); err != nil {
 		return err
 	}
 

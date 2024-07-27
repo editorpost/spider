@@ -18,7 +18,7 @@ type CollectStore interface {
 // CollectStorage in-memory colly storage backed by S3
 // @see CollectHistory.Init and CollectStorage.Shutdown
 type CollectStorage struct {
-	b     *res.S3
+	b     res.S3
 	store Storage
 	// Based on colly storage.InMemoryStorage
 	// @source github.com/gocolly/colly/v2@v2.1.1-0.20240327170223-5224b972e22b/storage/storage.go
@@ -27,7 +27,7 @@ type CollectStorage struct {
 	jar         *cookiejar.Jar
 }
 
-func NewCollectStorage(spiderID string, b *res.S3) (*CollectStorage, func() error, error) {
+func NewCollectStorage(spiderID string, b res.S3) (*CollectStorage, func() error, error) {
 
 	jar, _ := cookiejar.New(nil)
 	folder := fmt.Sprintf(CollectFolder, spiderID)

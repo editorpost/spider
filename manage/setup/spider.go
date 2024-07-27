@@ -17,11 +17,11 @@ import (
 
 // Deploy provides the configuration for the Spider infrastructure.
 type Deploy struct {
-	Storage  *res.S3         `json:"Storage"`
-	Media    *res.S3Public   `json:"Media"`
-	Database *res.Postgresql `json:"Database"`
-	Metrics  *res.Metrics    `json:"Metrics"`
-	Logs     *res.Logs       `json:"Logs"`
+	Storage  res.S3         `json:"Storage"`
+	Media    res.S3Public   `json:"Media"`
+	Database res.Postgresql `json:"Database"`
+	Metrics  res.Metrics    `json:"Metrics"`
+	Logs     res.Logs       `json:"Logs"`
 }
 
 // Spider aggregates configs and create collect.Crawler.
@@ -31,14 +31,6 @@ type Spider struct {
 	pipe     *pipe.Pipeline
 	shutdown []func() error
 }
-
-// epmg.win
-// quee.win
-// pstr.win
-// wast.win
-// stra.win
-// postd.org
-// estatic.org
 
 // UnmarshalJSON is the custom unmarshalling for Spider
 func (s *Spider) UnmarshalJSON(data []byte) error {
@@ -115,7 +107,7 @@ func (s *Spider) withPipeline() error {
 	return nil
 }
 
-func (s *Spider) NewCrawler(deploy *Deploy) (*collect.Crawler, error) {
+func (s *Spider) NewCrawler(deploy Deploy) (*collect.Crawler, error) {
 
 	deps := &config.Deps{}
 
@@ -139,18 +131,18 @@ func (s *Spider) NewCrawler(deploy *Deploy) (*collect.Crawler, error) {
 	return collect.NewCrawler(s.Collect, deps)
 }
 
-func (s *Spider) withVictoriaLogs(config *res.Logs) {
+func (s *Spider) withVictoriaLogs(config res.Logs) {
 
-	if config == nil || len(config.URL) == 0 {
+	if len(config.URL) == 0 {
 		return
 	}
 
 	VictoriaLogs(config.URL, "info", s.Collect.ID)
 }
 
-func (s *Spider) withVictoriaMetrics(config *res.Metrics, deps *config.Deps) (err error) {
+func (s *Spider) withVictoriaMetrics(config res.Metrics, deps *config.Deps) (err error) {
 
-	if config == nil || len(config.URL) == 0 {
+	if len(config.URL) == 0 {
 		return
 	}
 
@@ -174,9 +166,9 @@ func (s *Spider) withProxy(deps *config.Deps) error {
 	return nil
 }
 
-func (s *Spider) withStorage(deploy *Deploy, deps *config.Deps) error {
+func (s *Spider) withStorage(deploy Deploy, deps *config.Deps) error {
 
-	if deploy.Storage == nil || deploy.Storage.Bucket == "" {
+	if deploy.Storage.Bucket == "" {
 		return nil
 	}
 
@@ -195,7 +187,7 @@ func (s *Spider) withStorage(deploy *Deploy, deps *config.Deps) error {
 	return nil
 }
 
-func (s *Spider) withCollectStore(bucket *res.S3, deps *config.Deps) error {
+func (s *Spider) withCollectStore(bucket res.S3, deps *config.Deps) error {
 
 	storage, upload, err := store.NewCollectStorage(s.Collect.ID, bucket)
 	if err != nil {
@@ -209,7 +201,7 @@ func (s *Spider) withCollectStore(bucket *res.S3, deps *config.Deps) error {
 	return err
 }
 
-func (s *Spider) withExtractStore(bucket *res.S3) (err error) {
+func (s *Spider) withExtractStore(bucket res.S3) (err error) {
 
 	extractStore, err := store.NewExtractStorage(s.Collect.ID, bucket)
 	if err != nil {
@@ -222,13 +214,13 @@ func (s *Spider) withExtractStore(bucket *res.S3) (err error) {
 	return nil
 }
 
-func (s *Spider) withMedia(bucket *res.S3Public) error {
+func (s *Spider) withMedia(bucket res.S3Public) error {
 
 	if !s.Extract.Media.Enabled {
 		return nil
 	}
 
-	bucketStore, err := store.NewMediaStorage(s.Collect.ID, &bucket.S3)
+	bucketStore, err := store.NewMediaStorage(s.Collect.ID, bucket.S3)
 	if err != nil {
 		return err
 	}
