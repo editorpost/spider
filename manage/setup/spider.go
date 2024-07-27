@@ -74,7 +74,7 @@ func (s *Spider) withPipeline() error {
 		return nil
 	}
 
-	extractors, err := extract.Extractors(s.Extract.ExtractFields, s.Extract.ExtractEntities...)
+	extractors, err := extract.Extractors(s.Extract.Fields, s.Extract.Extract...)
 	if err != nil {
 		return err
 	}

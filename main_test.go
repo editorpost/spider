@@ -19,8 +19,8 @@ func TestFlags(t *testing.T) {
 			"ExtractLimit": 10
 		},
 		"Extract": {
-			"ExtractEntities": ["person", "organization"],
-			"ExtractFields": [
+			"Extract": ["person", "organization"],
+			"Fields": [
 				{
 					"Name": "name",
 					"Selector": "h1"

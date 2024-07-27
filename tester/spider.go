@@ -52,8 +52,8 @@ func NewArgs() *config.Config {
 
 func NewExtractConfig() *extract.Config {
 	return &extract.Config{
-		ExtractEntities: []string{"article"},
-		ExtractFields: []*fields.Field{
+		Extract: []string{"article"},
+		Fields: []*fields.Field{
 			{
 				Name:         "head_title",
 				Cardinality:  1,
