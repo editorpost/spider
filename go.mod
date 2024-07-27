@@ -74,7 +74,7 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.16.3 // indirect
-	github.com/editorpost/donq/res v0.0.0-20240727213936-34943b406ac2 // indirect
+	github.com/editorpost/donq/res v0.0.0-20240727223425-e9e6ef081503 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.5.0 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.13.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
