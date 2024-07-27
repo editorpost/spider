@@ -23,7 +23,10 @@ func TestSpiderFromJSONString(t *testing.T) {
 					"Name": "name",
 					"Selector": "h1"
 				}
-			]
+			],
+			"Media": {
+				"Enabled": true
+			}
 		}
 	}`
 

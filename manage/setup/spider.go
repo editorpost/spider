@@ -32,30 +32,6 @@ type Spider struct {
 	shutdown []func() error
 }
 
-// UnmarshalJSON is the custom unmarshalling for Spider
-func (s *Spider) UnmarshalJSON(data []byte) error {
-	type Alias Spider
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(s),
-	}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	return nil
-}
-
-func NewSpiderFromJSON(data []byte) (*Spider, error) {
-
-	s := &Spider{}
-	if err := json.Unmarshal(data, s); err != nil {
-		return nil, err
-	}
-
-	return NewSpider(s.Collect, s.Extract)
-}
-
 func NewSpider(args *config.Args, cfg *extract.Config) (*Spider, error) {
 
 	if args.ID == "" {
@@ -236,4 +212,39 @@ func (s *Spider) withMedia(bucket res.S3Public) error {
 	s.pipe.Finisher(uploader.Upload)
 
 	return nil
+}
+
+// UnmarshalJSON is the custom unmarshalling for Spider
+func (s *Spider) UnmarshalJSON(data []byte) error {
+	type Alias Spider
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	return nil
+}
+
+func NewSpiderFromJSON(data []byte) (*Spider, error) {
+
+	s := &Spider{}
+	if err := json.Unmarshal(data, s); err != nil {
+		return nil, err
+	}
+
+	return NewSpider(s.Collect, s.Extract)
+}
+
+func NewDeploy(js string) (Deploy, error) {
+
+	deploy := Deploy{}
+
+	if err := json.Unmarshal([]byte(js), &deploy); err != nil {
+		return deploy, err
+	}
+
+	return deploy, nil
 }

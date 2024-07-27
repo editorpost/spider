@@ -84,7 +84,7 @@ func ContentLikeURL(urlStr string) bool {
 		return false
 	}
 
-	// Extract the file extension if present
+	// Enabled the file extension if present
 	path := parsedURL.Path
 	if dotIndex := strings.LastIndex(path, "."); dotIndex != -1 {
 		ext := path[dotIndex:]

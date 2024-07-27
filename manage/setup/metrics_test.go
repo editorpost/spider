@@ -197,7 +197,7 @@ func TestExampleMetrics(t *testing.T) {
 	// Эмулируем событие Scraped
 	m.OnScraped(resp)
 
-	// Эмулируем событие Extract
+	// Эмулируем событие Enabled
 	m.OnExtract(resp)
 
 	// Задержка для гарантированной отправки данных
