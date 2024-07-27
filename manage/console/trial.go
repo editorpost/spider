@@ -13,7 +13,7 @@ func Trial(s *setup.Spider) ([]*pipe.Payload, error) {
 	items := []*pipe.Payload{}
 
 	// force low limit for trial
-	if s.Collect.ExtractLimit == 0 && s.Collect.ExtractLimit > 30 {
+	if s.Collect.ExtractLimit == 0 || s.Collect.ExtractLimit > 30 {
 		s.Collect.ExtractLimit = 30
 	}
 
