@@ -5,6 +5,7 @@ import (
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/extract/fields"
+	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/manage/setup"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -61,6 +62,8 @@ func NewExtractConfig() *extract.Config {
 				Selector:     "head title",
 			},
 		},
-		ExtractMedia: true,
+		Media: &media.Config{
+			Enabled: true,
+		},
 	}
 }

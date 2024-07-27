@@ -1,9 +1,12 @@
 package store
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/editorpost/donq/res"
+)
 
 // NewMediaStorage is a wrapper for NewStorage to upload media in given folder.
-func NewMediaStorage(spiderID string, bucket Bucket) (Storage, error) {
+func NewMediaStorage(spiderID string, bucket *res.S3) (Storage, error) {
 	return NewStorage(bucket, GetMediaStorageFolder(spiderID))
 }
 

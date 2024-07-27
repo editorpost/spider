@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/editorpost/donq/pkg/vars"
+	"github.com/editorpost/donq/res"
 	"github.com/editorpost/spider/collect"
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/collect/proxy"
@@ -14,39 +15,30 @@ import (
 	"github.com/google/uuid"
 )
 
-// Deploy is the configuration for the spider
-// JSON:
-//
-//		{
-//	     "MongoDSN": "mongodb://spider:pass@mongo-server-rs.spider.svc/spider?ssl=false",
-//	     "VictoriaLogsUrl": "http://spider-victoria-logs-single-server.spider.svc:9428",
-//	     "VictoriaMetricsUrl": "http://vmsingle-spider.spider.svc:8429/api/v1/import/prometheus",
-//			"Bucket": {
-//				"Name": "ep-spider",
-//				"Endpoint": "https://s3.ap-southeast-1.wasabisys.com",
-//				"Region": "ap-southeast-1",
-//				"PublicURL": "http://localhost:9000",
-//				"Access": "",
-//				"Secret": "",
-//			}
-//		}
-//
-//		db.updateUser("spider", {roles: [{ role: "readAnyDatabase", db: "admin"}
+// Deploy provides the configuration for the Spider infrastructure.
 type Deploy struct {
-	// Bucket is the name of the bucket to store data
-	Bucket store.Bucket `json:"Bucket"`
-	// VictoriaMetricsUrl
-	VictoriaMetricsUrl string `json:"VictoriaMetricsUrl" validate:"trim"`
-	// VictoriaLogsUrl
-	VictoriaLogsUrl string `json:"VictoriaLogsUrl" validate:"trim"`
+	Storage  *res.S3         `json:"Storage"`
+	Media    *res.S3Public   `json:"Media"`
+	Database *res.Postgresql `json:"Database"`
+	Metrics  *res.Metrics    `json:"Metrics"`
+	Logs     *res.Logs       `json:"Logs"`
 }
 
+// Spider aggregates configs and create collect.Crawler.
 type Spider struct {
 	Collect  *config.Args
 	Extract  *extract.Config
 	pipe     *pipe.Pipeline
 	shutdown []func() error
 }
+
+// epmg.win
+// quee.win
+// pstr.win
+// wast.win
+// stra.win
+// postd.org
+// estatic.org
 
 // UnmarshalJSON is the custom unmarshalling for Spider
 func (s *Spider) UnmarshalJSON(data []byte) error {
@@ -88,11 +80,11 @@ func NewSpider(args *config.Args, cfg *extract.Config) (*Spider, error) {
 		Extract: cfg,
 	}
 
-	if err := s.Collect.Normalize(); err != nil {
+	if err = s.Collect.Normalize(); err != nil {
 		return nil, err
 	}
 
-	if err := s.withPipeline(); err != nil {
+	if err = s.withPipeline(); err != nil {
 		return nil, err
 	}
 
@@ -127,9 +119,9 @@ func (s *Spider) NewCrawler(deploy *Deploy) (*collect.Crawler, error) {
 
 	deps := &config.Deps{}
 
-	s.withVictoriaLogs(deploy.VictoriaLogsUrl)
+	s.withVictoriaLogs(deploy.Logs)
 
-	if err := s.withVictoriaMetrics(deploy.VictoriaMetricsUrl, deps); err != nil {
+	if err := s.withVictoriaMetrics(deploy.Metrics, deps); err != nil {
 		return nil, err
 	}
 
@@ -147,19 +139,22 @@ func (s *Spider) NewCrawler(deploy *Deploy) (*collect.Crawler, error) {
 	return collect.NewCrawler(s.Collect, deps)
 }
 
-func (s *Spider) withVictoriaLogs(uri string) {
-	if uri != "" {
-		VictoriaLogs(uri, "info", s.Collect.ID)
+func (s *Spider) withVictoriaLogs(config *res.Logs) {
+
+	if config == nil || len(config.URL) == 0 {
+		return
 	}
+
+	VictoriaLogs(config.URL, "info", s.Collect.ID)
 }
 
-func (s *Spider) withVictoriaMetrics(uri string, deps *config.Deps) (err error) {
+func (s *Spider) withVictoriaMetrics(config *res.Metrics, deps *config.Deps) (err error) {
 
-	if len(uri) == 0 {
-		return nil
+	if config == nil || len(config.URL) == 0 {
+		return
 	}
 
-	deps.Monitor, err = NewMetrics(vars.FromEnv().JobID, s.Collect.ID, uri)
+	deps.Monitor, err = NewMetrics(vars.FromEnv().JobID, s.Collect.ID, config.URL)
 	return err
 }
 
@@ -181,29 +176,28 @@ func (s *Spider) withProxy(deps *config.Deps) error {
 
 func (s *Spider) withStorage(deploy *Deploy, deps *config.Deps) error {
 
-	// s3
-	if deploy.Bucket.Name == "" {
+	if deploy.Storage == nil || deploy.Storage.Bucket == "" {
 		return nil
 	}
 
-	if err := s.withCollectStore(deploy, deps); err != nil {
+	if err := s.withCollectStore(deploy.Storage, deps); err != nil {
 		return err
 	}
 
-	if err := s.withExtractStore(deploy); err != nil {
+	if err := s.withExtractStore(deploy.Storage); err != nil {
 		return err
 	}
 
-	if err := s.withMedia(deploy); err != nil {
+	if err := s.withMedia(deploy.Media); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *Spider) withCollectStore(deploy *Deploy, deps *config.Deps) error {
+func (s *Spider) withCollectStore(bucket *res.S3, deps *config.Deps) error {
 
-	storage, upload, err := store.NewCollectStorage(s.Collect.ID, deploy.Bucket)
+	storage, upload, err := store.NewCollectStorage(s.Collect.ID, bucket)
 	if err != nil {
 		return err
 	}
@@ -215,9 +209,9 @@ func (s *Spider) withCollectStore(deploy *Deploy, deps *config.Deps) error {
 	return err
 }
 
-func (s *Spider) withExtractStore(deploy *Deploy) (err error) {
+func (s *Spider) withExtractStore(bucket *res.S3) (err error) {
 
-	extractStore, err := store.NewExtractStorage(s.Collect.ID, deploy.Bucket)
+	extractStore, err := store.NewExtractStorage(s.Collect.ID, bucket)
 	if err != nil {
 		return fmt.Errorf("failed to create extract S3 storage: %w", err)
 	}
@@ -228,13 +222,13 @@ func (s *Spider) withExtractStore(deploy *Deploy) (err error) {
 	return nil
 }
 
-func (s *Spider) withMedia(deploy *Deploy) error {
+func (s *Spider) withMedia(bucket *res.S3Public) error {
 
-	if !s.Extract.ExtractMedia {
+	if !s.Extract.Media.Enabled {
 		return nil
 	}
 
-	bucketStore, err := store.NewMediaStorage(s.Collect.ID, deploy.Bucket)
+	bucketStore, err := store.NewMediaStorage(s.Collect.ID, &bucket.S3)
 	if err != nil {
 		return err
 	}
@@ -243,7 +237,7 @@ func (s *Spider) withMedia(deploy *Deploy) error {
 	// join public url with bucket folder, e.g. spider/%/media/123.jpg
 	// to simplify further proxying the bucket, e.g. http://my-proxy:8080/spider/%/media/123.jpg
 	folder := store.GetMediaStorageFolder(s.Collect.ID)
-	publicURL := fmt.Sprintf("%s/%s", deploy.Bucket.PublicURL, folder)
+	publicURL := fmt.Sprintf("%s/%s", bucket.PublicURL, folder)
 	uploader := media.NewMedia(publicURL, media.NewLoader(bucketStore))
 
 	s.pipe.Starter(uploader.Claims)

@@ -7,7 +7,6 @@ import (
 	"github.com/editorpost/spider/store/ent/extractindex"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 	"strings"
 )
 

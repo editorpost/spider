@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 	"fmt"
+	"github.com/editorpost/donq/res"
 	"os"
 	"path/filepath"
 )
@@ -13,13 +14,13 @@ type LocalStorage struct {
 	folder string
 }
 
-func IsLocalBucket(bucket Bucket) bool {
-	return bucket.Name == LocalBucket
+func IsLocalBucket(bucket *res.S3) bool {
+	return bucket.Bucket == LocalBucket
 }
 
-func NewFolderStorage(bucket Bucket, folder string) (*LocalStorage, error) {
+func NewFolderStorage(bucket *res.S3, folder string) (*LocalStorage, error) {
 
-	root, err := filepath.Abs(bucket.Endpoint)
+	root, err := filepath.Abs(bucket.EndPoint)
 	if err != nil {
 		return nil, err
 	}

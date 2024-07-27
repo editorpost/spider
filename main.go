@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"github.com/editorpost/spider/manage/setup"
+	_ "github.com/lib/pq"
 	"log/slog"
 )
 

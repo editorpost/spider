@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/editorpost/donq/res"
 	"log/slog"
 )
 
@@ -44,10 +45,10 @@ type (
 	}
 )
 
-func NewS3Client(bucket Bucket) (*s3.Client, error) {
+func NewS3Client(bucket *res.S3) (*s3.Client, error) {
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(bucket.Access, bucket.Secret, "")),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(bucket.AccessKey, bucket.SecretKey, "")),
 		config.WithRegion(bucket.Region),
 	)
 
@@ -56,7 +57,7 @@ func NewS3Client(bucket Bucket) (*s3.Client, error) {
 	}
 
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.BaseEndpoint = aws.String(bucket.Endpoint)
+		o.BaseEndpoint = aws.String(bucket.EndPoint)
 		o.UsePathStyle = true
 	})
 
@@ -71,7 +72,7 @@ func NewBucketStorage(bucket, folder string, client *s3.Client) *BucketStorage {
 	}
 }
 
-func NewStorage(bucket Bucket, folder string) (Storage, error) {
+func NewStorage(bucket *res.S3, folder string) (Storage, error) {
 
 	if IsLocalBucket(bucket) {
 		return NewFolderStorage(bucket, folder)
@@ -82,7 +83,7 @@ func NewStorage(bucket Bucket, folder string) (Storage, error) {
 		return nil, fmt.Errorf("failed to create s3 client, %w", err)
 	}
 
-	return NewBucketStorage(bucket.Name, folder, client), nil
+	return NewBucketStorage(bucket.Bucket, folder, client), nil
 }
 
 func (b *BucketStorage) path(filename string) *string {

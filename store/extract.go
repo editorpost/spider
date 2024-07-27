@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bits-and-blooms/bloom/v3"
+	"github.com/editorpost/donq/res"
 	"github.com/editorpost/spider/extract/pipe"
 )
 
@@ -17,14 +18,14 @@ type (
 	}
 
 	ExtractStorage struct {
-		b         Bucket
+		b         *res.S3
 		store     Storage
 		extracted *bloom.BloomFilter
 	}
 )
 
 // NewExtractStorage S3 storage for payload and document html
-func NewExtractStorage(spiderID string, b Bucket) (*ExtractStorage, error) {
+func NewExtractStorage(spiderID string, b *res.S3) (*ExtractStorage, error) {
 
 	store, err := NewStorage(b, fmt.Sprintf(PayloadFolder, spiderID))
 	if err != nil {

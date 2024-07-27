@@ -51,7 +51,7 @@ This is a sample markdown without images.`,
 			expectedErr: nil,
 		},
 		{
-			name: "Image Download Failure",
+			name: "Image Enabled Failure",
 			markdown: `# Sample Markdown
 
 ![Alt text](http://example.com/fail.jpg)`,
