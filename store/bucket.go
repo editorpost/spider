@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	CollectFolder = "spiders/%s/collect"
-	MediaFolder   = "spiders/%s/media/"
-	PayloadFolder = "spiders/%s/payload/"
+	CollectFolder = "spd/%s/collect"
+	MediaFolder   = "spd/%s/media/"
+	PayloadFolder = "spd/%s/payload/"
 	PayloadFile   = "payload.json"
 	DocumentFile  = "doc.html"
 	VisitedFile   = "visited.json"
