@@ -22,6 +22,7 @@ require (
 	github.com/editorpost/donq/pkg/valid v0.0.0-20240607161540-d65b9c9c3129
 	github.com/editorpost/donq/pkg/vars v0.0.0-20240607194324-029202268a3b
 	github.com/editorpost/donq/pkg/vlog v0.0.0-20240602165338-32524dec77da
+	github.com/editorpost/donq/res v0.0.0-20240727223425-e9e6ef081503
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/go-shiori/dom v0.0.0-20230515143342-73569d674e1c
 	github.com/go-shiori/go-readability v0.0.0-20240204090920-819593fddc6b
@@ -33,6 +34,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/samber/lo v1.39.0
 	github.com/stretchr/testify v1.9.0
+	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 )
 
 require (
@@ -74,7 +76,6 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.16.3 // indirect
-	github.com/editorpost/donq/res v0.0.0-20240727223425-e9e6ef081503 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.5.0 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.13.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect

@@ -11,6 +11,7 @@ import (
 	"github.com/goodsign/monday"
 	distiller "github.com/markusmobius/go-domdistiller"
 	"github.com/samber/lo"
+	mdLinks "github.com/writeas/go-strip-markdown"
 	"log/slog"
 	"net/url"
 	"strings"
@@ -68,6 +69,9 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 
 	// html to markdown
 	a.Markup = markupText(a.Markup)
+
+	// mdLinks markdown links
+	a.Markup = mdLinks.Strip(a.Markup)
 
 	// nil dto if it's invalid
 	if err := a.Normalize(); err != nil {
@@ -148,7 +152,7 @@ func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
 	return images
 }
 
-// markdown converts HTML to markdown
+// markupText converts HTML to markdown
 func markupText(html string) string {
 	converter := md.NewConverter("", true, nil)
 	markdown, err := converter.ConvertString(html)
