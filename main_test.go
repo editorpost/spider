@@ -37,13 +37,16 @@ func TestFlags(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(jsonStr), s))
 
 	require.NoError(t, flag.Set("spider", jsonStr))
+	require.NoError(t, flag.Set("deploy", deployStr))
 	require.NoError(t, flag.Set("cmd", "start"))
 
-	cmd, spider := Flags()
+	cmd, spider, deploy := Flags()
 
 	assert.Equal(t, "start", cmd)
 	assert.Equal(t, s.Collect, spider.Collect)
 	assert.Equal(t, s.Extract, spider.Extract)
+	assert.Equal(t, "local", deploy.Storage.Bucket)
+	assert.Equal(t, "apac", deploy.Storage.Region)
 }
 
 func TestDeployFromString(t *testing.T) {

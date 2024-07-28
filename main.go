@@ -11,17 +11,18 @@ import (
 var (
 	fCmd    = flag.String("cmd", "", "Available commands: start, trial")
 	fSpider = flag.String("spider", "", "Spider arguments as JSON string")
+	fDeploy = flag.String("deploy", "", "Deploy arguments as JSON string")
 )
 
 func main() {
-	cmd, spider := Flags()
-	if err := windmill.Command(cmd, spider); err != nil {
+	cmd, spider, deploy := Flags()
+	if err := windmill.Command(cmd, spider, deploy); err != nil {
 		slog.Error("cmd:"+cmd, slog.String("error", err.Error()))
 		return
 	}
 }
 
-func Flags() (cmd string, spider *setup.Spider) {
+func Flags() (cmd string, spider *setup.Spider, deploy setup.Deploy) {
 
 	// parse command and flags
 	flag.Parse()
@@ -45,7 +46,13 @@ func Flags() (cmd string, spider *setup.Spider) {
 		return
 	}
 
-	return cmd, spider
+	// JSON string of setup.Spider
+	deployJson := FlagToString(fDeploy)
+	if deployJson != "" {
+		deploy, err = setup.NewDeploy(deployJson)
+	}
+
+	return
 }
 
 func FlagToString(flag *string) string {
