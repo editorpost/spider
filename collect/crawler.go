@@ -19,10 +19,6 @@ type Crawler struct {
 
 func NewCrawler(args *config.Config, deps *config.Deps) (*Crawler, error) {
 
-	if err := args.Normalize(); err != nil {
-		return nil, err
-	}
-
 	crawler := &Crawler{
 		args: args,
 		deps: deps.Normalize(),
