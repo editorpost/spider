@@ -40,7 +40,7 @@ func TestFlags(t *testing.T) {
 	require.NoError(t, flag.Set("deploy", deployStr))
 	require.NoError(t, flag.Set("cmd", "start"))
 
-	cmd, spider, deploy := Flags()
+	cmd, spider, deploy, _ := Flags()
 
 	assert.Equal(t, "start", cmd)
 	assert.Equal(t, s.Collect, spider.Collect)

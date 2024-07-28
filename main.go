@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"github.com/editorpost/spider/manage/provider/windmill"
 	"github.com/editorpost/spider/manage/setup"
 	_ "github.com/lib/pq"
 	"log/slog"
+	"os"
 )
 
 var (
@@ -15,41 +17,55 @@ var (
 )
 
 func main() {
-	cmd, spider, deploy := Flags()
+
+	cmd, spider, deploy, err := Flags()
+
+	if err != nil {
+		slog.Error("flags", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+
 	if err := windmill.Command(cmd, spider, deploy); err != nil {
 		slog.Error("cmd:"+cmd, slog.String("error", err.Error()))
 		return
 	}
 }
 
-func Flags() (cmd string, spider *setup.Spider, deploy setup.Deploy) {
+func Flags() (cmd string, spider *setup.Spider, deploy setup.Deploy, err error) {
 
 	// parse command and flags
 	flag.Parse()
 
 	cmd = FlagToString(fCmd)
 	if cmd == "" {
-		slog.Error("cmd flag for spider binary is not set")
+		err = errors.New("cmd flag for spider binary is not set")
 		return
 	}
 
 	// JSON string of setup.Spider
 	spiderJson := FlagToString(fSpider)
 	if spiderJson == "" {
-		slog.Error("args flag for spider binary is not set")
+		err = errors.New("flag spider is not set")
 		return
 	}
 
-	spider, err := setup.NewSpiderFromJSON([]byte(spiderJson))
+	spider, err = setup.NewSpiderFromJSON([]byte(spiderJson))
 	if err != nil {
-		slog.Error("parse spider JSON", slog.String("arg", spiderJson), slog.String("error", err.Error()))
+		err = errors.New("failed to parse spider JSON")
 		return
 	}
 
 	// JSON string of setup.Spider
 	deployJson := FlagToString(fDeploy)
-	if deployJson != "" {
-		deploy, err = setup.NewDeploy(deployJson)
+	if deployJson == "" {
+		err = errors.New("flag deploy is not set")
+		return
+	}
+
+	deploy, err = setup.NewDeploy(deployJson)
+	if err != nil {
+		err = errors.New("failed to parse deploy JSON")
+		return
 	}
 
 	return
