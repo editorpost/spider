@@ -15,23 +15,16 @@ import (
 )
 
 const (
-	CollectFolder = "spd/%s/collect"
-	MediaFolder   = "spd/%s/media/"
-	PayloadFolder = "spd/%s/payload/"
-	PayloadFile   = "payload.json"
-	DocumentFile  = "doc.html"
-	VisitedFile   = "visited.json"
+	CollectFolder   = "spd/%s/collect"
+	MediaFolder     = "spd/%s/media"
+	PayloadFolder   = "spd/%s/payload"
+	PayloadFile     = "payload.json"
+	DocumentFile    = "doc.html"
+	VisitedFile     = "visited.json"
+	ChunkTimeFormat = "06-01"
 )
 
 type (
-	Bucket struct {
-		Name      string
-		Endpoint  string
-		Access    string
-		Secret    string
-		Region    string
-		PublicURL string
-	}
 	BucketStorage struct {
 		folder string
 		bucket string

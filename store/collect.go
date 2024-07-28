@@ -48,6 +48,17 @@ func NewCollectStorage(spiderID string, b res.S3) (*CollectStorage, func() error
 	return s, s.shutdown, nil
 }
 
+func DropCollectStorage(spiderID string, b res.S3) error {
+
+	// note no need to call shutdown here
+	store, _, err := NewCollectStorage(spiderID, b)
+	if err != nil {
+		return err
+	}
+
+	return store.Reset()
+}
+
 func (s *CollectStorage) shutdown() error {
 
 	if len(s.visitedURLs) == 0 {

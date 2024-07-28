@@ -13,6 +13,7 @@ import (
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/store"
 	"github.com/google/uuid"
+	"time"
 )
 
 // Deploy provides the configuration for the Spider infrastructure.
@@ -225,7 +226,7 @@ func (s *Spider) withMedia(bucket res.S3Public) error {
 	// public url prefix for media files, e.g. http://my-proxy:8080
 	// join public url with bucket folder, e.g. spider/%/media/123.jpg
 	// to simplify further proxying the bucket, e.g. http://my-proxy:8080/spider/%/media/123.jpg
-	folder := store.GetMediaStorageFolder(s.Collect.ID)
+	folder := store.GetMediaStorageFolder(s.Collect.ID, time.Now())
 	publicURL := fmt.Sprintf("%s/%s", bucket.PublicURL, folder)
 	uploader := media.NewMedia(publicURL, media.NewLoader(bucketStore))
 
