@@ -9,7 +9,7 @@ import (
 // It is allowed to use proxy pool for requests.
 func Trial(s *setup.Spider) ([]*pipe.Payload, error) {
 
-	s.Collect.ID = "trial"
+	s.ID = "trial"
 	items := []*pipe.Payload{}
 
 	// force low limit for trial

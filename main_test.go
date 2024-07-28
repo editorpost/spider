@@ -13,8 +13,8 @@ import (
 func TestFlags(t *testing.T) {
 
 	jsonStr := `{
+		"ID": "4c62e925-2e3e-4ff6-a92b-305b85d6281a",
 		"Collect": {
-			"ID": "4c62e925-2e3e-4ff6-a92b-305b85d6281a",
 			"StartURL": "http://example.com",
 			"ExtractLimit": 10
 		},

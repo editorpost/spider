@@ -27,19 +27,20 @@ type Deploy struct {
 
 // Spider aggregates configs and create collect.Crawler.
 type Spider struct {
+	ID       string
 	Collect  *config.Config
 	Extract  *extract.Config
 	pipe     *pipe.Pipeline
 	shutdown []func() error
 }
 
-func NewSpider(args *config.Config, cfg *extract.Config) (*Spider, error) {
+func NewSpider(id string, args *config.Config, cfg *extract.Config) (*Spider, error) {
 
-	if args.ID == "" {
+	if id == "" {
 		return nil, fmt.Errorf("spider ID is empty")
 	}
 
-	_, err := uuid.Parse(args.ID)
+	_, err := uuid.Parse(id)
 	if err != nil {
 		return nil, fmt.Errorf("spider ID is invalid: %w", err)
 	}
@@ -114,7 +115,7 @@ func (s *Spider) withVictoriaLogs(config res.Logs) {
 		return
 	}
 
-	VictoriaLogs(config.URL, "info", s.Collect.ID)
+	VictoriaLogs(config.URL, "info", s.ID)
 }
 
 func (s *Spider) withVictoriaMetrics(config res.Metrics, deps *config.Deps) (err error) {
@@ -123,7 +124,7 @@ func (s *Spider) withVictoriaMetrics(config res.Metrics, deps *config.Deps) (err
 		return
 	}
 
-	deps.Monitor, err = NewMetrics(vars.FromEnv().JobID, s.Collect.ID, config.URL)
+	deps.Monitor, err = NewMetrics(vars.FromEnv().JobID, s.ID, config.URL)
 	return err
 }
 
@@ -170,7 +171,7 @@ func (s *Spider) withStorage(deploy Deploy, deps *config.Deps) error {
 
 func (s *Spider) withCollectStore(bucket res.S3, deps *config.Deps) error {
 
-	storage, upload, err := store.NewCollectStorage(s.Collect.ID, bucket)
+	storage, upload, err := store.NewCollectStorage(s.ID, bucket)
 	if err != nil {
 		return err
 	}
@@ -184,7 +185,7 @@ func (s *Spider) withCollectStore(bucket res.S3, deps *config.Deps) error {
 
 func (s *Spider) withExtractStore(bucket res.S3) error {
 
-	extractStore, err := store.NewExtractStorage(s.Collect.ID, bucket)
+	extractStore, err := store.NewExtractStorage(s.ID, bucket)
 	if err != nil {
 		return fmt.Errorf("failed to create extract S3 storage: %w", err)
 	}
@@ -201,7 +202,7 @@ func (s *Spider) withExtractIndex(db res.Postgresql) error {
 		return nil
 	}
 
-	extractIndex, err := store.NewExtractIndex(s.Collect.ID, db.DSN())
+	extractIndex, err := store.NewExtractIndex(s.ID, db.DSN())
 	if err != nil {
 		return fmt.Errorf("failed to create extract index store: %w", err)
 	}
@@ -218,7 +219,7 @@ func (s *Spider) withMedia(bucket res.S3Public) error {
 		return nil
 	}
 
-	bucketStore, err := store.NewMediaStorage(s.Collect.ID, bucket.S3)
+	bucketStore, err := store.NewMediaStorage(s.ID, bucket.S3)
 	if err != nil {
 		return err
 	}
@@ -226,7 +227,7 @@ func (s *Spider) withMedia(bucket res.S3Public) error {
 	// public url prefix for media files, e.g. http://my-proxy:8080
 	// join public url with bucket folder, e.g. spider/%/media/123.jpg
 	// to simplify further proxying the bucket, e.g. http://my-proxy:8080/spider/%/media/123.jpg
-	folder := store.GetMediaStorageFolder(s.Collect.ID, time.Now())
+	folder := store.GetMediaStorageFolder(s.ID, time.Now())
 	publicURL := fmt.Sprintf("%s/%s", bucket.PublicURL, folder)
 	uploader := media.NewMedia(publicURL, media.NewLoader(bucketStore))
 
@@ -283,7 +284,7 @@ func NewSpiderFromJSON(data []byte) (*Spider, error) {
 		return nil, err
 	}
 
-	return NewSpider(s.Collect, s.Extract)
+	return NewSpider(s.ID, s.Collect, s.Extract)
 }
 
 func NewDeploy(js string) (Deploy, error) {

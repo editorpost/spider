@@ -14,34 +14,25 @@ const (
 
 type Config struct {
 
-	// required
-
-	// ID is the unique identifier for the spider
-	ID string `json:"ID"`
-
-	// Name is the name of the spider
-	Name string `json:"Name"`
-
 	// StartURL is the url to start the scraping
 	StartURL string `json:"StartURL"`
-
-	// recommended
 
 	// AllowedURL is comma separated regex to match the urls
 	// use it to reduce the number of urls to visit
 	AllowedURL string `json:"AllowedURL"`
+
 	// ExtractURL is the regex to match the entity urls
 	// use it to extract the entity urls
 	ExtractURL string `json:"ExtractURL"`
+
 	// ExtractSelector is the css selector to match the elements
 	// use selector for extracting entities and filtering pages
 	// def: html
 	ExtractSelector string `json:"ExtractSelector"`
+
 	// ExtractLimit is the limit of entities to extract
 	// Crawler gracefully stops after reaching the limit
 	ExtractLimit int `json:"ExtractLimit"`
-
-	// optional
 
 	// UseBrowser is a flag to use browser for rendering the page
 	UseBrowser bool `json:"UseBrowser"`
@@ -51,16 +42,11 @@ type Config struct {
 	// UserAgent is the user agent string used by the collector
 	UserAgent string `json:"UserAgent"`
 
-	// proxy
-
 	// ProxyEnabled is the flag to enable proxy or send requests directly
 	ProxyEnabled bool `json:"ProxyEnabled"`
 	// ProxySources is the list of proxy sources, expected to return list of proxies URLs.
 	// If empty, the default proxy sources is used.
 	ProxySources []string `json:"ProxySources"`
-
-	// options
-
 }
 
 // The Config JSON representation:

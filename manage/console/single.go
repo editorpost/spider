@@ -14,8 +14,6 @@ func Single(uri, selector string, extractor pipe.Extractor) (*pipe.Payload, erro
 	result := &pipe.Payload{}
 
 	args := &config.Config{
-		// Any name since no data is stored
-		ID: "ready-check",
 		// All urls are the same for single turn
 		StartURL:        uri,
 		AllowedURL:      uri,
@@ -27,7 +25,7 @@ func Single(uri, selector string, extractor pipe.Extractor) (*pipe.Payload, erro
 		ProxyEnabled: true,
 	}
 
-	s, err := setup.NewSpider(args, &extract.Config{})
+	s, err := setup.NewSpider("ready-check", args, &extract.Config{})
 	if err != nil {
 		return result, err
 	}

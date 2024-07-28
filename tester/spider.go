@@ -1,7 +1,7 @@
 package tester
 
 import (
-	"github.com/brianvoe/gofakeit/v6"
+	fk "github.com/brianvoe/gofakeit/v6"
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/extract/fields"
@@ -12,7 +12,7 @@ import (
 )
 
 func NewSpider(t *testing.T) *setup.Spider {
-	s, err := setup.NewSpider(NewArgs(), NewExtractConfig())
+	s, err := setup.NewSpider(fk.UUID(), NewArgs(), NewExtractConfig())
 	require.NoError(t, err)
 	return s
 }
@@ -26,7 +26,7 @@ func NewSpiderWith(t *testing.T, server *TestServer) *setup.Spider {
 	args.ExtractLimit = 5
 	args.Depth = 3
 
-	s, err := setup.NewSpider(args, NewExtractConfig())
+	s, err := setup.NewSpider(fk.UUID(), args, NewExtractConfig())
 	require.NoError(t, err)
 	require.NotNil(t, s)
 
@@ -35,8 +35,6 @@ func NewSpiderWith(t *testing.T, server *TestServer) *setup.Spider {
 
 func NewArgs() *config.Config {
 	return &config.Config{
-		ID:              gofakeit.UUID(),
-		Name:            gofakeit.AppName(),
 		StartURL:        "",
 		AllowedURL:      "",
 		ExtractURL:      "",
