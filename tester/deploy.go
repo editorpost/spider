@@ -26,6 +26,15 @@ func TestDeploy(t *testing.T) setup.Deploy {
 			},
 			PublicURL: "https://cdn.example.com",
 		},
+		Database: res.Postgresql{
+			Host:               "",
+			Port:               0,
+			User:               "",
+			Dbname:             "",
+			SSLMode:            "",
+			Password:           "",
+			RootCertificatePEM: "",
+		},
 		Metrics: res.Metrics{
 			URL: "",
 		},

@@ -156,6 +156,10 @@ func (s *Spider) withStorage(deploy Deploy, deps *config.Deps) error {
 		return err
 	}
 
+	if err := s.withExtractIndex(deploy.Database); err != nil {
+		return err
+	}
+
 	if err := s.withMedia(deploy.Media); err != nil {
 		return err
 	}
@@ -177,7 +181,7 @@ func (s *Spider) withCollectStore(bucket res.S3, deps *config.Deps) error {
 	return err
 }
 
-func (s *Spider) withExtractStore(bucket res.S3) (err error) {
+func (s *Spider) withExtractStore(bucket res.S3) error {
 
 	extractStore, err := store.NewExtractStorage(s.Collect.ID, bucket)
 	if err != nil {
@@ -186,6 +190,23 @@ func (s *Spider) withExtractStore(bucket res.S3) (err error) {
 
 	// provide save extractor func
 	s.pipe.Finisher(extractStore.Save)
+
+	return nil
+}
+
+func (s *Spider) withExtractIndex(db res.Postgresql) error {
+
+	if len(db.Host) == 0 {
+		return nil
+	}
+
+	extractIndex, err := store.NewExtractIndex(s.Collect.ID, db.DSN())
+	if err != nil {
+		return fmt.Errorf("failed to create extract index store: %w", err)
+	}
+
+	// provide save extractor func
+	s.pipe.Finisher(extractIndex.Save)
 
 	return nil
 }
