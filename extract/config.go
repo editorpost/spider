@@ -13,3 +13,16 @@ type Config struct {
 	// Media is the configuration for media
 	Media *media.Config `json:"Media"`
 }
+
+func (c *Config) Normalize() error {
+
+	if c.Media == nil {
+		c.Media = &media.Config{}
+	}
+
+	if c.Fields == nil {
+		c.Fields = make([]*fields.Field, 0)
+	}
+
+	return nil
+}

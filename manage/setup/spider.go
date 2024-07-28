@@ -250,10 +250,36 @@ func (s *Spider) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Normalize the Spider configuration
+func (s *Spider) Normalize() error {
+
+	if s.Collect == nil {
+		return fmt.Errorf("collect config is empty")
+	}
+
+	if s.Extract == nil {
+		return fmt.Errorf("extract config is empty")
+	}
+
+	if err := s.Collect.Normalize(); err != nil {
+		return err
+	}
+
+	if err := s.Extract.Normalize(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewSpiderFromJSON(data []byte) (*Spider, error) {
 
 	s := &Spider{}
 	if err := json.Unmarshal(data, s); err != nil {
+		return nil, err
+	}
+
+	if err := s.Normalize(); err != nil {
 		return nil, err
 	}
 
