@@ -1,6 +1,8 @@
 package windmill
 
-import "github.com/editorpost/spider/manage/setup"
+import (
+	"github.com/editorpost/spider/manage/setup"
+)
 
 func Command(cmd string, s *setup.Spider) (err error) {
 
@@ -10,6 +12,8 @@ func Command(cmd string, s *setup.Spider) (err error) {
 		return Start(s)
 	case "trial":
 		return Trial(s)
+	case "validate":
+		return Validate(s)
 	}
 
 	return nil
