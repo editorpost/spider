@@ -70,7 +70,7 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 	a.Markup = markupText(a.Markup)
 
 	// todo: strip non-image links
-	a.Markup = StripMarkdown(a.Markup)
+	// a.Markup = StripMarkdown(a.Markup)
 
 	// nil dto if it's invalid
 	if err := a.Normalize(); err != nil {
