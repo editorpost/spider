@@ -19,7 +19,7 @@ func TestFlags(t *testing.T) {
 			"ExtractLimit": 10
 		},
 		"Extract": {
-			"Extract": ["person", "organization"],
+			"Entities": ["person", "organization"],
 			"Fields": [
 				{
 					"Name": "name",
@@ -47,6 +47,12 @@ func TestFlags(t *testing.T) {
 	assert.Equal(t, s.Extract, spider.Extract)
 	assert.Equal(t, "local", deploy.Storage.Bucket)
 	assert.Equal(t, "apac", deploy.Storage.Region)
+}
+
+func TestInvalidSpider(t *testing.T) {
+
+	_, err := setup.NewSpiderFromJSON([]byte(validSpider))
+	require.NoError(t, err)
 }
 
 func TestDeployFromString(t *testing.T) {
@@ -123,3 +129,37 @@ var deployStr = `
   }
 }
 `
+
+// the code from real case for v0.3.3 version
+var validSpider = `{
+    "ID": "df265b45-00bc-4aa6-bad2-a83018ff42ca",
+    "Name": "Tourism",
+    "Tags": [],
+    "edges": {},
+    "Collect": {
+        "Depth": 1,
+        "StartURL": "https://thailand-news.ru/news/turizm/",
+        "Scheduled": false,
+        "Schedules": null,
+        "UserAgent": "",
+        "AllowedURL": "https://thailand-news.ru/news/{turizm,puteshestviya}{any}",
+        "ExtractURL": "https://thailand-news.ru/news/{turizm,puteshestviya}/{some}",
+        "UseBrowser": false,
+        "ExtractLimit": 3,
+        "ProxyEnabled": false,
+        "ProxySources": [],
+        "ExtractSelector": ".node-article--full"
+    },
+    "Created": "2024-08-04T16:00:28.096157Z",
+    "Extract": {
+        "Media": {
+            "Enabled": false
+        },
+        "Fields": [],
+        "Entities": [
+            "article"
+        ]
+    },
+    "Updated": "2024-08-04T20:12:27.096488Z",
+    "ProjectID": "13b4ab82-bf02-40dd-a27e-d00682062872"
+}`

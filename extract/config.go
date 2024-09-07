@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	// ExtractEntity is predefined named entity to extract
-	Extract []string `json:"Extract"`
+	Entities []string `json:"Entities"`
 	// Fields is the list of fields to extract
 	Fields []*fields.Field `json:"Fields"`
 	// Media is the configuration for media

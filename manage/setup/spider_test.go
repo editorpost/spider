@@ -17,7 +17,7 @@ func TestSpiderFromJSONString(t *testing.T) {
 			"ExtractLimit": 10
 		},
 		"Extract": {
-			"Extract": ["person", "organization"],
+			"Entities": ["person", "organization"],
 			"Fields": [
 				{
 					"Name": "name",
@@ -35,6 +35,6 @@ func TestSpiderFromJSONString(t *testing.T) {
 	require.Equal(t, "test", s.ID)
 	require.Equal(t, "http://example.com", s.Collect.StartURL)
 	require.Equal(t, 10, s.Collect.ExtractLimit)
-	require.Len(t, s.Extract.Extract, 2)
+	require.Len(t, s.Extract.Entities, 2)
 	require.Len(t, s.Extract.Fields, 1)
 }

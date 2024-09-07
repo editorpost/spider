@@ -50,7 +50,7 @@ func NewArgs() *config.Config {
 
 func NewExtractConfig() *extract.Config {
 	return &extract.Config{
-		Extract: []string{"article"},
+		Entities: []string{"article"},
 		Fields: []*fields.Field{
 			{
 				Name:         "head_title",
