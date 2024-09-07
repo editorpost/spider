@@ -11,7 +11,6 @@ import (
 	"github.com/goodsign/monday"
 	distiller "github.com/markusmobius/go-domdistiller"
 	"github.com/samber/lo"
-	mdLinks "github.com/writeas/go-strip-markdown"
 	"log/slog"
 	"net/url"
 	"strings"
@@ -70,8 +69,8 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 	// html to markdown
 	a.Markup = markupText(a.Markup)
 
-	// mdLinks markdown links
-	a.Markup = mdLinks.Strip(a.Markup)
+	// todo: strip non-image links
+	a.Markup = StripMarkdown(a.Markup)
 
 	// nil dto if it's invalid
 	if err := a.Normalize(); err != nil {
