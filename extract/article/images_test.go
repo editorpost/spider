@@ -2,7 +2,11 @@ package article_test
 
 import (
 	"errors"
+	dto "github.com/editorpost/article"
+	"github.com/editorpost/spider/extract/article"
 	"github.com/editorpost/spider/extract/media"
+	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -33,7 +37,7 @@ This is a sample markdown without images.`,
 ![Alt text](http://example.com/image1.png)`,
 			expected: `# Sample Markdown
 
-![Alt text](downloaded_http://example.com/image1.png)`,
+![Alt text](http://storage.s3/image1.png)`,
 			expectedErr: nil,
 		},
 		{
@@ -45,24 +49,22 @@ This is a sample markdown without images.`,
 ![Another alt text](http://example.com/image2.jpg)`,
 			expected: `# Sample Markdown
 
-![Alt text](downloaded_http://example.com/image1.png)
+![Alt text](http://storage.s3/image1.png)
 
-![Another alt text](downloaded_http://example.com/image2.jpg)`,
+![Another alt text](http://storage.s3/image2.jpg)`,
 			expectedErr: nil,
-		},
-		{
-			name: "Image Enabled Failure",
-			markdown: `# Sample Markdown
-
-![Alt text](http://example.com/fail.jpg)`,
-			expected:    "",
-			expectedErr: errors.New("failed to download image"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// todo
+
+			a := dto.NewArticle()
+
+			a.Markup = tt.markdown
+
+			article.Images("test", a, &MockDownloadClaims{})
+			assert.Equal(t, tt.expected, a.Markup)
 		})
 	}
 }
@@ -75,5 +77,9 @@ func (m MockDownloadClaims) Add(payloadID string, src string) (media.Claim, erro
 	if src == "http://example.com/fail.jpg" {
 		return media.Claim{}, errors.New("failed to download image")
 	}
-	return media.Claim{Dst: "downloaded_" + src}, nil
+
+	return media.Claim{
+		Src: src,
+		Dst: strings.Replace(src, "example.com", "storage.s3", 1),
+	}, nil
 }

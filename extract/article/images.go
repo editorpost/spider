@@ -16,8 +16,10 @@ type MediaClaims interface {
 	Add(payloadID string, srcAbsoluteUrl string) (media.Claim, error)
 }
 
+// Images extracts images from the article and sets the images field
 func Images(payloadID string, a *dto.Article, d MediaClaims) {
 
+	// extract image urls from markdown
 	matches := MarkdownSourceUrls(a.Markup)
 	if matches == nil {
 		return
