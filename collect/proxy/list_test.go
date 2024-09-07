@@ -50,6 +50,66 @@ func TestListConcurrency(_ *testing.T) {
 	wg.Wait()
 }
 
+func TestAddProxy(t *testing.T) {
+	lst := proxy.NewList()
+	proxy1 := NewProxy("http://proxy1.com")
+	lst.Add(proxy1)
+
+	if !lst.Exists(proxy1) {
+		t.Fatalf("expected proxy to exist in the list")
+	}
+}
+
+func TestAddDuplicateProxy(t *testing.T) {
+	lst := proxy.NewList()
+	proxy1 := NewProxy("http://proxy1.com")
+	lst.Add(proxy1, proxy1)
+
+	if len(lst.Slice()) != 1 {
+		t.Fatalf("expected only one instance of the proxy in the list")
+	}
+}
+
+func TestDeleteProxy(t *testing.T) {
+	lst := proxy.NewList()
+	proxy1 := NewProxy("http://proxy1.com")
+	lst.Add(proxy1)
+	lst.Delete(proxy1.String())
+
+	if lst.Exists(proxy1) {
+		t.Fatalf("expected proxy to be deleted from the list")
+	}
+}
+
+func TestNextProxy(t *testing.T) {
+	lst := proxy.NewList(NewProxy("http://proxy1.com"), NewProxy("http://proxy2.com"))
+	proxy1 := lst.Next(nil)
+	proxy2 := lst.Next(nil)
+
+	if proxy1 == nil || proxy2 == nil {
+		t.Fatalf("expected to get proxies from the list")
+	}
+
+	if proxy1 == proxy2 {
+		t.Fatalf("expected to get different proxies in round-robin fashion")
+	}
+}
+
+func TestEmptyList(t *testing.T) {
+	lst := proxy.NewList()
+
+	if !lst.Empty() {
+		t.Fatalf("expected list to be empty")
+	}
+}
+
+func TestHasFreshProxy(t *testing.T) {
+	lst := proxy.NewList(NewProxy("http://proxy1.com"))
+	if lst.HasFresh() {
+		t.Fatalf("expected no fresh proxies in the list")
+	}
+}
+
 func NewProxy(addr string) *proxy.Proxy {
 	return &proxy.Proxy{URL: &url.URL{Host: addr}}
 }
