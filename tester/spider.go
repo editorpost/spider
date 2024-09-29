@@ -11,12 +11,6 @@ import (
 	"testing"
 )
 
-func NewSpider(t *testing.T) *setup.Spider {
-	s, err := setup.NewSpider(fk.UUID(), NewArgs(), NewExtractConfig())
-	require.NoError(t, err)
-	return s
-}
-
 func NewSpiderWith(t *testing.T, server *TestServer) *setup.Spider {
 
 	args := NewArgs()

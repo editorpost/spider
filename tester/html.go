@@ -27,6 +27,11 @@ func GetHTML(t *testing.T, path string) string {
 }
 
 func GetDocument(t *testing.T, path string) *colly.HTMLElement {
+	t.Helper()
+	return GetDocumentSelections(t, path, "html")
+}
+
+func GetDocumentSelections(t *testing.T, path string, selector string) *colly.HTMLElement {
 
 	t.Helper()
 
@@ -45,7 +50,10 @@ func GetDocument(t *testing.T, path string) *colly.HTMLElement {
 	var doc *colly.HTMLElement
 	doc = colly.NewHTMLElementFromSelectionNode(resp, query.Selection, query.Nodes[0], 0)
 
-	query.Find("html").Each(func(_ int, s *goquery.Selection) {
+	selections := query.Find(selector)
+
+	// todo it must be refactored, there is no need to loop through
+	selections.Each(func(_ int, s *goquery.Selection) {
 		for _, n := range s.Nodes {
 			if doc != nil {
 				doc = colly.NewHTMLElementFromSelectionNode(resp, s, n, 0)

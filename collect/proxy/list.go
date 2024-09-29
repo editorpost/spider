@@ -3,9 +3,7 @@ package proxy
 import (
 	"context"
 	"github.com/gocolly/colly/v2"
-	"github.com/gocolly/colly/v2/proxy"
 	"net/http"
-	"net/url"
 	"sync"
 	"sync/atomic"
 )
@@ -21,16 +19,6 @@ func NewList(proxies ...*Proxy) *List {
 		proxies: proxies,
 		mute:    &sync.RWMutex{},
 	}
-}
-
-// Rounder creates a new valid rotator from the given valid urls
-// Example for collect.Crawler set Crawler.ProxyFn to NewList("http://proxy1.com", "http://proxy2.com").Rounder
-func (lst *List) Rounder() func(pr *http.Request) (*url.URL, error) {
-	rp, err := proxy.RoundRobinProxySwitcher(lst.Strings()...)
-	if err != nil {
-		panic(err)
-	}
-	return rp
 }
 
 // Next returns the next valid from the list
