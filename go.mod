@@ -34,7 +34,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/samber/lo v1.39.0
 	github.com/stretchr/testify v1.9.0
-	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 )
 
 require (
