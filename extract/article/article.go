@@ -82,7 +82,7 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 	a.Author = lo.Ternary(a.Author == "", legacyAuthor(html), a.Author)
 
 	// html to markdown
-	a.Markup = markupText(a.Markup)
+	a.Markup = HTMLToMarkdown(a.Markup)
 
 	// todo: strip non-image links
 	// a.Markup = StripMarkdown(a.Markup)
@@ -166,8 +166,8 @@ func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
 	return images
 }
 
-// markupText converts HTML to markdown
-func markupText(html string) string {
+// HTMLToMarkdown converts HTML to markdown
+func HTMLToMarkdown(html string) string {
 	converter := md.NewConverter("", true, nil)
 	markdown, err := converter.ConvertString(html)
 	return lo.Ternary(err == nil, markdown, "")
