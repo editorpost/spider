@@ -4,6 +4,7 @@ import (
 	"fmt"
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/editorpost/spider/extract/article"
+	"github.com/editorpost/spider/tester"
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
 	distiller "github.com/markusmobius/go-domdistiller"
@@ -19,7 +20,8 @@ import (
 
 func TestFromHTML(t *testing.T) {
 
-	a, err := article.ArticleFromHTML(GetArticleHTML(t), GetArticleURL(t))
+	content := tester.GetHTML(t, "../../tester/fixtures/article.html")
+	a, err := article.ArticleFromHTML(content, GetArticleURL(t))
 	require.NoError(t, err)
 
 	// custom fallback with css selector
@@ -31,6 +33,15 @@ func TestFromHTML(t *testing.T) {
 
 	// validation
 	assert.NoError(t, a.Normalize())
+}
+
+func TestTitleFromHTML(t *testing.T) {
+
+	content := tester.GetHTML(t, "../../tester/fixtures/cases/must_article_title.html")
+	a, err := article.ArticleFromHTML(content, GetArticleURL(t))
+	require.NoError(t, err)
+
+	assert.Equal(t, "Рамбутан", a.Title)
 }
 
 func TestDistiller(t *testing.T) {

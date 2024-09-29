@@ -21,7 +21,7 @@ import (
 // and sets the dto fields to the payload
 func Article(payload *pipe.Payload) error {
 
-	htmlStr, err := payload.Selection.Html()
+	htmlStr, err := ArticleSelection(payload)
 	if err != nil {
 		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
 		return err
@@ -47,6 +47,21 @@ func Article(payload *pipe.Payload) error {
 	slog.Debug("extract success", slog.String("title", art.Title))
 
 	return nil
+}
+
+// ArticleSelection combine head tags and article html code selection
+// Head tags are required for readability to work properly
+func ArticleSelection(payload *pipe.Payload) (dom string, err error) {
+
+	if dom, err = payload.Selection.Html(); err != nil {
+		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
+		return "", err
+	}
+
+	// get head tags as a string and attach to rest of the html
+	head, _ := payload.Doc.DOM.Find("head").Html()
+
+	return strings.Join([]string{head, dom}, ""), nil
 }
 
 // ArticleFromHTML extracts Article
