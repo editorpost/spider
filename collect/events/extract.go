@@ -63,27 +63,30 @@ func (crawler *Dispatch) WatchLimit() {
 
 // selections matching the query (with JS browse if Config.ExtractSelector is not found in GET response)
 func (crawler *Dispatch) selections(e *colly.HTMLElement) []*goquery.Selection {
+	return Selections(e, crawler.args.ExtractSelector, crawler.browser)
+}
 
-	if crawler.args.ExtractSelector == "html" {
+// Selections matching the query (with JS browse if Config.ExtractSelector is not found in GET response)
+func Selections(e *colly.HTMLElement, selector string, browser Browser) []*goquery.Selection {
+
+	if selector == "html" {
 		return []*goquery.Selection{e.DOM}
 	}
 
-	selections := e.DOM.Find(crawler.args.ExtractSelector)
+	var selection *goquery.Selection
 
-	// if the ExtractSelector is not found in the GET response,
-	// but in the fallback js browser call
-	// todo: replace this part, free of Browser dependecy
-	if crawler.args.UseBrowser {
+	if browser != nil {
 		var err error
-		selections, err = crawler.browser.Browse(e.Request.URL.String())
-		if err != nil {
+		if selection, err = browser.Browse(e.Request.URL.String()); err != nil {
 			return nil
 		}
+	} else {
+		selection = e.DOM.Find(selector)
 	}
 
 	var nodes []*goquery.Selection
 
-	selections.Each(func(i int, s *goquery.Selection) {
+	selection.Each(func(i int, s *goquery.Selection) {
 		nodes = append(nodes, s)
 	})
 
