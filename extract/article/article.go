@@ -99,13 +99,42 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 	return a, nil
 }
 
-func ArticleSelectionToMarkup(payload *pipe.Payload) (markup string, err error) {
+func ArticleSelectionToMarkup(payload *pipe.Payload) (string, error) {
 
-	if markup, err = payload.Selection.Html(); err != nil {
-		return
+	html, err := payload.Selection.Html()
+	if err != nil {
+		return "", err
 	}
 
-	return HTMLToMarkdown(markup), nil
+	converter := md.NewConverter("", true, &md.Options{
+		// replace relative URLs with absolute
+		GetAbsoluteURL: func(s *goquery.Selection, rawURL string, domain string) string {
+			return AbsoluteUrl(payload.URL, rawURL)
+		},
+	})
+
+	return converter.ConvertString(html)
+}
+
+// AbsoluteUrl
+// todo replace with media.AbsoluteUrl
+func AbsoluteUrl(base *url.URL, href string) string {
+
+	// parse the href
+	rel, err := url.Parse(href)
+	if err != nil {
+		return ""
+	}
+
+	// already absolute
+	if rel.Scheme != "" {
+		return rel.String()
+	}
+
+	// resolve the base with the relative href
+	abs := base.ResolveReference(rel)
+
+	return abs.String()
 }
 
 func readabilityArticle(html string, resource *url.URL, a *dto.Article) {
@@ -184,6 +213,7 @@ func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
 
 // HTMLToMarkdown converts HTML to markdown
 func HTMLToMarkdown(html string) string {
+
 	converter := md.NewConverter("", true, nil)
 	markdown, err := converter.ConvertString(html)
 	return lo.Ternary(err == nil, markdown, "")
