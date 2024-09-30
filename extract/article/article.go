@@ -101,18 +101,30 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 
 func ArticleSelectionToMarkup(payload *pipe.Payload) (string, error) {
 
+	// get the selection
+	selection := payload.Selection.Clone()
+
+	// remove h1 from the selection
+	selection.Find("h1").Remove()
+
+	// get the html from the selection
 	html, err := payload.Selection.Html()
 	if err != nil {
 		return "", err
 	}
 
+	// url getter for replacing relative URLs with absolute
+	absoluteUrlFn := func(s *goquery.Selection, rawURL string, domain string) string {
+		return AbsoluteUrl(payload.URL, rawURL)
+	}
+
+	// create the converter
 	converter := md.NewConverter("", true, &md.Options{
 		// replace relative URLs with absolute
-		GetAbsoluteURL: func(s *goquery.Selection, rawURL string, domain string) string {
-			return AbsoluteUrl(payload.URL, rawURL)
-		},
+		GetAbsoluteURL: absoluteUrlFn,
 	})
 
+	// convert the html to markdown
 	return converter.ConvertString(html)
 }
 
