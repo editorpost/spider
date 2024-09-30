@@ -33,6 +33,14 @@ func Article(payload *pipe.Payload) error {
 		return err
 	}
 
+	// rewrite the markup from readability and distiller due to the different behavior
+	// use provided Config.ExtractSelector markup as a default
+	// todo: if extract selector is empty, then use the readability markup
+	if art.Markup, err = ArticleSelectionToMarkup(payload); err != nil {
+		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
+		return err
+	}
+
 	// download claims
 	if claims := media.ClaimsFromContext(payload.Ctx); claims != nil {
 		// set article images, replace links in markdown
@@ -73,10 +81,6 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 	// readability: title, summary, text, html, language
 	readabilityArticle(html, resource, a)
 
-	// todo decide if we need to use distiller, since images are not used
-	// distiller: category, images, source name, author
-	distillArticle(html, resource, a)
-
 	// fallback: published
 	a.Published = lo.Ternary(a.Published.IsZero(), legacyPublished(html), a.Published)
 	a.Author = lo.Ternary(a.Author == "", legacyAuthor(html), a.Author)
@@ -93,6 +97,15 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 	}
 
 	return a, nil
+}
+
+func ArticleSelectionToMarkup(payload *pipe.Payload) (markup string, err error) {
+
+	if markup, err = payload.Selection.Html(); err != nil {
+		return
+	}
+
+	return HTMLToMarkdown(markup), nil
 }
 
 func readabilityArticle(html string, resource *url.URL, a *dto.Article) {
