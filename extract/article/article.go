@@ -108,7 +108,7 @@ func ArticleSelectionToMarkup(payload *pipe.Payload) (string, error) {
 	selection.Find("h1").Remove()
 
 	// get the html from the selection
-	html, err := payload.Selection.Html()
+	html, err := selection.Html()
 	if err != nil {
 		return "", err
 	}
