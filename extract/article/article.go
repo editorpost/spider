@@ -75,7 +75,7 @@ func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
 
 	// todo decide if we need to use distiller, since images are not used
 	// distiller: category, images, source name, author
-	// distillArticle(html, resource, a)
+	distillArticle(html, resource, a)
 
 	// fallback: published
 	a.Published = lo.Ternary(a.Published.IsZero(), legacyPublished(html), a.Published)
@@ -140,7 +140,10 @@ func distillArticle(html string, resource *url.URL, a *dto.Article) {
 	a.Title = lo.Ternary(a.Title == "", distill.Title, a.Title)
 	a.Summary = lo.Ternary(a.Summary == "", info.Description, a.Summary)
 	a.Text = lo.Ternary(a.Text == "", distill.Text, a.Text)
-	a.Markup = lo.Ternary(a.Markup == "", dom.OuterHTML(distill.Node), a.Markup)
+
+	// a.Markup = lo.Ternary(a.Markup == "", dom.OuterHTML(distill.Node), a.Markup)
+	a.Markup = dom.OuterHTML(distill.Node)
+
 	a.Published = lo.Ternary(a.Published.IsZero(), distillPublished(distill), a.Published)
 }
 
