@@ -1,6 +1,7 @@
 package console
 
 import (
+	"errors"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/manage/setup"
 )
@@ -9,7 +10,11 @@ import (
 // It is allowed to use proxy pool for requests.
 func Trial(s *setup.Spider) ([]*pipe.Payload, error) {
 
-	s.ID = "trial"
+	// Spider.ID is required
+	if s.ID == "" {
+		return nil, errors.New("spider check: ID not provided")
+	}
+
 	items := []*pipe.Payload{}
 
 	// force low limit for trial
