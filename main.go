@@ -13,7 +13,6 @@ import (
 var (
 	fCmd    = flag.String("cmd", "", "Available commands: start, trial")
 	fSpider = flag.String("spider", "", "Spider arguments as JSON string")
-	fDeploy = flag.String("deploy", "", "Deploy arguments as JSON string")
 )
 
 func main() {
