@@ -40,8 +40,7 @@ func NewSpider(id string, args *config.Config, cfg *extract.Config) (*Spider, er
 		return nil, fmt.Errorf("spider ID is empty")
 	}
 
-	_, err := uuid.Parse(id)
-	if err != nil {
+	if _, err := uuid.Parse(id); err != nil {
 		return nil, fmt.Errorf("spider ID is invalid: %w", err)
 	}
 
@@ -50,11 +49,11 @@ func NewSpider(id string, args *config.Config, cfg *extract.Config) (*Spider, er
 		Extract: cfg,
 	}
 
-	if err = s.Collect.Normalize(); err != nil {
+	if err := s.Collect.Normalize(); err != nil {
 		return nil, err
 	}
 
-	if err = s.withPipeline(); err != nil {
+	if err := s.withPipeline(); err != nil {
 		return nil, err
 	}
 

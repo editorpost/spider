@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-const ()
-
 type (
 	ExtractStore interface {
 		Save(p *pipe.Payload) error

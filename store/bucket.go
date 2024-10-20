@@ -40,8 +40,10 @@ type (
 
 func NewS3Client(bucket res.S3) (*s3.Client, error) {
 
+	access := credentials.NewStaticCredentialsProvider(bucket.AccessKey, bucket.SecretKey, "")
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(bucket.AccessKey, bucket.SecretKey, "")),
+		config.WithCredentialsProvider(access),
 		config.WithRegion(bucket.Region),
 	)
 
