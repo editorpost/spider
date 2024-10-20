@@ -205,6 +205,9 @@ func (s *Spider) Normalize() error {
 
 	if s.Deploy == nil {
 		s.Deploy = &Deploy{}
+	}
+
+	if s.Deploy.Paths.Collect == "" || s.Deploy.Paths.Payload == "" {
 		s.Deploy.Paths = store.DefaultStoragePaths()
 	}
 
