@@ -173,6 +173,10 @@ func readabilityArticle(html string, resource *url.URL, a *dto.Article) {
 	if read.PublishedTime != nil {
 		a.Published = *read.PublishedTime
 	}
+
+	if len(a.Title) == 0 {
+		a.Title = resource.String()
+	}
 }
 
 func distillArticle(html string, resource *url.URL, a *dto.Article) {
