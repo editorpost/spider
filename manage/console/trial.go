@@ -27,7 +27,7 @@ func Trial(s *setup.Spider) ([]*pipe.Payload, error) {
 		return nil
 	})
 
-	crawler, err := s.NewCrawler(setup.Deploy{})
+	crawler, err := s.NewCrawler()
 	if err != nil {
 		return items, err
 	}

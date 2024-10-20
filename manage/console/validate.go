@@ -5,8 +5,8 @@ import (
 )
 
 // Validate configuration
-func Validate(s *setup.Spider, deploy setup.Deploy) error {
-	_, err := s.NewCrawler(deploy)
+func Validate(s *setup.Spider) error {
+	_, err := s.NewCrawler()
 	if err != nil {
 		return err
 	}

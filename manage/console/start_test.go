@@ -15,7 +15,7 @@ func TestStart(t *testing.T) {
 	spider := tester.NewSpiderWith(t, srv)
 	require.NotNil(t, spider)
 
-	deploy := tester.TestDeploy(t)
-	err := console.Start(spider, deploy)
+	spider.Deploy = tester.TestDeploy(t)
+	err := console.Start(spider)
 	require.NoError(t, err)
 }

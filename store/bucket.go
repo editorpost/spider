@@ -15,12 +15,9 @@ import (
 )
 
 const (
-	CollectFolder   = "spd/%s/collect"
-	MediaFolder     = "spd/%s/media"
-	PayloadFolder   = "spd/%s/payload"
 	PayloadFile     = "payload.json"
-	DocumentFile    = "doc.html"
 	VisitedFile     = "visited.json"
+	HTMLSourceFile  = "index.html"
 	ChunkTimeFormat = "06-01"
 )
 

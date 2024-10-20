@@ -27,10 +27,9 @@ type CollectStorage struct {
 	jar         *cookiejar.Jar
 }
 
-func NewCollectStorage(spiderID string, b res.S3) (*CollectStorage, func() error, error) {
+func NewCollectStorage(folder string, b res.S3) (*CollectStorage, func() error, error) {
 
 	jar, _ := cookiejar.New(nil)
-	folder := fmt.Sprintf(CollectFolder, spiderID)
 
 	store, err := NewStorage(b, folder)
 	if err != nil {
@@ -48,10 +47,10 @@ func NewCollectStorage(spiderID string, b res.S3) (*CollectStorage, func() error
 	return s, s.shutdown, nil
 }
 
-func DropCollectStorage(spiderID string, b res.S3) error {
+func DropCollectStorage(folder string, b res.S3) error {
 
 	// note no need to call shutdown here
-	store, _, err := NewCollectStorage(spiderID, b)
+	store, _, err := NewCollectStorage(folder, b)
 	if err != nil {
 		return err
 	}

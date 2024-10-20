@@ -10,11 +10,11 @@ import (
 
 const DeployBucketFolder = "./testdata"
 
-func TestDeploy(t *testing.T) setup.Deploy {
+func TestDeploy(t *testing.T) *setup.Deploy {
 
 	t.Helper()
 
-	return setup.Deploy{
+	return &setup.Deploy{
 		Storage: res.S3{
 			Bucket:   "local",
 			EndPoint: DeployBucketFolder,

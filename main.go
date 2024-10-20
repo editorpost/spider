@@ -18,20 +18,20 @@ var (
 
 func main() {
 
-	cmd, spider, deploy, err := Flags()
+	cmd, spider, err := Flags()
 
 	if err != nil {
 		slog.Error("flags", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
-	if err := windmill.Command(cmd, spider, deploy); err != nil {
+	if err = windmill.Command(cmd, spider); err != nil {
 		slog.Error("cmd:"+cmd, slog.String("error", err.Error()))
 		return
 	}
 }
 
-func Flags() (cmd string, spider *setup.Spider, deploy setup.Deploy, err error) {
+func Flags() (cmd string, spider *setup.Spider, err error) {
 
 	// parse command and flags
 	flag.Parse()
@@ -49,22 +49,9 @@ func Flags() (cmd string, spider *setup.Spider, deploy setup.Deploy, err error) 
 		return
 	}
 
-	spider, err = setup.NewSpiderFromJSON([]byte(spiderJson))
+	spider, err = setup.SpiderFromJSON([]byte(spiderJson))
 	if err != nil {
 		err = errors.New("failed to parse spider JSON")
-		return
-	}
-
-	// JSON string of setup.Spider
-	deployJson := FlagToString(fDeploy)
-	if deployJson == "" {
-		err = errors.New("flag deploy is not set")
-		return
-	}
-
-	deploy, err = setup.NewDeploy(deployJson)
-	if err != nil {
-		err = errors.New("failed to parse deploy JSON")
 		return
 	}
 

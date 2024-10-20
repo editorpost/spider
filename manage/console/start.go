@@ -6,9 +6,9 @@ import (
 
 // Start is a code for running spider
 // as Windmill Script with extract.Article
-func Start(s *setup.Spider, deploy setup.Deploy) error {
+func Start(s *setup.Spider) error {
 
-	crawler, err := s.NewCrawler(deploy)
+	crawler, err := s.NewCrawler()
 	if err != nil {
 		return err
 	}

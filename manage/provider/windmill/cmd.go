@@ -5,14 +5,14 @@ import (
 	"github.com/editorpost/spider/manage/setup"
 )
 
-func Command(cmd string, s *setup.Spider, d setup.Deploy) (err error) {
+func Command(cmd string, s *setup.Spider) (err error) {
 
 	switch cmd {
 
 	case "start":
-		return console.Start(s, d)
+		return console.Start(s)
 	case "validate":
-		return console.Validate(s, d)
+		return console.Validate(s)
 	case "trial":
 		return Trial(s)
 	}

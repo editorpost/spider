@@ -20,7 +20,7 @@ func NewSpiderWith(t *testing.T, server *TestServer) *setup.Spider {
 	args.ExtractLimit = 5
 	args.Depth = 3
 
-	s, err := setup.NewSpider(fk.UUID(), args, NewExtractConfig())
+	s, err := setup.NewSpider(fk.UUID(), args, NewExtractConfig(), TestDeploy(t))
 	require.NoError(t, err)
 	require.NotNil(t, s)
 

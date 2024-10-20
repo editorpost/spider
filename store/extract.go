@@ -6,7 +6,6 @@ import (
 	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/editorpost/donq/res"
 	"github.com/editorpost/spider/extract/pipe"
-	"time"
 )
 
 type (
@@ -24,12 +23,10 @@ type (
 )
 
 // NewExtractStorage S3 storage for payload and document html
-func NewExtractStorage(spiderID string, b res.S3) (*ExtractStorage, error) {
-
-	chunk := time.Now().UTC().Format("06-01")
-	folder := fmt.Sprintf(PayloadFolder, spiderID) + "/" + chunk
+func NewExtractStorage(folder string, b res.S3) (*ExtractStorage, error) {
 
 	store, err := NewStorage(b, folder)
+
 	if err != nil {
 		return nil, fmt.Errorf("extract store s3 client: %w", err)
 	}
@@ -41,10 +38,7 @@ func NewExtractStorage(spiderID string, b res.S3) (*ExtractStorage, error) {
 	}, nil
 }
 
-func DropExtractStorage(spiderID string, bucket res.S3) error {
-
-	// folder without chunk suffix
-	folder := fmt.Sprintf(PayloadFolder, spiderID)
+func DropExtractStorage(folder string, bucket res.S3) error {
 
 	storage, err := NewStorage(bucket, folder)
 	if err != nil {
@@ -92,7 +86,7 @@ func (s *ExtractStorage) save(p *pipe.Payload) error {
 		return err
 	}
 
-	return s.store.Save([]byte(dom), fmt.Sprintf("%s/%s", p.ID, DocumentFile))
+	return s.store.Save([]byte(dom), fmt.Sprintf("%s/%s", p.ID, HTMLSourceFile))
 }
 
 func (s *ExtractStorage) Reset() error {
