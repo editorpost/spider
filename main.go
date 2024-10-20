@@ -13,6 +13,7 @@ import (
 var (
 	fCmd    = flag.String("cmd", "", "Available commands: start, trial")
 	fSpider = flag.String("spider", "", "Spider arguments as JSON string")
+	fDeploy = flag.String("deploy", "", "Deploy arguments as JSON string")
 )
 
 func main() {
@@ -41,17 +42,15 @@ func Flags() (cmd string, spider *setup.Spider, err error) {
 		return
 	}
 
-	// JSON string of setup.Spider
-	spiderJson := FlagToString(fSpider)
-	if spiderJson == "" {
-		err = errors.New("flag spider is not set")
-		return
-	}
-
-	spider, err = setup.SpiderFromJSON([]byte(spiderJson))
+	spider, err = setup.SpiderFromJSON([]byte(FlagToString(fSpider)))
 	if err != nil {
 		err = errors.New("failed to parse spider JSON")
 		return
+	}
+
+	deploy := FlagToString(fDeploy)
+	if len(deploy) > 0 {
+		spider.Deploy, err = setup.NewDeploy(deploy)
 	}
 
 	return

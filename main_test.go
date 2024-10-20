@@ -12,6 +12,7 @@ import (
 func TestFlags(t *testing.T) {
 
 	require.NoError(t, flag.Set("spider", validSpider))
+	require.NoError(t, flag.Set("deploy", deployStr))
 	require.NoError(t, flag.Set("cmd", "start"))
 
 	cmd, s, _ := Flags()
