@@ -11,6 +11,8 @@ import (
 	"sync"
 )
 
+var ErrMediaSkipLessThan = errors.New("media content length is too small")
+
 type (
 	// Store media data to destinations like S3.
 	Store interface {
@@ -18,9 +20,10 @@ type (
 	}
 	// Loader copy data from url to store.
 	Loader struct {
-		pool   sync.Pool
-		store  Store
-		client *http.Client
+		pool         sync.Pool
+		store        Store
+		client       *http.Client
+		skipLessThan int
 	}
 )
 
@@ -31,8 +34,9 @@ func NewLoader(store Store) *Loader {
 				return new(bytes.Buffer)
 			},
 		},
-		store:  store,
-		client: &http.Client{},
+		store:        store,
+		client:       &http.Client{},
+		skipLessThan: 1024,
 	}
 }
 
@@ -51,6 +55,11 @@ func (dl *Loader) Download(src, dst string) error {
 		return err
 	}
 	defer dl.ReleaseBuffer(buf)
+
+	// Skip small images, less than 1KB.
+	if buf.Len() < dl.skipLessThan {
+		return ErrMediaSkipLessThan
+	}
 
 	// upload the data
 	return dl.store.Save(buf.Bytes(), dst)
@@ -123,40 +132,4 @@ func FileExtension(uri string) (string, error) {
 		return "", err
 	}
 	return filepath.Ext(u.Path), nil
-}
-
-// Download downloads an image from the specified Endpoint using the provided http.Transport.
-func Download(absoluteURL string, transport *http.Transport) ([]byte, error) {
-
-	// Parse the Endpoint to ensure it's valid.
-	parsedURL, err := url.Parse(absoluteURL)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create a new HTTP client with the specified transport.
-	client := &http.Client{
-		Transport: transport,
-	}
-
-	// Send the GET request.
-	resp, err := client.Get(parsedURL.String())
-	if err != nil {
-		return nil, err
-	}
-	//goland:noinspection GoUnhandledErrorResult
-	defer resp.Body.Close()
-
-	// Check if the response status is OK.
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("failed to download media: " + resp.Status)
-	}
-
-	// Read the media data.
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }

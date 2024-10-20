@@ -2,6 +2,7 @@ package media
 
 import (
 	"context"
+	"errors"
 	"github.com/editorpost/spider/extract/pipe"
 	"log/slog"
 	"strings"
@@ -57,7 +58,12 @@ func (m *Media) Upload(payload *pipe.Payload) error {
 		dst := strings.TrimPrefix(claim.Dst, m.publicURL)
 
 		if err := m.loader.Download(claim.Src, dst); err != nil {
-			slog.Error("failed to download media", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
+
+			if !errors.Is(err, ErrMediaSkipLessThan) {
+				slog.Error("failed to download media", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
+			}
+
+			// skip to next claim
 			continue
 		}
 

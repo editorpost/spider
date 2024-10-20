@@ -3,6 +3,7 @@ package tester
 import (
 	"github.com/editorpost/donq/res"
 	"github.com/editorpost/spider/manage/setup"
+	"github.com/editorpost/spider/store"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
@@ -41,6 +42,7 @@ func TestDeploy(t *testing.T) *setup.Deploy {
 		Logs: res.Logs{
 			URL: "",
 		},
+		Paths: store.DefaultStoragePaths(),
 	}
 }
 

@@ -15,7 +15,7 @@ var (
 )
 
 func DataExpected() []byte {
-	return []byte{0xFF, 0xD8, 0xFF}
+	return make([]byte, 1126) // 1.1KB = 1126 bytes
 }
 
 func DataAssert(t *testing.T, got []byte) {
@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 // TestDownloadImage tests the DownloadImage function.
 func TestDownloader_Download(t *testing.T) {
 	// Set up a test server that serves an example image.
-	testImage := []byte{0xFF, 0xD8, 0xFF} // Example of JPEG header bytes.
+	testImage := DataExpected()
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write(testImage)
 	}))

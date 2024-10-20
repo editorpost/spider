@@ -45,7 +45,7 @@ func (s *Spider) withCollectStore(deps *config.Deps) error {
 
 func (s *Spider) withExtractStore() error {
 
-	extractStore, err := store.NewExtractStorage(s.Deploy.Paths.Payload, s.Deploy.Storage)
+	extractStore, err := store.NewExtractStorage(s.Deploy.Paths.PayloadRoot(s.ID), s.Deploy.Storage)
 	if err != nil {
 		return fmt.Errorf("failed to create extract S3 storage: %w", err)
 	}
