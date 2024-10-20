@@ -8,15 +8,16 @@ import (
 
 const JobResultFile = "./result.json"
 
-// Trial spider against limited and return extracted data
+// Check spider against limited and return extracted data
 // It does not store the data, but uses proxy pool for requests.
-func Trial(s *setup.Spider) error {
+func Check(s *setup.Spider) error {
 
-	items, err := console.Trial(s)
-	if err != nil {
+	checkID := vars.FromEnv().GetJobID()
+
+	if _, err := console.Check(checkID, s); err != nil {
 		return err
 	}
 
 	// write extracted data to `./result.json` as windmill expects
-	return vars.WriteScriptResult(items, JobResultFile)
+	return vars.WriteScriptResult(map[string]string{"ID": checkID}, JobResultFile)
 }

@@ -14,7 +14,7 @@ func Command(cmd string, s *setup.Spider) (err error) {
 	case "validate":
 		return console.Validate(s)
 	case "trial":
-		return Trial(s)
+		return Check(s)
 	}
 
 	return nil

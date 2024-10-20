@@ -1,14 +1,14 @@
 package console_test
 
 import (
+	fk "github.com/brianvoe/gofakeit/v6"
 	"github.com/editorpost/spider/manage/console"
 	"github.com/editorpost/spider/tester"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func TestTrial(t *testing.T) {
+func TestCheck(t *testing.T) {
 
 	srv := tester.NewServer("../../tester/fixtures")
 	defer srv.Close()
@@ -16,7 +16,8 @@ func TestTrial(t *testing.T) {
 	s := tester.NewSpiderWith(t, srv)
 	require.NotNil(t, s)
 
-	data, err := console.Trial(s)
+	checkID := fk.UUID()
+	id, err := console.Check(checkID, s)
 	require.NoError(t, err)
-	assert.Len(t, data, 3)
+	require.Equal(t, checkID, id)
 }
