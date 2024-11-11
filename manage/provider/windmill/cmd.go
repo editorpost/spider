@@ -13,7 +13,7 @@ func Command(cmd string, s *setup.Spider) (err error) {
 		return console.Start(s)
 	case "validate":
 		return console.Validate(s)
-	case "trial":
+	case "check":
 		return Check(s)
 	}
 
