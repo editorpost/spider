@@ -27,9 +27,9 @@ func CheckStoragePaths() Paths {
 // Changing the paths will affect the storage location,
 // old data won't be moved automatically.
 type Paths struct {
-	Collect string
-	Media   string
-	Payload string
+	Collect string `json:"collect"`
+	Media   string `json:"media"`
+	Payload string `json:"payload"`
 }
 
 func (paths Paths) joinChunkFolder(folder string) string {
