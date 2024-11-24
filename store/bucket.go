@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/editorpost/donq/res"
 	"log/slog"
+	"strings"
 )
 
 const (
@@ -84,7 +85,7 @@ func (b *BucketStorage) path(filename string) *string {
 		return aws.String(filename)
 	}
 
-	return aws.String(fmt.Sprintf("%s/%s", b.folder, filename))
+	return aws.String(fmt.Sprintf("%s/%s", strings.TrimRight(b.folder, "/"), filename))
 }
 
 func (b *BucketStorage) Save(data []byte, filename string) error {

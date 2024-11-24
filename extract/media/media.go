@@ -55,7 +55,9 @@ func (m *Media) Upload(payload *pipe.Payload) error {
 	// download source and upload to destination
 	for _, claim := range claims.All() {
 
-		dst := strings.TrimPrefix(claim.Dst, m.publicURL)
+		// trim base URL from the full chunked path
+		// note claim.DstPath doesn't have chunk part, it keeps path for {payloadID}/media/{imageID}.ext
+		dst := strings.TrimPrefix(claim.Dst, m.publicURL+"/")
 
 		if err := m.loader.Download(claim.Src, dst); err != nil {
 

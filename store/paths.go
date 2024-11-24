@@ -34,8 +34,9 @@ type Paths struct {
 }
 
 func (paths Paths) joinChunkFolder(folder string) string {
+
 	chunk := time.Now().UTC().Format(ChunkTimeFormat)
-	return strings.TrimRight(folder, "/") + chunk
+	return strings.TrimRight(folder, "/") + "/" + chunk
 }
 
 func (paths Paths) MediaChunk(arg string) string {
