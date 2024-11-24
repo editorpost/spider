@@ -18,8 +18,6 @@ func TestTrial(t *testing.T) {
 	s := tester.NewSpiderWith(t, srv)
 	require.NotNil(t, s)
 
-	// set env vars
-	require.NoError(t, os.Setenv("WM_JOB_ID", "test-job-id"))
 	require.NoError(t, windmill.Check(s))
 
 	// read results.json
@@ -28,9 +26,9 @@ func TestTrial(t *testing.T) {
 	require.NotNil(t, f)
 
 	// unmarshal to map
-	var data struct{ ID string }
+	var data struct{ CheckID string }
 	require.NoError(t, json.Unmarshal(f, &data))
-	assert.Equal(t, data.ID, "test-job-id") // UUID
+	assert.NotEmpty(t, data.CheckID)
 
 	// remove results.json
 	require.NoError(t, os.Remove(windmill.JobResultFile))

@@ -7,14 +7,15 @@ import (
 	"testing"
 )
 
-func TestCheck(t *testing.T) {
+func TestValidate(t *testing.T) {
 
 	srv := tester.NewServer("../../tester/fixtures")
 	defer srv.Close()
 
-	s := tester.NewSpiderWith(t, srv)
-	require.NotNil(t, s)
+	spider := tester.NewSpiderWith(t, srv)
+	require.NotNil(t, spider)
 
-	_, err := console.Check(s)
+	spider.Deploy = tester.TestDeploy(t)
+	err := console.Validate(spider)
 	require.NoError(t, err)
 }
