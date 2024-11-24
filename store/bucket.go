@@ -112,13 +112,13 @@ func (b *BucketStorage) Load(filename string) ([]byte, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to get object, %w", err)
+		return nil, err
 	}
 
 	buf := new(bytes.Buffer)
 	_, err = buf.ReadFrom(obj.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read object, %w", err)
+		return nil, err
 	}
 
 	return buf.Bytes(), nil
