@@ -7,23 +7,19 @@ import (
 
 // Check runs spider as usual, but with limited extract limit and storage paths.
 // It is used for testing spider configuration and extractors from the console, api or clients.
-func Check(checkID string, s *setup.Spider) (string, error) {
-
-	// Replace actual spider ID with Windmill job UUID,
-	// making virtual copy of the actual spider configuration,
-	// keeping relation between Windmill job and check run.
-	// It guarantees that check runs are isolated,
-	// but close to real runs.
-	s.ID = checkID
+func Check(spider *setup.Spider) (map[string]any, error) {
 
 	// force low hard-limit for check runs
-	if s.Collect.ExtractLimit == 0 || s.Collect.ExtractLimit > 30 {
-		s.Collect.ExtractLimit = 30
+	if spider.Collect.ExtractLimit == 0 || spider.Collect.ExtractLimit > 30 {
+		spider.Collect.ExtractLimit = 30
 	}
 
 	// replace actual storage paths with check storage paths
-	s.Deploy.Paths = store.CheckStoragePaths()
+	spider.Deploy.Paths = store.CheckStoragePaths()
 
 	// return check UUID and run the spider
-	return s.ID, Start(s)
+	return map[string]any{
+		"CheckID": spider.ID,
+		"Paths":   spider.Deploy.Paths,
+	}, Start(spider)
 }
