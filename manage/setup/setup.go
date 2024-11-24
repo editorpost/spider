@@ -26,10 +26,10 @@ type Deploy struct {
 
 // Spider aggregates configs and create collect.Crawler.
 type Spider struct {
-	ID       string
-	Collect  *config.Config
-	Extract  *extract.Config
-	Deploy   *Deploy
+	ID       string          `json:"ID"`
+	Collect  *config.Config  `json:"Collect"`
+	Extract  *extract.Config `json:"Extract"`
+	Deploy   *Deploy         `json:"Deploy"`
 	pipe     *pipe.Pipeline
 	shutdown []func() error
 }
