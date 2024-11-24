@@ -2,7 +2,9 @@ package store
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/editorpost/donq/res"
 	"github.com/gocolly/colly/v2/storage"
 	"net/http/cookiejar"
@@ -76,8 +78,16 @@ func (s *CollectStorage) shutdown() error {
 func (s *CollectStorage) Init() error {
 
 	b, err := s.store.Load(VisitedFile)
+
+	// Check for the "Not Found" error
+	var awsErr *types.NoSuchKey
+	if errors.As(err, &awsErr) {
+		return nil
+	}
+
+	// ignore not found error
 	if err != nil {
-		return err
+		return fmt.Errorf("error to connect to collect storage, %w", err)
 	}
 
 	return json.Unmarshal(b, &s.visitedURLs)
