@@ -5,8 +5,8 @@ package ent
 import (
 	"time"
 
-	"github.com/editorpost/spider/store/ent/extractindex"
 	"github.com/editorpost/spider/store/ent/schema"
+	"github.com/editorpost/spider/store/ent/spiderpayload"
 	"github.com/google/uuid"
 )
 
@@ -14,22 +14,22 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	extractindexFields := schema.ExtractIndex{}.Fields()
-	_ = extractindexFields
-	// extractindexDescPayloadID is the schema descriptor for payload_id field.
-	extractindexDescPayloadID := extractindexFields[2].Descriptor()
-	// extractindex.PayloadIDValidator is a validator for the "payload_id" field. It is called by the builders before save.
-	extractindex.PayloadIDValidator = extractindexDescPayloadID.Validators[0].(func(string) error)
-	// extractindexDescExtractedAt is the schema descriptor for extracted_at field.
-	extractindexDescExtractedAt := extractindexFields[3].Descriptor()
-	// extractindex.DefaultExtractedAt holds the default value on creation for the extracted_at field.
-	extractindex.DefaultExtractedAt = extractindexDescExtractedAt.Default.(func() time.Time)
-	// extractindexDescStatus is the schema descriptor for status field.
-	extractindexDescStatus := extractindexFields[4].Descriptor()
-	// extractindex.DefaultStatus holds the default value on creation for the status field.
-	extractindex.DefaultStatus = extractindexDescStatus.Default.(uint8)
-	// extractindexDescID is the schema descriptor for id field.
-	extractindexDescID := extractindexFields[0].Descriptor()
-	// extractindex.DefaultID holds the default value on creation for the id field.
-	extractindex.DefaultID = extractindexDescID.Default.(func() uuid.UUID)
+	spiderpayloadFields := schema.SpiderPayload{}.Fields()
+	_ = spiderpayloadFields
+	// spiderpayloadDescPayloadID is the schema descriptor for payload_id field.
+	spiderpayloadDescPayloadID := spiderpayloadFields[2].Descriptor()
+	// spiderpayload.PayloadIDValidator is a validator for the "payload_id" field. It is called by the builders before save.
+	spiderpayload.PayloadIDValidator = spiderpayloadDescPayloadID.Validators[0].(func(string) error)
+	// spiderpayloadDescExtractedAt is the schema descriptor for extracted_at field.
+	spiderpayloadDescExtractedAt := spiderpayloadFields[3].Descriptor()
+	// spiderpayload.DefaultExtractedAt holds the default value on creation for the extracted_at field.
+	spiderpayload.DefaultExtractedAt = spiderpayloadDescExtractedAt.Default.(func() time.Time)
+	// spiderpayloadDescStatus is the schema descriptor for status field.
+	spiderpayloadDescStatus := spiderpayloadFields[4].Descriptor()
+	// spiderpayload.DefaultStatus holds the default value on creation for the status field.
+	spiderpayload.DefaultStatus = spiderpayloadDescStatus.Default.(uint8)
+	// spiderpayloadDescID is the schema descriptor for id field.
+	spiderpayloadDescID := spiderpayloadFields[0].Descriptor()
+	// spiderpayload.DefaultID holds the default value on creation for the id field.
+	spiderpayload.DefaultID = spiderpayloadDescID.Default.(func() uuid.UUID)
 }

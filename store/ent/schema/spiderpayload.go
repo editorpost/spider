@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-// ExtractIndex holds the schema definition for the ExtractIndex entity.
-type ExtractIndex struct {
+// SpiderPayload holds the schema definition for the SpiderPayload entity.
+type SpiderPayload struct {
 	ent.Schema
 }
 
 // Fields of the ExtractIndex.
-func (ExtractIndex) Fields() []ent.Field {
+func (SpiderPayload) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("spider_id", uuid.UUID{}),
@@ -26,11 +26,11 @@ func (ExtractIndex) Fields() []ent.Field {
 }
 
 // Edges of the ExtractIndex.
-func (ExtractIndex) Edges() []ent.Edge {
+func (SpiderPayload) Edges() []ent.Edge {
 	return nil
 }
 
-func (ExtractIndex) Indexes() []ent.Index {
+func (SpiderPayload) Indexes() []ent.Index {
 	return []ent.Index{
 		// unique constraint on (identity_id, user_agent)
 		index.Fields("spider_id", "extracted_at").Unique(),

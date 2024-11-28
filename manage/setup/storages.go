@@ -62,7 +62,7 @@ func (s *Spider) withExtractIndex() error {
 		return nil
 	}
 
-	extractIndex, err := store.NewExtractIndex(s.ID, s.Deploy.Database.DSN())
+	extractIndex, err := store.NewSpiderPayloads(s.ID, s.Deploy.Database.DSN())
 	if err != nil {
 		return fmt.Errorf("failed to create extract index store: %w", err)
 	}

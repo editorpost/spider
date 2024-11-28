@@ -6,5 +6,5 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// ExtractIndex is the predicate function for extractindex builders.
-type ExtractIndex func(*sql.Selector)
+// SpiderPayload is the predicate function for spiderpayload builders.
+type SpiderPayload func(*sql.Selector)

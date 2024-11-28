@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/editorpost/spider/store/ent/extractindex"
+	"github.com/editorpost/spider/store/ent/spiderpayload"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -69,11 +69,11 @@ var (
 	columnCheck sql.ColumnCheck
 )
 
-// columnChecker checks if the column exists in the given table.
+// checkColumn checks if the column exists in the given table.
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			extractindex.Table: extractindex.ValidColumn,
+			spiderpayload.Table: spiderpayload.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

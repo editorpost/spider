@@ -15,7 +15,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"github.com/editorpost/spider/store/ent/extractindex"
+	"github.com/editorpost/spider/store/ent/spiderpayload"
 )
 
 // Client is the client that holds all ent builders.
@@ -23,8 +23,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// ExtractIndex is the client for interacting with the ExtractIndex builders.
-	ExtractIndex *ExtractIndexClient
+	// SpiderPayload is the client for interacting with the SpiderPayload builders.
+	SpiderPayload *SpiderPayloadClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -36,7 +36,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.ExtractIndex = NewExtractIndexClient(c.config)
+	c.SpiderPayload = NewSpiderPayloadClient(c.config)
 }
 
 type (
@@ -127,9 +127,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:          ctx,
-		config:       cfg,
-		ExtractIndex: NewExtractIndexClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		SpiderPayload: NewSpiderPayloadClient(cfg),
 	}, nil
 }
 
@@ -147,16 +147,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:          ctx,
-		config:       cfg,
-		ExtractIndex: NewExtractIndexClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		SpiderPayload: NewSpiderPayloadClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		ExtractIndex.
+//		SpiderPayload.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -178,126 +178,126 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.ExtractIndex.Use(hooks...)
+	c.SpiderPayload.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.ExtractIndex.Intercept(interceptors...)
+	c.SpiderPayload.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *ExtractIndexMutation:
-		return c.ExtractIndex.mutate(ctx, m)
+	case *SpiderPayloadMutation:
+		return c.SpiderPayload.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
 }
 
-// ExtractIndexClient is a client for the ExtractIndex schema.
-type ExtractIndexClient struct {
+// SpiderPayloadClient is a client for the SpiderPayload schema.
+type SpiderPayloadClient struct {
 	config
 }
 
-// NewExtractIndexClient returns a client for the ExtractIndex from the given config.
-func NewExtractIndexClient(c config) *ExtractIndexClient {
-	return &ExtractIndexClient{config: c}
+// NewSpiderPayloadClient returns a client for the SpiderPayload from the given config.
+func NewSpiderPayloadClient(c config) *SpiderPayloadClient {
+	return &SpiderPayloadClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `extractindex.Hooks(f(g(h())))`.
-func (c *ExtractIndexClient) Use(hooks ...Hook) {
-	c.hooks.ExtractIndex = append(c.hooks.ExtractIndex, hooks...)
+// A call to `Use(f, g, h)` equals to `spiderpayload.Hooks(f(g(h())))`.
+func (c *SpiderPayloadClient) Use(hooks ...Hook) {
+	c.hooks.SpiderPayload = append(c.hooks.SpiderPayload, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `extractindex.Intercept(f(g(h())))`.
-func (c *ExtractIndexClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ExtractIndex = append(c.inters.ExtractIndex, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `spiderpayload.Intercept(f(g(h())))`.
+func (c *SpiderPayloadClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SpiderPayload = append(c.inters.SpiderPayload, interceptors...)
 }
 
-// Create returns a builder for creating a ExtractIndex entity.
-func (c *ExtractIndexClient) Create() *ExtractIndexCreate {
-	mutation := newExtractIndexMutation(c.config, OpCreate)
-	return &ExtractIndexCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a SpiderPayload entity.
+func (c *SpiderPayloadClient) Create() *SpiderPayloadCreate {
+	mutation := newSpiderPayloadMutation(c.config, OpCreate)
+	return &SpiderPayloadCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of ExtractIndex entities.
-func (c *ExtractIndexClient) CreateBulk(builders ...*ExtractIndexCreate) *ExtractIndexCreateBulk {
-	return &ExtractIndexCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of SpiderPayload entities.
+func (c *SpiderPayloadClient) CreateBulk(builders ...*SpiderPayloadCreate) *SpiderPayloadCreateBulk {
+	return &SpiderPayloadCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *ExtractIndexClient) MapCreateBulk(slice any, setFunc func(*ExtractIndexCreate, int)) *ExtractIndexCreateBulk {
+func (c *SpiderPayloadClient) MapCreateBulk(slice any, setFunc func(*SpiderPayloadCreate, int)) *SpiderPayloadCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &ExtractIndexCreateBulk{err: fmt.Errorf("calling to ExtractIndexClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &SpiderPayloadCreateBulk{err: fmt.Errorf("calling to SpiderPayloadClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*ExtractIndexCreate, rv.Len())
+	builders := make([]*SpiderPayloadCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &ExtractIndexCreateBulk{config: c.config, builders: builders}
+	return &SpiderPayloadCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for ExtractIndex.
-func (c *ExtractIndexClient) Update() *ExtractIndexUpdate {
-	mutation := newExtractIndexMutation(c.config, OpUpdate)
-	return &ExtractIndexUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for SpiderPayload.
+func (c *SpiderPayloadClient) Update() *SpiderPayloadUpdate {
+	mutation := newSpiderPayloadMutation(c.config, OpUpdate)
+	return &SpiderPayloadUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ExtractIndexClient) UpdateOne(ei *ExtractIndex) *ExtractIndexUpdateOne {
-	mutation := newExtractIndexMutation(c.config, OpUpdateOne, withExtractIndex(ei))
-	return &ExtractIndexUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SpiderPayloadClient) UpdateOne(sp *SpiderPayload) *SpiderPayloadUpdateOne {
+	mutation := newSpiderPayloadMutation(c.config, OpUpdateOne, withSpiderPayload(sp))
+	return &SpiderPayloadUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ExtractIndexClient) UpdateOneID(id uuid.UUID) *ExtractIndexUpdateOne {
-	mutation := newExtractIndexMutation(c.config, OpUpdateOne, withExtractIndexID(id))
-	return &ExtractIndexUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SpiderPayloadClient) UpdateOneID(id uuid.UUID) *SpiderPayloadUpdateOne {
+	mutation := newSpiderPayloadMutation(c.config, OpUpdateOne, withSpiderPayloadID(id))
+	return &SpiderPayloadUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for ExtractIndex.
-func (c *ExtractIndexClient) Delete() *ExtractIndexDelete {
-	mutation := newExtractIndexMutation(c.config, OpDelete)
-	return &ExtractIndexDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for SpiderPayload.
+func (c *SpiderPayloadClient) Delete() *SpiderPayloadDelete {
+	mutation := newSpiderPayloadMutation(c.config, OpDelete)
+	return &SpiderPayloadDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ExtractIndexClient) DeleteOne(ei *ExtractIndex) *ExtractIndexDeleteOne {
-	return c.DeleteOneID(ei.ID)
+func (c *SpiderPayloadClient) DeleteOne(sp *SpiderPayload) *SpiderPayloadDeleteOne {
+	return c.DeleteOneID(sp.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ExtractIndexClient) DeleteOneID(id uuid.UUID) *ExtractIndexDeleteOne {
-	builder := c.Delete().Where(extractindex.ID(id))
+func (c *SpiderPayloadClient) DeleteOneID(id uuid.UUID) *SpiderPayloadDeleteOne {
+	builder := c.Delete().Where(spiderpayload.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &ExtractIndexDeleteOne{builder}
+	return &SpiderPayloadDeleteOne{builder}
 }
 
-// Query returns a query builder for ExtractIndex.
-func (c *ExtractIndexClient) Query() *ExtractIndexQuery {
-	return &ExtractIndexQuery{
+// Query returns a query builder for SpiderPayload.
+func (c *SpiderPayloadClient) Query() *SpiderPayloadQuery {
+	return &SpiderPayloadQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeExtractIndex},
+		ctx:    &QueryContext{Type: TypeSpiderPayload},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a ExtractIndex entity by its id.
-func (c *ExtractIndexClient) Get(ctx context.Context, id uuid.UUID) (*ExtractIndex, error) {
-	return c.Query().Where(extractindex.ID(id)).Only(ctx)
+// Get returns a SpiderPayload entity by its id.
+func (c *SpiderPayloadClient) Get(ctx context.Context, id uuid.UUID) (*SpiderPayload, error) {
+	return c.Query().Where(spiderpayload.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ExtractIndexClient) GetX(ctx context.Context, id uuid.UUID) *ExtractIndex {
+func (c *SpiderPayloadClient) GetX(ctx context.Context, id uuid.UUID) *SpiderPayload {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -306,36 +306,36 @@ func (c *ExtractIndexClient) GetX(ctx context.Context, id uuid.UUID) *ExtractInd
 }
 
 // Hooks returns the client hooks.
-func (c *ExtractIndexClient) Hooks() []Hook {
-	return c.hooks.ExtractIndex
+func (c *SpiderPayloadClient) Hooks() []Hook {
+	return c.hooks.SpiderPayload
 }
 
 // Interceptors returns the client interceptors.
-func (c *ExtractIndexClient) Interceptors() []Interceptor {
-	return c.inters.ExtractIndex
+func (c *SpiderPayloadClient) Interceptors() []Interceptor {
+	return c.inters.SpiderPayload
 }
 
-func (c *ExtractIndexClient) mutate(ctx context.Context, m *ExtractIndexMutation) (Value, error) {
+func (c *SpiderPayloadClient) mutate(ctx context.Context, m *SpiderPayloadMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&ExtractIndexCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SpiderPayloadCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&ExtractIndexUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SpiderPayloadUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&ExtractIndexUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SpiderPayloadUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&ExtractIndexDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&SpiderPayloadDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown ExtractIndex mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown SpiderPayload mutation op: %q", m.Op())
 	}
 }
 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ExtractIndex []ent.Hook
+		SpiderPayload []ent.Hook
 	}
 	inters struct {
-		ExtractIndex []ent.Interceptor
+		SpiderPayload []ent.Interceptor
 	}
 )

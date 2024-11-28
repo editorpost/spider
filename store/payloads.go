@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/store/ent"
-	"github.com/editorpost/spider/store/ent/extractindex"
+	"github.com/editorpost/spider/store/ent/spiderpayload"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"strings"
@@ -15,13 +15,13 @@ const (
 )
 
 type (
-	ExtractIndex struct {
+	SpiderPayloads struct {
 		db       *ent.Client
 		spiderID string
 	}
 )
 
-func NewExtractIndex(spiderID, dsn string) (_ *ExtractIndex, err error) {
+func NewSpiderPayloads(spiderID, dsn string) (_ *SpiderPayloads, err error) {
 
 	db, err := NewEntClient(dsn)
 	if err != nil {
@@ -33,7 +33,7 @@ func NewExtractIndex(spiderID, dsn string) (_ *ExtractIndex, err error) {
 		return nil, err
 	}
 
-	return &ExtractIndex{
+	return &SpiderPayloads{
 		db:       db,
 		spiderID: spiderID,
 	}, nil
@@ -61,14 +61,14 @@ func NewEntClient(dsn string) (c *ent.Client, err error) {
 	return ent.Open(driver, dsn)
 }
 
-func (e *ExtractIndex) Save(p *pipe.Payload) error {
+func (e *SpiderPayloads) Save(p *pipe.Payload) error {
 
 	spiderID, err := uuid.Parse(e.spiderID)
 	if err != nil {
 		return err
 	}
 
-	_, err = e.db.ExtractIndex.Create().
+	_, err = e.db.SpiderPayload.Create().
 		SetPayloadID(p.ID).
 		SetSpiderID(spiderID).
 		SetTitle(p.Doc.DOM.Find("title").Text()).
@@ -78,16 +78,16 @@ func (e *ExtractIndex) Save(p *pipe.Payload) error {
 	return err
 }
 
-func (e *ExtractIndex) ByPayloadID(payloadID string) (*ent.ExtractIndex, error) {
-	return e.db.ExtractIndex.Query().
-		Where(extractindex.PayloadID(payloadID)).
+func (e *SpiderPayloads) ByPayloadID(payloadID string) (*ent.SpiderPayload, error) {
+	return e.db.SpiderPayload.Query().
+		Where(spiderpayload.PayloadID(payloadID)).
 		Only(context.Background())
 }
 
-func (e *ExtractIndex) Client() *ent.Client {
+func (e *SpiderPayloads) Client() *ent.Client {
 	return e.db
 }
 
-func (e *ExtractIndex) Close() error {
+func (e *SpiderPayloads) Close() error {
 	return e.db.Close()
 }

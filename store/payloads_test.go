@@ -33,7 +33,7 @@ func TestExtractIndex_Save(t *testing.T) {
 	spiderID := uuid.New().String()
 	payload := tester.TestPayload(t, "../tester/fixtures/news/article-1.html")
 
-	idx, err := store.NewExtractIndex(spiderID, "sqlite3://file:ent?mode=memory&cache=shared&_fk=1")
+	idx, err := store.NewSpiderPayloads(spiderID, "sqlite3://file:ent?mode=memory&cache=shared&_fk=1")
 	require.NoError(t, err)
 	defer idx.Close()
 

@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	// ExtractIndexesColumns holds the columns for the "extract_indexes" table.
-	ExtractIndexesColumns = []*schema.Column{
+	// SpiderPayloadsColumns holds the columns for the "spider_payloads" table.
+	SpiderPayloadsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "spider_id", Type: field.TypeUUID},
 		{Name: "payload_id", Type: field.TypeString},
@@ -17,22 +17,22 @@ var (
 		{Name: "status", Type: field.TypeUint8, Default: 1},
 		{Name: "title", Type: field.TypeString},
 	}
-	// ExtractIndexesTable holds the schema information for the "extract_indexes" table.
-	ExtractIndexesTable = &schema.Table{
-		Name:       "extract_indexes",
-		Columns:    ExtractIndexesColumns,
-		PrimaryKey: []*schema.Column{ExtractIndexesColumns[0]},
+	// SpiderPayloadsTable holds the schema information for the "spider_payloads" table.
+	SpiderPayloadsTable = &schema.Table{
+		Name:       "spider_payloads",
+		Columns:    SpiderPayloadsColumns,
+		PrimaryKey: []*schema.Column{SpiderPayloadsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "extractindex_spider_id_extracted_at",
+				Name:    "spiderpayload_spider_id_extracted_at",
 				Unique:  true,
-				Columns: []*schema.Column{ExtractIndexesColumns[1], ExtractIndexesColumns[3]},
+				Columns: []*schema.Column{SpiderPayloadsColumns[1], SpiderPayloadsColumns[3]},
 			},
 		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		ExtractIndexesTable,
+		SpiderPayloadsTable,
 	}
 )
 

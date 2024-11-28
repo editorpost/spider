@@ -11,8 +11,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/editorpost/spider/store/ent/extractindex"
 	"github.com/editorpost/spider/store/ent/predicate"
+	"github.com/editorpost/spider/store/ent/spiderpayload"
 	"github.com/google/uuid"
 )
 
@@ -25,11 +25,11 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeExtractIndex = "ExtractIndex"
+	TypeSpiderPayload = "SpiderPayload"
 )
 
-// ExtractIndexMutation represents an operation that mutates the ExtractIndex nodes in the graph.
-type ExtractIndexMutation struct {
+// SpiderPayloadMutation represents an operation that mutates the SpiderPayload nodes in the graph.
+type SpiderPayloadMutation struct {
 	config
 	op            Op
 	typ           string
@@ -42,21 +42,21 @@ type ExtractIndexMutation struct {
 	title         *string
 	clearedFields map[string]struct{}
 	done          bool
-	oldValue      func(context.Context) (*ExtractIndex, error)
-	predicates    []predicate.ExtractIndex
+	oldValue      func(context.Context) (*SpiderPayload, error)
+	predicates    []predicate.SpiderPayload
 }
 
-var _ ent.Mutation = (*ExtractIndexMutation)(nil)
+var _ ent.Mutation = (*SpiderPayloadMutation)(nil)
 
-// extractindexOption allows management of the mutation configuration using functional options.
-type extractindexOption func(*ExtractIndexMutation)
+// spiderpayloadOption allows management of the mutation configuration using functional options.
+type spiderpayloadOption func(*SpiderPayloadMutation)
 
-// newExtractIndexMutation creates new mutation for the ExtractIndex entity.
-func newExtractIndexMutation(c config, op Op, opts ...extractindexOption) *ExtractIndexMutation {
-	m := &ExtractIndexMutation{
+// newSpiderPayloadMutation creates new mutation for the SpiderPayload entity.
+func newSpiderPayloadMutation(c config, op Op, opts ...spiderpayloadOption) *SpiderPayloadMutation {
+	m := &SpiderPayloadMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeExtractIndex,
+		typ:           TypeSpiderPayload,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -65,20 +65,20 @@ func newExtractIndexMutation(c config, op Op, opts ...extractindexOption) *Extra
 	return m
 }
 
-// withExtractIndexID sets the ID field of the mutation.
-func withExtractIndexID(id uuid.UUID) extractindexOption {
-	return func(m *ExtractIndexMutation) {
+// withSpiderPayloadID sets the ID field of the mutation.
+func withSpiderPayloadID(id uuid.UUID) spiderpayloadOption {
+	return func(m *SpiderPayloadMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *ExtractIndex
+			value *SpiderPayload
 		)
-		m.oldValue = func(ctx context.Context) (*ExtractIndex, error) {
+		m.oldValue = func(ctx context.Context) (*SpiderPayload, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().ExtractIndex.Get(ctx, id)
+					value, err = m.Client().SpiderPayload.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -87,10 +87,10 @@ func withExtractIndexID(id uuid.UUID) extractindexOption {
 	}
 }
 
-// withExtractIndex sets the old ExtractIndex of the mutation.
-func withExtractIndex(node *ExtractIndex) extractindexOption {
-	return func(m *ExtractIndexMutation) {
-		m.oldValue = func(context.Context) (*ExtractIndex, error) {
+// withSpiderPayload sets the old SpiderPayload of the mutation.
+func withSpiderPayload(node *SpiderPayload) spiderpayloadOption {
+	return func(m *SpiderPayloadMutation) {
+		m.oldValue = func(context.Context) (*SpiderPayload, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -99,7 +99,7 @@ func withExtractIndex(node *ExtractIndex) extractindexOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ExtractIndexMutation) Client() *Client {
+func (m SpiderPayloadMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -107,7 +107,7 @@ func (m ExtractIndexMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m ExtractIndexMutation) Tx() (*Tx, error) {
+func (m SpiderPayloadMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -117,14 +117,14 @@ func (m ExtractIndexMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ExtractIndex entities.
-func (m *ExtractIndexMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of SpiderPayload entities.
+func (m *SpiderPayloadMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ExtractIndexMutation) ID() (id uuid.UUID, exists bool) {
+func (m *SpiderPayloadMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -135,7 +135,7 @@ func (m *ExtractIndexMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ExtractIndexMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *SpiderPayloadMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -144,19 +144,19 @@ func (m *ExtractIndexMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ExtractIndex.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().SpiderPayload.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetSpiderID sets the "spider_id" field.
-func (m *ExtractIndexMutation) SetSpiderID(u uuid.UUID) {
+func (m *SpiderPayloadMutation) SetSpiderID(u uuid.UUID) {
 	m.spider_id = &u
 }
 
 // SpiderID returns the value of the "spider_id" field in the mutation.
-func (m *ExtractIndexMutation) SpiderID() (r uuid.UUID, exists bool) {
+func (m *SpiderPayloadMutation) SpiderID() (r uuid.UUID, exists bool) {
 	v := m.spider_id
 	if v == nil {
 		return
@@ -164,10 +164,10 @@ func (m *ExtractIndexMutation) SpiderID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldSpiderID returns the old "spider_id" field's value of the ExtractIndex entity.
-// If the ExtractIndex object wasn't provided to the builder, the object is fetched from the database.
+// OldSpiderID returns the old "spider_id" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ExtractIndexMutation) OldSpiderID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SpiderPayloadMutation) OldSpiderID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSpiderID is only allowed on UpdateOne operations")
 	}
@@ -182,17 +182,17 @@ func (m *ExtractIndexMutation) OldSpiderID(ctx context.Context) (v uuid.UUID, er
 }
 
 // ResetSpiderID resets all changes to the "spider_id" field.
-func (m *ExtractIndexMutation) ResetSpiderID() {
+func (m *SpiderPayloadMutation) ResetSpiderID() {
 	m.spider_id = nil
 }
 
 // SetPayloadID sets the "payload_id" field.
-func (m *ExtractIndexMutation) SetPayloadID(s string) {
+func (m *SpiderPayloadMutation) SetPayloadID(s string) {
 	m.payload_id = &s
 }
 
 // PayloadID returns the value of the "payload_id" field in the mutation.
-func (m *ExtractIndexMutation) PayloadID() (r string, exists bool) {
+func (m *SpiderPayloadMutation) PayloadID() (r string, exists bool) {
 	v := m.payload_id
 	if v == nil {
 		return
@@ -200,10 +200,10 @@ func (m *ExtractIndexMutation) PayloadID() (r string, exists bool) {
 	return *v, true
 }
 
-// OldPayloadID returns the old "payload_id" field's value of the ExtractIndex entity.
-// If the ExtractIndex object wasn't provided to the builder, the object is fetched from the database.
+// OldPayloadID returns the old "payload_id" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ExtractIndexMutation) OldPayloadID(ctx context.Context) (v string, err error) {
+func (m *SpiderPayloadMutation) OldPayloadID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPayloadID is only allowed on UpdateOne operations")
 	}
@@ -218,17 +218,17 @@ func (m *ExtractIndexMutation) OldPayloadID(ctx context.Context) (v string, err 
 }
 
 // ResetPayloadID resets all changes to the "payload_id" field.
-func (m *ExtractIndexMutation) ResetPayloadID() {
+func (m *SpiderPayloadMutation) ResetPayloadID() {
 	m.payload_id = nil
 }
 
 // SetExtractedAt sets the "extracted_at" field.
-func (m *ExtractIndexMutation) SetExtractedAt(t time.Time) {
+func (m *SpiderPayloadMutation) SetExtractedAt(t time.Time) {
 	m.extracted_at = &t
 }
 
 // ExtractedAt returns the value of the "extracted_at" field in the mutation.
-func (m *ExtractIndexMutation) ExtractedAt() (r time.Time, exists bool) {
+func (m *SpiderPayloadMutation) ExtractedAt() (r time.Time, exists bool) {
 	v := m.extracted_at
 	if v == nil {
 		return
@@ -236,10 +236,10 @@ func (m *ExtractIndexMutation) ExtractedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldExtractedAt returns the old "extracted_at" field's value of the ExtractIndex entity.
-// If the ExtractIndex object wasn't provided to the builder, the object is fetched from the database.
+// OldExtractedAt returns the old "extracted_at" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ExtractIndexMutation) OldExtractedAt(ctx context.Context) (v time.Time, err error) {
+func (m *SpiderPayloadMutation) OldExtractedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldExtractedAt is only allowed on UpdateOne operations")
 	}
@@ -254,18 +254,18 @@ func (m *ExtractIndexMutation) OldExtractedAt(ctx context.Context) (v time.Time,
 }
 
 // ResetExtractedAt resets all changes to the "extracted_at" field.
-func (m *ExtractIndexMutation) ResetExtractedAt() {
+func (m *SpiderPayloadMutation) ResetExtractedAt() {
 	m.extracted_at = nil
 }
 
 // SetStatus sets the "status" field.
-func (m *ExtractIndexMutation) SetStatus(u uint8) {
+func (m *SpiderPayloadMutation) SetStatus(u uint8) {
 	m.status = &u
 	m.addstatus = nil
 }
 
 // Status returns the value of the "status" field in the mutation.
-func (m *ExtractIndexMutation) Status() (r uint8, exists bool) {
+func (m *SpiderPayloadMutation) Status() (r uint8, exists bool) {
 	v := m.status
 	if v == nil {
 		return
@@ -273,10 +273,10 @@ func (m *ExtractIndexMutation) Status() (r uint8, exists bool) {
 	return *v, true
 }
 
-// OldStatus returns the old "status" field's value of the ExtractIndex entity.
-// If the ExtractIndex object wasn't provided to the builder, the object is fetched from the database.
+// OldStatus returns the old "status" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ExtractIndexMutation) OldStatus(ctx context.Context) (v uint8, err error) {
+func (m *SpiderPayloadMutation) OldStatus(ctx context.Context) (v uint8, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
@@ -291,7 +291,7 @@ func (m *ExtractIndexMutation) OldStatus(ctx context.Context) (v uint8, err erro
 }
 
 // AddStatus adds u to the "status" field.
-func (m *ExtractIndexMutation) AddStatus(u int8) {
+func (m *SpiderPayloadMutation) AddStatus(u int8) {
 	if m.addstatus != nil {
 		*m.addstatus += u
 	} else {
@@ -300,7 +300,7 @@ func (m *ExtractIndexMutation) AddStatus(u int8) {
 }
 
 // AddedStatus returns the value that was added to the "status" field in this mutation.
-func (m *ExtractIndexMutation) AddedStatus() (r int8, exists bool) {
+func (m *SpiderPayloadMutation) AddedStatus() (r int8, exists bool) {
 	v := m.addstatus
 	if v == nil {
 		return
@@ -309,18 +309,18 @@ func (m *ExtractIndexMutation) AddedStatus() (r int8, exists bool) {
 }
 
 // ResetStatus resets all changes to the "status" field.
-func (m *ExtractIndexMutation) ResetStatus() {
+func (m *SpiderPayloadMutation) ResetStatus() {
 	m.status = nil
 	m.addstatus = nil
 }
 
 // SetTitle sets the "title" field.
-func (m *ExtractIndexMutation) SetTitle(s string) {
+func (m *SpiderPayloadMutation) SetTitle(s string) {
 	m.title = &s
 }
 
 // Title returns the value of the "title" field in the mutation.
-func (m *ExtractIndexMutation) Title() (r string, exists bool) {
+func (m *SpiderPayloadMutation) Title() (r string, exists bool) {
 	v := m.title
 	if v == nil {
 		return
@@ -328,10 +328,10 @@ func (m *ExtractIndexMutation) Title() (r string, exists bool) {
 	return *v, true
 }
 
-// OldTitle returns the old "title" field's value of the ExtractIndex entity.
-// If the ExtractIndex object wasn't provided to the builder, the object is fetched from the database.
+// OldTitle returns the old "title" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ExtractIndexMutation) OldTitle(ctx context.Context) (v string, err error) {
+func (m *SpiderPayloadMutation) OldTitle(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
 	}
@@ -346,19 +346,19 @@ func (m *ExtractIndexMutation) OldTitle(ctx context.Context) (v string, err erro
 }
 
 // ResetTitle resets all changes to the "title" field.
-func (m *ExtractIndexMutation) ResetTitle() {
+func (m *SpiderPayloadMutation) ResetTitle() {
 	m.title = nil
 }
 
-// Where appends a list predicates to the ExtractIndexMutation builder.
-func (m *ExtractIndexMutation) Where(ps ...predicate.ExtractIndex) {
+// Where appends a list predicates to the SpiderPayloadMutation builder.
+func (m *SpiderPayloadMutation) Where(ps ...predicate.SpiderPayload) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the ExtractIndexMutation builder. Using this method,
+// WhereP appends storage-level predicates to the SpiderPayloadMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ExtractIndexMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ExtractIndex, len(ps))
+func (m *SpiderPayloadMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.SpiderPayload, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -366,39 +366,39 @@ func (m *ExtractIndexMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *ExtractIndexMutation) Op() Op {
+func (m *SpiderPayloadMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *ExtractIndexMutation) SetOp(op Op) {
+func (m *SpiderPayloadMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (ExtractIndex).
-func (m *ExtractIndexMutation) Type() string {
+// Type returns the node type of this mutation (SpiderPayload).
+func (m *SpiderPayloadMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *ExtractIndexMutation) Fields() []string {
+func (m *SpiderPayloadMutation) Fields() []string {
 	fields := make([]string, 0, 5)
 	if m.spider_id != nil {
-		fields = append(fields, extractindex.FieldSpiderID)
+		fields = append(fields, spiderpayload.FieldSpiderID)
 	}
 	if m.payload_id != nil {
-		fields = append(fields, extractindex.FieldPayloadID)
+		fields = append(fields, spiderpayload.FieldPayloadID)
 	}
 	if m.extracted_at != nil {
-		fields = append(fields, extractindex.FieldExtractedAt)
+		fields = append(fields, spiderpayload.FieldExtractedAt)
 	}
 	if m.status != nil {
-		fields = append(fields, extractindex.FieldStatus)
+		fields = append(fields, spiderpayload.FieldStatus)
 	}
 	if m.title != nil {
-		fields = append(fields, extractindex.FieldTitle)
+		fields = append(fields, spiderpayload.FieldTitle)
 	}
 	return fields
 }
@@ -406,17 +406,17 @@ func (m *ExtractIndexMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *ExtractIndexMutation) Field(name string) (ent.Value, bool) {
+func (m *SpiderPayloadMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case extractindex.FieldSpiderID:
+	case spiderpayload.FieldSpiderID:
 		return m.SpiderID()
-	case extractindex.FieldPayloadID:
+	case spiderpayload.FieldPayloadID:
 		return m.PayloadID()
-	case extractindex.FieldExtractedAt:
+	case spiderpayload.FieldExtractedAt:
 		return m.ExtractedAt()
-	case extractindex.FieldStatus:
+	case spiderpayload.FieldStatus:
 		return m.Status()
-	case extractindex.FieldTitle:
+	case spiderpayload.FieldTitle:
 		return m.Title()
 	}
 	return nil, false
@@ -425,56 +425,56 @@ func (m *ExtractIndexMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *ExtractIndexMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *SpiderPayloadMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case extractindex.FieldSpiderID:
+	case spiderpayload.FieldSpiderID:
 		return m.OldSpiderID(ctx)
-	case extractindex.FieldPayloadID:
+	case spiderpayload.FieldPayloadID:
 		return m.OldPayloadID(ctx)
-	case extractindex.FieldExtractedAt:
+	case spiderpayload.FieldExtractedAt:
 		return m.OldExtractedAt(ctx)
-	case extractindex.FieldStatus:
+	case spiderpayload.FieldStatus:
 		return m.OldStatus(ctx)
-	case extractindex.FieldTitle:
+	case spiderpayload.FieldTitle:
 		return m.OldTitle(ctx)
 	}
-	return nil, fmt.Errorf("unknown ExtractIndex field %s", name)
+	return nil, fmt.Errorf("unknown SpiderPayload field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ExtractIndexMutation) SetField(name string, value ent.Value) error {
+func (m *SpiderPayloadMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case extractindex.FieldSpiderID:
+	case spiderpayload.FieldSpiderID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSpiderID(v)
 		return nil
-	case extractindex.FieldPayloadID:
+	case spiderpayload.FieldPayloadID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPayloadID(v)
 		return nil
-	case extractindex.FieldExtractedAt:
+	case spiderpayload.FieldExtractedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetExtractedAt(v)
 		return nil
-	case extractindex.FieldStatus:
+	case spiderpayload.FieldStatus:
 		v, ok := value.(uint8)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
 		return nil
-	case extractindex.FieldTitle:
+	case spiderpayload.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -482,15 +482,15 @@ func (m *ExtractIndexMutation) SetField(name string, value ent.Value) error {
 		m.SetTitle(v)
 		return nil
 	}
-	return fmt.Errorf("unknown ExtractIndex field %s", name)
+	return fmt.Errorf("unknown SpiderPayload field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *ExtractIndexMutation) AddedFields() []string {
+func (m *SpiderPayloadMutation) AddedFields() []string {
 	var fields []string
 	if m.addstatus != nil {
-		fields = append(fields, extractindex.FieldStatus)
+		fields = append(fields, spiderpayload.FieldStatus)
 	}
 	return fields
 }
@@ -498,9 +498,9 @@ func (m *ExtractIndexMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *ExtractIndexMutation) AddedField(name string) (ent.Value, bool) {
+func (m *SpiderPayloadMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case extractindex.FieldStatus:
+	case spiderpayload.FieldStatus:
 		return m.AddedStatus()
 	}
 	return nil, false
@@ -509,9 +509,9 @@ func (m *ExtractIndexMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ExtractIndexMutation) AddField(name string, value ent.Value) error {
+func (m *SpiderPayloadMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case extractindex.FieldStatus:
+	case spiderpayload.FieldStatus:
 		v, ok := value.(int8)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -519,95 +519,95 @@ func (m *ExtractIndexMutation) AddField(name string, value ent.Value) error {
 		m.AddStatus(v)
 		return nil
 	}
-	return fmt.Errorf("unknown ExtractIndex numeric field %s", name)
+	return fmt.Errorf("unknown SpiderPayload numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *ExtractIndexMutation) ClearedFields() []string {
+func (m *SpiderPayloadMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *ExtractIndexMutation) FieldCleared(name string) bool {
+func (m *SpiderPayloadMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *ExtractIndexMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown ExtractIndex nullable field %s", name)
+func (m *SpiderPayloadMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown SpiderPayload nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *ExtractIndexMutation) ResetField(name string) error {
+func (m *SpiderPayloadMutation) ResetField(name string) error {
 	switch name {
-	case extractindex.FieldSpiderID:
+	case spiderpayload.FieldSpiderID:
 		m.ResetSpiderID()
 		return nil
-	case extractindex.FieldPayloadID:
+	case spiderpayload.FieldPayloadID:
 		m.ResetPayloadID()
 		return nil
-	case extractindex.FieldExtractedAt:
+	case spiderpayload.FieldExtractedAt:
 		m.ResetExtractedAt()
 		return nil
-	case extractindex.FieldStatus:
+	case spiderpayload.FieldStatus:
 		m.ResetStatus()
 		return nil
-	case extractindex.FieldTitle:
+	case spiderpayload.FieldTitle:
 		m.ResetTitle()
 		return nil
 	}
-	return fmt.Errorf("unknown ExtractIndex field %s", name)
+	return fmt.Errorf("unknown SpiderPayload field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ExtractIndexMutation) AddedEdges() []string {
+func (m *SpiderPayloadMutation) AddedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *ExtractIndexMutation) AddedIDs(name string) []ent.Value {
+func (m *SpiderPayloadMutation) AddedIDs(name string) []ent.Value {
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ExtractIndexMutation) RemovedEdges() []string {
+func (m *SpiderPayloadMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *ExtractIndexMutation) RemovedIDs(name string) []ent.Value {
+func (m *SpiderPayloadMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ExtractIndexMutation) ClearedEdges() []string {
+func (m *SpiderPayloadMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *ExtractIndexMutation) EdgeCleared(name string) bool {
+func (m *SpiderPayloadMutation) EdgeCleared(name string) bool {
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *ExtractIndexMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown ExtractIndex unique edge %s", name)
+func (m *SpiderPayloadMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown SpiderPayload unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *ExtractIndexMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown ExtractIndex edge %s", name)
+func (m *SpiderPayloadMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown SpiderPayload edge %s", name)
 }

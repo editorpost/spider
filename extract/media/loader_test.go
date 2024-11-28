@@ -15,7 +15,7 @@ var (
 )
 
 func DataExpected() []byte {
-	return make([]byte, 1126) // 1.1KB = 1126 bytes
+	return make([]byte, 1024*15) // 15KB
 }
 
 func DataAssert(t *testing.T, got []byte) {

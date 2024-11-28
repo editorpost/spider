@@ -9,16 +9,16 @@ import (
 	"github.com/editorpost/spider/store/ent"
 )
 
-// The ExtractIndexFunc type is an adapter to allow the use of ordinary
-// function as ExtractIndex mutator.
-type ExtractIndexFunc func(context.Context, *ent.ExtractIndexMutation) (ent.Value, error)
+// The SpiderPayloadFunc type is an adapter to allow the use of ordinary
+// function as SpiderPayload mutator.
+type SpiderPayloadFunc func(context.Context, *ent.SpiderPayloadMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f ExtractIndexFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ExtractIndexMutation); ok {
+func (f SpiderPayloadFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SpiderPayloadMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ExtractIndexMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SpiderPayloadMutation", m)
 }
 
 // Condition is a hook condition function.

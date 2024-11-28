@@ -9,12 +9,12 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/editorpost/spider/store/ent/extractindex"
+	"github.com/editorpost/spider/store/ent/spiderpayload"
 	"github.com/google/uuid"
 )
 
-// ExtractIndex is the model entity for the ExtractIndex schema.
-type ExtractIndex struct {
+// SpiderPayload is the model entity for the SpiderPayload schema.
+type SpiderPayload struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -32,17 +32,17 @@ type ExtractIndex struct {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*ExtractIndex) scanValues(columns []string) ([]any, error) {
+func (*SpiderPayload) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case extractindex.FieldStatus:
+		case spiderpayload.FieldStatus:
 			values[i] = new(sql.NullInt64)
-		case extractindex.FieldPayloadID, extractindex.FieldTitle:
+		case spiderpayload.FieldPayloadID, spiderpayload.FieldTitle:
 			values[i] = new(sql.NullString)
-		case extractindex.FieldExtractedAt:
+		case spiderpayload.FieldExtractedAt:
 			values[i] = new(sql.NullTime)
-		case extractindex.FieldID, extractindex.FieldSpiderID:
+		case spiderpayload.FieldID, spiderpayload.FieldSpiderID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -52,102 +52,102 @@ func (*ExtractIndex) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the ExtractIndex fields.
-func (ei *ExtractIndex) assignValues(columns []string, values []any) error {
+// to the SpiderPayload fields.
+func (sp *SpiderPayload) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case extractindex.FieldID:
+		case spiderpayload.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ei.ID = *value
+				sp.ID = *value
 			}
-		case extractindex.FieldSpiderID:
+		case spiderpayload.FieldSpiderID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field spider_id", values[i])
 			} else if value != nil {
-				ei.SpiderID = *value
+				sp.SpiderID = *value
 			}
-		case extractindex.FieldPayloadID:
+		case spiderpayload.FieldPayloadID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field payload_id", values[i])
 			} else if value.Valid {
-				ei.PayloadID = value.String
+				sp.PayloadID = value.String
 			}
-		case extractindex.FieldExtractedAt:
+		case spiderpayload.FieldExtractedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field extracted_at", values[i])
 			} else if value.Valid {
-				ei.ExtractedAt = value.Time
+				sp.ExtractedAt = value.Time
 			}
-		case extractindex.FieldStatus:
+		case spiderpayload.FieldStatus:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				ei.Status = uint8(value.Int64)
+				sp.Status = uint8(value.Int64)
 			}
-		case extractindex.FieldTitle:
+		case spiderpayload.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				ei.Title = value.String
+				sp.Title = value.String
 			}
 		default:
-			ei.selectValues.Set(columns[i], values[i])
+			sp.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the ExtractIndex.
+// Value returns the ent.Value that was dynamically selected and assigned to the SpiderPayload.
 // This includes values selected through modifiers, order, etc.
-func (ei *ExtractIndex) Value(name string) (ent.Value, error) {
-	return ei.selectValues.Get(name)
+func (sp *SpiderPayload) Value(name string) (ent.Value, error) {
+	return sp.selectValues.Get(name)
 }
 
-// Update returns a builder for updating this ExtractIndex.
-// Note that you need to call ExtractIndex.Unwrap() before calling this method if this ExtractIndex
+// Update returns a builder for updating this SpiderPayload.
+// Note that you need to call SpiderPayload.Unwrap() before calling this method if this SpiderPayload
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ei *ExtractIndex) Update() *ExtractIndexUpdateOne {
-	return NewExtractIndexClient(ei.config).UpdateOne(ei)
+func (sp *SpiderPayload) Update() *SpiderPayloadUpdateOne {
+	return NewSpiderPayloadClient(sp.config).UpdateOne(sp)
 }
 
-// Unwrap unwraps the ExtractIndex entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the SpiderPayload entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ei *ExtractIndex) Unwrap() *ExtractIndex {
-	_tx, ok := ei.config.driver.(*txDriver)
+func (sp *SpiderPayload) Unwrap() *SpiderPayload {
+	_tx, ok := sp.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: ExtractIndex is not a transactional entity")
+		panic("ent: SpiderPayload is not a transactional entity")
 	}
-	ei.config.driver = _tx.drv
-	return ei
+	sp.config.driver = _tx.drv
+	return sp
 }
 
 // String implements the fmt.Stringer.
-func (ei *ExtractIndex) String() string {
+func (sp *SpiderPayload) String() string {
 	var builder strings.Builder
-	builder.WriteString("ExtractIndex(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ei.ID))
+	builder.WriteString("SpiderPayload(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", sp.ID))
 	builder.WriteString("spider_id=")
-	builder.WriteString(fmt.Sprintf("%v", ei.SpiderID))
+	builder.WriteString(fmt.Sprintf("%v", sp.SpiderID))
 	builder.WriteString(", ")
 	builder.WriteString("payload_id=")
-	builder.WriteString(ei.PayloadID)
+	builder.WriteString(sp.PayloadID)
 	builder.WriteString(", ")
 	builder.WriteString("extracted_at=")
-	builder.WriteString(ei.ExtractedAt.Format(time.ANSIC))
+	builder.WriteString(sp.ExtractedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", ei.Status))
+	builder.WriteString(fmt.Sprintf("%v", sp.Status))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(ei.Title)
+	builder.WriteString(sp.Title)
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// ExtractIndexes is a parsable slice of ExtractIndex.
-type ExtractIndexes []*ExtractIndex
+// SpiderPayloads is a parsable slice of SpiderPayload.
+type SpiderPayloads []*SpiderPayload
