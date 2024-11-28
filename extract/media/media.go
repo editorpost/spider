@@ -62,7 +62,7 @@ func (m *Media) Upload(payload *pipe.Payload) error {
 
 		if err := m.loader.Download(claim.Src, dst); err != nil {
 
-			if !errors.Is(err, ErrMediaSkipLessThan) {
+			if !errors.Is(err, http.ErrShortBody) {
 				slog.Info("skip small image", slog.String("claim.Src", claim.Src))
 				continue
 			}

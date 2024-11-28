@@ -11,8 +11,6 @@ import (
 	"sync"
 )
 
-var ErrMediaSkipLessThan = errors.New("media content length is too small")
-
 type (
 	// Store media data to destinations like S3.
 	Store interface {
@@ -36,7 +34,7 @@ func NewLoader(store Store) *Loader {
 		},
 		store:        store,
 		client:       &http.Client{},
-		skipLessThan: 1024,
+		skipLessThan: 1024 * 15, // 15KB
 	}
 }
 
@@ -47,6 +45,7 @@ func (dl *Loader) SetClient(client *http.Client) {
 }
 
 // Download fetches the media from the specified Endpoint and uploads it to the store.
+// Return http.ErrShortBody if the media is less than defined size in bytes.
 func (dl *Loader) Download(src, dst string) error {
 
 	// download
@@ -58,7 +57,7 @@ func (dl *Loader) Download(src, dst string) error {
 
 	// Skip small images, less than 1KB.
 	if buf.Len() < dl.skipLessThan {
-		return ErrMediaSkipLessThan
+		return http.ErrShortBody
 	}
 
 	// upload the data
