@@ -83,7 +83,7 @@ func (dl *Loader) Fetch(imageURL string) (*bytes.Buffer, error) {
 
 	// Check if the response status is OK.
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("failed to download image: " + resp.Status)
+		return nil, http.ErrMissingFile
 	}
 
 	// Get a buffer from the pool.

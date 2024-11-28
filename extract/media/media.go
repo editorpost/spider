@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/editorpost/spider/extract/pipe"
 	"log/slog"
+	"net/http"
 	"strings"
 )
 
@@ -62,11 +63,17 @@ func (m *Media) Upload(payload *pipe.Payload) error {
 		if err := m.loader.Download(claim.Src, dst); err != nil {
 
 			if !errors.Is(err, ErrMediaSkipLessThan) {
-				slog.Error("failed to download media", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
+				slog.Info("skip small image", slog.String("claim.Src", claim.Src))
+				continue
 			}
 
-			// skip to next claim
-			continue
+			if errors.Is(err, http.ErrMissingFile) {
+				// skip to next claim
+				slog.Info("broken image link", slog.String("claim.Src", claim.Src))
+				continue
+			}
+
+			slog.Warn("failed to download media", slog.String("claim.Src", claim.Src), slog.String("err", err.Error()))
 		}
 
 		claims.Done(claim.Dst)
