@@ -18,10 +18,12 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("failed opening connection to sqlite: %v", err)
 	}
-	defer client.Close()
+	defer func(client *ent.Client) {
+		_ = client.Close()
+	}(client)
 
 	// Run the auto migration tool.
-	if err := client.Schema.Create(context.Background()); err != nil {
+	if err = client.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
@@ -36,7 +38,9 @@ func TestSpiderPayloads_Save(t *testing.T) {
 
 	idx, err := store.NewSpiderPayloads(spiderID, "sqlite3://file:ent?mode=memory&cache=shared&_fk=1", deploy.Paths)
 	require.NoError(t, err)
-	defer idx.Close()
+	defer func(idx *store.SpiderPayloads) {
+		_ = idx.Close()
+	}(idx)
 
 	require.NoError(t, idx.Save(payload))
 
