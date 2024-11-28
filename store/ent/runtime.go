@@ -25,7 +25,7 @@ func init() {
 	// spiderpayload.DefaultExtractedAt holds the default value on creation for the extracted_at field.
 	spiderpayload.DefaultExtractedAt = spiderpayloadDescExtractedAt.Default.(func() time.Time)
 	// spiderpayloadDescStatus is the schema descriptor for status field.
-	spiderpayloadDescStatus := spiderpayloadFields[4].Descriptor()
+	spiderpayloadDescStatus := spiderpayloadFields[6].Descriptor()
 	// spiderpayload.DefaultStatus holds the default value on creation for the status field.
 	spiderpayload.DefaultStatus = spiderpayloadDescStatus.Default.(uint8)
 	// spiderpayloadDescID is the schema descriptor for id field.

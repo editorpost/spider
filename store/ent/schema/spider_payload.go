@@ -20,6 +20,8 @@ func (SpiderPayload) Fields() []ent.Field {
 		field.UUID("spider_id", uuid.UUID{}),
 		field.String("payload_id").NotEmpty(),
 		field.Time("extracted_at").Default(time.Now),
+		field.String("url").Optional(),
+		field.String("path").Optional(),
 		field.Uint8("status").Default(1),
 		field.String("title"),
 	}

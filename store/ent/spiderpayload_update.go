@@ -71,6 +71,46 @@ func (spu *SpiderPayloadUpdate) SetNillableExtractedAt(t *time.Time) *SpiderPayl
 	return spu
 }
 
+// SetURL sets the "url" field.
+func (spu *SpiderPayloadUpdate) SetURL(s string) *SpiderPayloadUpdate {
+	spu.mutation.SetURL(s)
+	return spu
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (spu *SpiderPayloadUpdate) SetNillableURL(s *string) *SpiderPayloadUpdate {
+	if s != nil {
+		spu.SetURL(*s)
+	}
+	return spu
+}
+
+// ClearURL clears the value of the "url" field.
+func (spu *SpiderPayloadUpdate) ClearURL() *SpiderPayloadUpdate {
+	spu.mutation.ClearURL()
+	return spu
+}
+
+// SetPath sets the "path" field.
+func (spu *SpiderPayloadUpdate) SetPath(s string) *SpiderPayloadUpdate {
+	spu.mutation.SetPath(s)
+	return spu
+}
+
+// SetNillablePath sets the "path" field if the given value is not nil.
+func (spu *SpiderPayloadUpdate) SetNillablePath(s *string) *SpiderPayloadUpdate {
+	if s != nil {
+		spu.SetPath(*s)
+	}
+	return spu
+}
+
+// ClearPath clears the value of the "path" field.
+func (spu *SpiderPayloadUpdate) ClearPath() *SpiderPayloadUpdate {
+	spu.mutation.ClearPath()
+	return spu
+}
+
 // SetStatus sets the "status" field.
 func (spu *SpiderPayloadUpdate) SetStatus(u uint8) *SpiderPayloadUpdate {
 	spu.mutation.ResetStatus()
@@ -169,6 +209,18 @@ func (spu *SpiderPayloadUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := spu.mutation.ExtractedAt(); ok {
 		_spec.SetField(spiderpayload.FieldExtractedAt, field.TypeTime, value)
 	}
+	if value, ok := spu.mutation.URL(); ok {
+		_spec.SetField(spiderpayload.FieldURL, field.TypeString, value)
+	}
+	if spu.mutation.URLCleared() {
+		_spec.ClearField(spiderpayload.FieldURL, field.TypeString)
+	}
+	if value, ok := spu.mutation.Path(); ok {
+		_spec.SetField(spiderpayload.FieldPath, field.TypeString, value)
+	}
+	if spu.mutation.PathCleared() {
+		_spec.ClearField(spiderpayload.FieldPath, field.TypeString)
+	}
 	if value, ok := spu.mutation.Status(); ok {
 		_spec.SetField(spiderpayload.FieldStatus, field.TypeUint8, value)
 	}
@@ -237,6 +289,46 @@ func (spuo *SpiderPayloadUpdateOne) SetNillableExtractedAt(t *time.Time) *Spider
 	if t != nil {
 		spuo.SetExtractedAt(*t)
 	}
+	return spuo
+}
+
+// SetURL sets the "url" field.
+func (spuo *SpiderPayloadUpdateOne) SetURL(s string) *SpiderPayloadUpdateOne {
+	spuo.mutation.SetURL(s)
+	return spuo
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (spuo *SpiderPayloadUpdateOne) SetNillableURL(s *string) *SpiderPayloadUpdateOne {
+	if s != nil {
+		spuo.SetURL(*s)
+	}
+	return spuo
+}
+
+// ClearURL clears the value of the "url" field.
+func (spuo *SpiderPayloadUpdateOne) ClearURL() *SpiderPayloadUpdateOne {
+	spuo.mutation.ClearURL()
+	return spuo
+}
+
+// SetPath sets the "path" field.
+func (spuo *SpiderPayloadUpdateOne) SetPath(s string) *SpiderPayloadUpdateOne {
+	spuo.mutation.SetPath(s)
+	return spuo
+}
+
+// SetNillablePath sets the "path" field if the given value is not nil.
+func (spuo *SpiderPayloadUpdateOne) SetNillablePath(s *string) *SpiderPayloadUpdateOne {
+	if s != nil {
+		spuo.SetPath(*s)
+	}
+	return spuo
+}
+
+// ClearPath clears the value of the "path" field.
+func (spuo *SpiderPayloadUpdateOne) ClearPath() *SpiderPayloadUpdateOne {
+	spuo.mutation.ClearPath()
 	return spuo
 }
 
@@ -367,6 +459,18 @@ func (spuo *SpiderPayloadUpdateOne) sqlSave(ctx context.Context) (_node *SpiderP
 	}
 	if value, ok := spuo.mutation.ExtractedAt(); ok {
 		_spec.SetField(spiderpayload.FieldExtractedAt, field.TypeTime, value)
+	}
+	if value, ok := spuo.mutation.URL(); ok {
+		_spec.SetField(spiderpayload.FieldURL, field.TypeString, value)
+	}
+	if spuo.mutation.URLCleared() {
+		_spec.ClearField(spiderpayload.FieldURL, field.TypeString)
+	}
+	if value, ok := spuo.mutation.Path(); ok {
+		_spec.SetField(spiderpayload.FieldPath, field.TypeString, value)
+	}
+	if spuo.mutation.PathCleared() {
+		_spec.ClearField(spiderpayload.FieldPath, field.TypeString)
 	}
 	if value, ok := spuo.mutation.Status(); ok {
 		_spec.SetField(spiderpayload.FieldStatus, field.TypeUint8, value)

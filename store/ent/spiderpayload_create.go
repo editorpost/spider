@@ -47,6 +47,34 @@ func (spc *SpiderPayloadCreate) SetNillableExtractedAt(t *time.Time) *SpiderPayl
 	return spc
 }
 
+// SetURL sets the "url" field.
+func (spc *SpiderPayloadCreate) SetURL(s string) *SpiderPayloadCreate {
+	spc.mutation.SetURL(s)
+	return spc
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (spc *SpiderPayloadCreate) SetNillableURL(s *string) *SpiderPayloadCreate {
+	if s != nil {
+		spc.SetURL(*s)
+	}
+	return spc
+}
+
+// SetPath sets the "path" field.
+func (spc *SpiderPayloadCreate) SetPath(s string) *SpiderPayloadCreate {
+	spc.mutation.SetPath(s)
+	return spc
+}
+
+// SetNillablePath sets the "path" field if the given value is not nil.
+func (spc *SpiderPayloadCreate) SetNillablePath(s *string) *SpiderPayloadCreate {
+	if s != nil {
+		spc.SetPath(*s)
+	}
+	return spc
+}
+
 // SetStatus sets the "status" field.
 func (spc *SpiderPayloadCreate) SetStatus(u uint8) *SpiderPayloadCreate {
 	spc.mutation.SetStatus(u)
@@ -198,6 +226,14 @@ func (spc *SpiderPayloadCreate) createSpec() (*SpiderPayload, *sqlgraph.CreateSp
 	if value, ok := spc.mutation.ExtractedAt(); ok {
 		_spec.SetField(spiderpayload.FieldExtractedAt, field.TypeTime, value)
 		_node.ExtractedAt = value
+	}
+	if value, ok := spc.mutation.URL(); ok {
+		_spec.SetField(spiderpayload.FieldURL, field.TypeString, value)
+		_node.URL = value
+	}
+	if value, ok := spc.mutation.Path(); ok {
+		_spec.SetField(spiderpayload.FieldPath, field.TypeString, value)
+		_node.Path = value
 	}
 	if value, ok := spc.mutation.Status(); ok {
 		_spec.SetField(spiderpayload.FieldStatus, field.TypeUint8, value)

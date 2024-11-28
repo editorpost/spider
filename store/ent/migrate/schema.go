@@ -14,6 +14,8 @@ var (
 		{Name: "spider_id", Type: field.TypeUUID},
 		{Name: "payload_id", Type: field.TypeString},
 		{Name: "extracted_at", Type: field.TypeTime},
+		{Name: "url", Type: field.TypeString, Nullable: true},
+		{Name: "path", Type: field.TypeString, Nullable: true},
 		{Name: "status", Type: field.TypeUint8, Default: 1},
 		{Name: "title", Type: field.TypeString},
 	}

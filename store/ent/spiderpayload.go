@@ -24,6 +24,10 @@ type SpiderPayload struct {
 	PayloadID string `json:"payload_id,omitempty"`
 	// ExtractedAt holds the value of the "extracted_at" field.
 	ExtractedAt time.Time `json:"extracted_at,omitempty"`
+	// URL holds the value of the "url" field.
+	URL string `json:"url,omitempty"`
+	// Path holds the value of the "path" field.
+	Path string `json:"path,omitempty"`
 	// Status holds the value of the "status" field.
 	Status uint8 `json:"status,omitempty"`
 	// Title holds the value of the "title" field.
@@ -38,7 +42,7 @@ func (*SpiderPayload) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case spiderpayload.FieldStatus:
 			values[i] = new(sql.NullInt64)
-		case spiderpayload.FieldPayloadID, spiderpayload.FieldTitle:
+		case spiderpayload.FieldPayloadID, spiderpayload.FieldURL, spiderpayload.FieldPath, spiderpayload.FieldTitle:
 			values[i] = new(sql.NullString)
 		case spiderpayload.FieldExtractedAt:
 			values[i] = new(sql.NullTime)
@@ -82,6 +86,18 @@ func (sp *SpiderPayload) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field extracted_at", values[i])
 			} else if value.Valid {
 				sp.ExtractedAt = value.Time
+			}
+		case spiderpayload.FieldURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field url", values[i])
+			} else if value.Valid {
+				sp.URL = value.String
+			}
+		case spiderpayload.FieldPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field path", values[i])
+			} else if value.Valid {
+				sp.Path = value.String
 			}
 		case spiderpayload.FieldStatus:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -139,6 +155,12 @@ func (sp *SpiderPayload) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("extracted_at=")
 	builder.WriteString(sp.ExtractedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("url=")
+	builder.WriteString(sp.URL)
+	builder.WriteString(", ")
+	builder.WriteString("path=")
+	builder.WriteString(sp.Path)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", sp.Status))

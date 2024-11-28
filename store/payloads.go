@@ -17,11 +17,16 @@ const (
 type (
 	SpiderPayloads struct {
 		db       *ent.Client
+		paths    PayloadPaths
 		spiderID string
+	}
+
+	PayloadPaths interface {
+		PayloadFile(spiderID, payloadID string) string
 	}
 )
 
-func NewSpiderPayloads(spiderID, dsn string) (_ *SpiderPayloads, err error) {
+func NewSpiderPayloads(spiderID, dsn string, paths PayloadPaths) (_ *SpiderPayloads, err error) {
 
 	db, err := NewEntClient(dsn)
 	if err != nil {
@@ -35,6 +40,7 @@ func NewSpiderPayloads(spiderID, dsn string) (_ *SpiderPayloads, err error) {
 
 	return &SpiderPayloads{
 		db:       db,
+		paths:    paths,
 		spiderID: spiderID,
 	}, nil
 }
@@ -72,6 +78,8 @@ func (e *SpiderPayloads) Save(p *pipe.Payload) error {
 		SetPayloadID(p.ID).
 		SetSpiderID(spiderID).
 		SetTitle(p.Doc.DOM.Find("title").Text()).
+		SetURL(p.URL.String()).
+		SetPath(e.paths.PayloadFile(e.spiderID, p.ID)).
 		SetStatus(ExtractIndexStatusPending).
 		Save(context.Background())
 

@@ -37,6 +37,8 @@ type SpiderPayloadMutation struct {
 	spider_id     *uuid.UUID
 	payload_id    *string
 	extracted_at  *time.Time
+	url           *string
+	_path         *string
 	status        *uint8
 	addstatus     *int8
 	title         *string
@@ -258,6 +260,104 @@ func (m *SpiderPayloadMutation) ResetExtractedAt() {
 	m.extracted_at = nil
 }
 
+// SetURL sets the "url" field.
+func (m *SpiderPayloadMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *SpiderPayloadMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SpiderPayloadMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ClearURL clears the value of the "url" field.
+func (m *SpiderPayloadMutation) ClearURL() {
+	m.url = nil
+	m.clearedFields[spiderpayload.FieldURL] = struct{}{}
+}
+
+// URLCleared returns if the "url" field was cleared in this mutation.
+func (m *SpiderPayloadMutation) URLCleared() bool {
+	_, ok := m.clearedFields[spiderpayload.FieldURL]
+	return ok
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *SpiderPayloadMutation) ResetURL() {
+	m.url = nil
+	delete(m.clearedFields, spiderpayload.FieldURL)
+}
+
+// SetPath sets the "path" field.
+func (m *SpiderPayloadMutation) SetPath(s string) {
+	m._path = &s
+}
+
+// Path returns the value of the "path" field in the mutation.
+func (m *SpiderPayloadMutation) Path() (r string, exists bool) {
+	v := m._path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPath returns the old "path" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SpiderPayloadMutation) OldPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPath: %w", err)
+	}
+	return oldValue.Path, nil
+}
+
+// ClearPath clears the value of the "path" field.
+func (m *SpiderPayloadMutation) ClearPath() {
+	m._path = nil
+	m.clearedFields[spiderpayload.FieldPath] = struct{}{}
+}
+
+// PathCleared returns if the "path" field was cleared in this mutation.
+func (m *SpiderPayloadMutation) PathCleared() bool {
+	_, ok := m.clearedFields[spiderpayload.FieldPath]
+	return ok
+}
+
+// ResetPath resets all changes to the "path" field.
+func (m *SpiderPayloadMutation) ResetPath() {
+	m._path = nil
+	delete(m.clearedFields, spiderpayload.FieldPath)
+}
+
 // SetStatus sets the "status" field.
 func (m *SpiderPayloadMutation) SetStatus(u uint8) {
 	m.status = &u
@@ -384,7 +484,7 @@ func (m *SpiderPayloadMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SpiderPayloadMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.spider_id != nil {
 		fields = append(fields, spiderpayload.FieldSpiderID)
 	}
@@ -393,6 +493,12 @@ func (m *SpiderPayloadMutation) Fields() []string {
 	}
 	if m.extracted_at != nil {
 		fields = append(fields, spiderpayload.FieldExtractedAt)
+	}
+	if m.url != nil {
+		fields = append(fields, spiderpayload.FieldURL)
+	}
+	if m._path != nil {
+		fields = append(fields, spiderpayload.FieldPath)
 	}
 	if m.status != nil {
 		fields = append(fields, spiderpayload.FieldStatus)
@@ -414,6 +520,10 @@ func (m *SpiderPayloadMutation) Field(name string) (ent.Value, bool) {
 		return m.PayloadID()
 	case spiderpayload.FieldExtractedAt:
 		return m.ExtractedAt()
+	case spiderpayload.FieldURL:
+		return m.URL()
+	case spiderpayload.FieldPath:
+		return m.Path()
 	case spiderpayload.FieldStatus:
 		return m.Status()
 	case spiderpayload.FieldTitle:
@@ -433,6 +543,10 @@ func (m *SpiderPayloadMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldPayloadID(ctx)
 	case spiderpayload.FieldExtractedAt:
 		return m.OldExtractedAt(ctx)
+	case spiderpayload.FieldURL:
+		return m.OldURL(ctx)
+	case spiderpayload.FieldPath:
+		return m.OldPath(ctx)
 	case spiderpayload.FieldStatus:
 		return m.OldStatus(ctx)
 	case spiderpayload.FieldTitle:
@@ -466,6 +580,20 @@ func (m *SpiderPayloadMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetExtractedAt(v)
+		return nil
+	case spiderpayload.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
+		return nil
+	case spiderpayload.FieldPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPath(v)
 		return nil
 	case spiderpayload.FieldStatus:
 		v, ok := value.(uint8)
@@ -525,7 +653,14 @@ func (m *SpiderPayloadMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *SpiderPayloadMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(spiderpayload.FieldURL) {
+		fields = append(fields, spiderpayload.FieldURL)
+	}
+	if m.FieldCleared(spiderpayload.FieldPath) {
+		fields = append(fields, spiderpayload.FieldPath)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -538,6 +673,14 @@ func (m *SpiderPayloadMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *SpiderPayloadMutation) ClearField(name string) error {
+	switch name {
+	case spiderpayload.FieldURL:
+		m.ClearURL()
+		return nil
+	case spiderpayload.FieldPath:
+		m.ClearPath()
+		return nil
+	}
 	return fmt.Errorf("unknown SpiderPayload nullable field %s", name)
 }
 
@@ -553,6 +696,12 @@ func (m *SpiderPayloadMutation) ResetField(name string) error {
 		return nil
 	case spiderpayload.FieldExtractedAt:
 		m.ResetExtractedAt()
+		return nil
+	case spiderpayload.FieldURL:
+		m.ResetURL()
+		return nil
+	case spiderpayload.FieldPath:
+		m.ResetPath()
 		return nil
 	case spiderpayload.FieldStatus:
 		m.ResetStatus()

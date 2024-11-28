@@ -20,6 +20,10 @@ const (
 	FieldPayloadID = "payload_id"
 	// FieldExtractedAt holds the string denoting the extracted_at field in the database.
 	FieldExtractedAt = "extracted_at"
+	// FieldURL holds the string denoting the url field in the database.
+	FieldURL = "url"
+	// FieldPath holds the string denoting the path field in the database.
+	FieldPath = "path"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldTitle holds the string denoting the title field in the database.
@@ -34,6 +38,8 @@ var Columns = []string{
 	FieldSpiderID,
 	FieldPayloadID,
 	FieldExtractedAt,
+	FieldURL,
+	FieldPath,
 	FieldStatus,
 	FieldTitle,
 }
@@ -80,6 +86,16 @@ func ByPayloadID(opts ...sql.OrderTermOption) OrderOption {
 // ByExtractedAt orders the results by the extracted_at field.
 func ByExtractedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldExtractedAt, opts...).ToFunc()
+}
+
+// ByURL orders the results by the url field.
+func ByURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldURL, opts...).ToFunc()
+}
+
+// ByPath orders the results by the path field.
+func ByPath(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPath, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

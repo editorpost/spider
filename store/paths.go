@@ -61,3 +61,7 @@ func (paths Paths) CollectRoot(arg string) string {
 func (paths Paths) PayloadRoot(arg string) string {
 	return fmt.Sprintf(paths.Payload, arg)
 }
+
+func (paths Paths) PayloadFile(arg, payloadID string) string {
+	return fmt.Sprintf("%s/%s", paths.PayloadRoot(arg), payloadID)
+}
