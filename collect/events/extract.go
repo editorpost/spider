@@ -4,6 +4,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/editorpost/spider/collect/config"
 	"github.com/gocolly/colly/v2"
+	"log/slog"
 	"net/url"
 	"regexp"
 )
@@ -30,8 +31,14 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 
 		// if expression exists, extract entity urls
 		if !match(doc.Request.URL) {
+			slog.Info("extract: url not matched",
+				slog.String("url", doc.Request.URL.String()),
+				slog.String("title", doc.DOM.Find("title").Text()),
+			)
 			return
 		}
+
+		extracted := false
 
 		// selected html selections matching the query
 		// might be empty if the query is not found
@@ -39,11 +46,29 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 
 			if err := crawler.deps.Extractor(doc, selected); err != nil {
 				crawler.deps.Monitor.OnError(doc.Response, err)
+				slog.Warn("extraction error",
+					slog.String("error", err.Error()),
+					slog.String("url", doc.Request.URL.String()),
+					slog.String("title", doc.DOM.Find("title").Text()),
+				)
 				continue
 			}
 
+			extracted = true
 			crawler.deps.Monitor.OnExtract(doc.Response)
 			crawler.WatchLimit()
+		}
+
+		if !extracted {
+			slog.Warn("no data extracted",
+				slog.String("url", doc.Request.URL.String()),
+				slog.String("title", doc.DOM.Find("title").Text()),
+			)
+		} else {
+			slog.Info("extracted",
+				slog.String("url", doc.Request.URL.String()),
+				slog.String("title", doc.DOM.Find("title").Text()),
+			)
 		}
 	}
 }
