@@ -25,9 +25,9 @@ func TestHTMLToMarkdown(t *testing.T) {
 
 // image conversion test
 func TestHTMLToMarkdownImage(t *testing.T) {
-	in := `<img src="https://example.com/image.jpg" alt="example image" />`
-	out := "![example image](https://example.com/image.jpg)"
-	mark, err := article.HTMLToStripMarkdown(in, "")
+	in := `<img src="https://example.com/image.jpg" width="1200" height="800" alt="Image Alt" title="Image Title" class="some-css-class es" style="margin-bottom: 10px;" />`
+	out := "![Image Alt](https://example.com/image.jpg \"Image Title\")"
+	mark, err := article.HTMLToMarkdown(in, "")
 	require.NoError(t, err)
 	assert.Equal(t, out, mark)
 }
@@ -74,4 +74,22 @@ func TestHTMLToMarkdownRemoveUrlLinks(t *testing.T) {
 
 	// markdown has no link
 	assert.Equal(t, out, mark)
+}
+
+func TestArticle_ReadabilityMainImage(t *testing.T) {
+
+	// @note readability might remove the main image from the content
+	// @see article.readabilityArticle()
+
+	// get document
+	pay := tester.TestPayload(t, "../../tester/fixtures/cases/must_article_image.html")
+
+	// data is not empty
+	assert.NoError(t, article.Article(pay))
+	assert.Greater(t, len(pay.Data), 0)
+
+	// the image must be in the markdown
+	image := "/sites/default/files/storage/images/2016-20/rambutan-thaiskii-frukt.jpg)"
+
+	assert.Contains(t, pay.Data["markup"], image)
 }

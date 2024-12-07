@@ -92,13 +92,8 @@ func HostUrl(base *url.URL) string {
 func readabilityArticle(payload *pipe.Payload, content string, a *dto.Article) error {
 
 	// get head tags as a string
-	head, err := payload.Doc.DOM.Find("head").Html()
-	if err != nil {
-		return fmt.Errorf("failed to get head tags: %w", err)
-	}
-
-	// and attach to the html content
-	html := strings.Join([]string{head, content}, "")
+	// @note whole html is required for effective readability (meta, scripts, etc.)
+	html, _ := payload.Doc.DOM.Html()
 
 	// readability: title, summary, text, markup, html, language, summary
 	read, err := readability.FromReader(strings.NewReader(html), payload.URL)
@@ -118,7 +113,11 @@ func readabilityArticle(payload *pipe.Payload, content string, a *dto.Article) e
 	a.Text = lo.Ternary(a.Text == "", read.TextContent, a.Text)
 	a.Language = lo.Ternary(a.Language == "", read.Language, a.Language)
 
-	a.Markup = read.Content
+	if read.Image != "" && !strings.Contains(a.Markup, read.Image) {
+		// @note readability might remove the main image from the content
+		// @see payload_test.readabilityArticle()
+		a.Markup = "![Image](" + read.Image + ")\n" + a.Markup
+	}
 
 	if read.PublishedTime != nil {
 		a.Published = *read.PublishedTime
