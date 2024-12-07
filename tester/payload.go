@@ -22,3 +22,16 @@ func TestPayload(t *testing.T, path string) *pipe.Payload {
 
 	return pay
 }
+
+func TestPayloadWithURI(t *testing.T, path, uri string) *pipe.Payload {
+
+	doc := GetDocument(t, path)
+
+	doc.Request.URL, _ = url.Parse(uri)
+
+	pay, err := pipe.NewPayload(doc, doc.DOM)
+	require.NoError(t, err)
+	require.NoError(t, article.Article(pay))
+
+	return pay
+}

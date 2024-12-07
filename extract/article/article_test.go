@@ -3,11 +3,10 @@ package article_test
 import (
 	"fmt"
 	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/editorpost/spider/extract/article"
 	"github.com/editorpost/spider/tester"
-	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
-	distiller "github.com/markusmobius/go-domdistiller"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -18,46 +17,33 @@ import (
 	"testing"
 )
 
-func TestFromHTML(t *testing.T) {
+func TestArticleFromPayload(t *testing.T) {
 
-	content := tester.GetHTML(t, "../../tester/fixtures/article.html")
-	a, err := article.ArticleFromHTML(content, GetArticleURL(t))
+	uri := gofakeit.URL()
+	filename := "../../tester/fixtures/article.html"
+	payload := tester.TestPayloadWithURI(t, filename, uri)
+
+	a, err := article.ArticleFromPayload(payload)
 	require.NoError(t, err)
 
 	// custom fallback with css selector
 	assert.Equal(t, "2024-03-13", a.Published.Format("2006-01-02"))
 	assert.Equal(t, "John Doe", a.Author)
 	assert.Equal(t, "Пхукет в стиле вашего отдыха", a.Title)
-	assert.Equal(t, "https://thailand-news.ru/news/puteshestviya/pkhuket-v-stile-vashego-otdykha/", a.SourceURL)
+	assert.Equal(t, uri, a.SourceURL)
 	assert.Equal(t, "", a.SourceName)
 
 	// validation
 	assert.NoError(t, a.Normalize())
 }
 
-func TestTitleFromHTML(t *testing.T) {
+func TestArticleFromPayload_Title(t *testing.T) {
 
-	content := tester.GetHTML(t, "../../tester/fixtures/cases/must_article_title.html")
-	a, err := article.ArticleFromHTML(content, GetArticleURL(t))
+	payload := tester.TestPayload(t, "../../tester/fixtures/cases/must_article_title.html")
+	a, err := article.ArticleFromPayload(payload)
 	require.NoError(t, err)
 
 	assert.Equal(t, "Рамбутан", a.Title)
-}
-
-func TestDistiller(t *testing.T) {
-
-	markup := GetArticleHTML(t)
-
-	// Run distiller
-	result, err := distiller.ApplyForReader(strings.NewReader(markup), &distiller.Options{
-		OriginalURL: GetArticleURL(t),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	rawHTML := dom.OuterHTML(result.Node)
-	assert.NotEmpty(t, rawHTML)
 }
 
 func TestReadability(t *testing.T) {

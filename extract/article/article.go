@@ -1,43 +1,24 @@
 package article
 
 import (
-	md "github.com/JohannesKaufmann/html-to-markdown"
-	"github.com/PuerkitoBio/goquery"
+	"fmt"
 	dto "github.com/editorpost/article"
 	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/extract/pipe"
-	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
-	"github.com/goodsign/monday"
-	distiller "github.com/markusmobius/go-domdistiller"
 	"github.com/samber/lo"
 	"log/slog"
 	"net/url"
 	"strings"
-	"time"
 )
 
 // Article extracts the dto from the HTML
 // and sets the dto fields to the payload
 func Article(payload *pipe.Payload) error {
 
-	htmlStr, err := ArticleSelection(payload)
-	if err != nil {
-		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
-		return err
-	}
-
-	art, err := ArticleFromHTML(htmlStr, payload.URL)
+	art, err := ArticleFromPayload(payload)
 	if err != nil {
 		slog.Warn("failed to extract dto", slog.String("err", err.Error()))
-		return err
-	}
-
-	// rewrite the markup from readability and distiller due to the different behavior
-	// use provided Config.ExtractSelector markup as a default
-	// todo: if extract selector is empty, then use the readability markup
-	if art.Markup, err = ArticleSelectionToMarkup(payload); err != nil {
-		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
 		return err
 	}
 
@@ -57,103 +38,72 @@ func Article(payload *pipe.Payload) error {
 	return nil
 }
 
-// ArticleSelection combine head tags and article html code selection
-// Head tags are required for readability to work properly
-func ArticleSelection(payload *pipe.Payload) (dom string, err error) {
+// ArticleFromPayload extracts Article
+func ArticleFromPayload(payload *pipe.Payload) (a *dto.Article, err error) {
 
-	if dom, err = payload.Selection.Html(); err != nil {
-		slog.Warn("failed to get HTML from selection", slog.String("err", err.Error()))
-		return "", err
+	a = dto.NewArticle()
+	a.SourceURL = payload.URL.String()
+
+	// get the selection
+	sel := payload.Selection.Clone()
+
+	// remove h1 from the selection
+	sel.Find("h1").Remove()
+
+	// remove url links from the selection
+	// replace text links with text content
+	replaceLinks(sel)
+
+	// get selection html content
+	content, err := sel.Html()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get HTML from selection: %w", err)
 	}
 
-	// get head tags as a string and attach to rest of the html
-	head, _ := payload.Doc.DOM.Find("head").Html()
-
-	return strings.Join([]string{head, dom}, ""), nil
-}
-
-// ArticleFromHTML extracts Article
-func ArticleFromHTML(html string, resource *url.URL) (*dto.Article, error) {
-
-	a := dto.NewArticle()
-	a.SourceURL = resource.String()
-
-	// readability: title, summary, text, html, language
-	readabilityArticle(html, resource, a)
+	// fill data from readability
+	// note article.Markup is still HTML here, not markdown
+	if err = readabilityArticle(payload, content, a); err != nil {
+		return nil, fmt.Errorf("failed to get readability article: %w", err)
+	}
 
 	// fallback: published
-	a.Published = lo.Ternary(a.Published.IsZero(), legacyPublished(html), a.Published)
-	a.Author = lo.Ternary(a.Author == "", legacyAuthor(html), a.Author)
+	a.Published = lo.Ternary(a.Published.IsZero(), legacyPublished(content), a.Published)
+	a.Author = lo.Ternary(a.Author == "", legacyAuthor(content), a.Author)
 
 	// html to markdown
-	a.Markup = HTMLToMarkdown(a.Markup)
-
-	// todo: strip non-image links
-	// a.Markup = StripMarkdown(a.Markup)
+	// article.Markup is now converted to markdown
+	if a.Markup, err = HTMLToMarkdown(a.Markup, HostUrl(payload.URL)); err != nil {
+		return nil, err
+	}
 
 	// nil dto if it's invalid
-	if err := a.Normalize(); err != nil {
+	if err = a.Normalize(); err != nil {
 		return nil, err
 	}
 
 	return a, nil
 }
 
-func ArticleSelectionToMarkup(payload *pipe.Payload) (string, error) {
-
-	// get the selection
-	selection := payload.Selection.Clone()
-
-	// remove h1 from the selection
-	selection.Find("h1").Remove()
-
-	// get the html from the selection
-	html, err := selection.Html()
-	if err != nil {
-		return "", err
-	}
-
-	// url getter for replacing relative URLs with absolute
-	absoluteUrlFn := func(s *goquery.Selection, rawURL string, domain string) string {
-		return AbsoluteUrl(payload.URL, rawURL)
-	}
-
-	// create the converter
-	converter := md.NewConverter("", true, &md.Options{
-		// replace relative URLs with absolute
-		GetAbsoluteURL: absoluteUrlFn,
-	})
-
-	// convert the html to markdown
-	return converter.ConvertString(html)
+// HostUrl returns the host URL without path
+func HostUrl(base *url.URL) string {
+	return base.Scheme + "://" + base.Host
 }
 
-// AbsoluteUrl
-// todo replace with media.AbsoluteUrl
-func AbsoluteUrl(base *url.URL, href string) string {
+func readabilityArticle(payload *pipe.Payload, content string, a *dto.Article) error {
 
-	// parse the href
-	rel, err := url.Parse(href)
+	// get head tags as a string
+	head, err := payload.Doc.DOM.Find("head").Html()
 	if err != nil {
-		return ""
+		return fmt.Errorf("failed to get head tags: %w", err)
 	}
 
-	// already absolute
-	if rel.Scheme != "" {
-		return rel.String()
-	}
+	// and attach to the html content
+	html := strings.Join([]string{head, content}, "")
 
-	// resolve the base with the relative href
-	abs := base.ResolveReference(rel)
-
-	return abs.String()
-}
-
-func readabilityArticle(html string, resource *url.URL, a *dto.Article) {
-
-	read, err := readability.FromReader(strings.NewReader(html), resource)
+	// readability: title, summary, text, markup, html, language, summary
+	read, err := readability.FromReader(strings.NewReader(html), payload.URL)
 	if err != nil {
-		return
+		return nil
 	}
 
 	a.Title = read.Title
@@ -175,102 +125,8 @@ func readabilityArticle(html string, resource *url.URL, a *dto.Article) {
 	}
 
 	if len(a.Title) == 0 {
-		a.Title = resource.String()
-	}
-}
-
-func distillArticle(html string, resource *url.URL, a *dto.Article) {
-
-	distill, err := distiller.ApplyForReader(strings.NewReader(html), &distiller.Options{
-		OriginalURL: resource,
-	})
-	if err != nil {
-		return
+		a.Title = payload.URL.String()
 	}
 
-	info := distill.MarkupInfo
-
-	// set the dto fields
-	a.SourceName = info.Publisher
-	a.Author = info.Author
-
-	// fallback fields applied only if the fields are empty
-	a.Title = lo.Ternary(a.Title == "", distill.Title, a.Title)
-	a.Summary = lo.Ternary(a.Summary == "", info.Description, a.Summary)
-	a.Text = lo.Ternary(a.Text == "", distill.Text, a.Text)
-
-	// a.Markup = lo.Ternary(a.Markup == "", dom.OuterHTML(distill.Node), a.Markup)
-	a.Markup = dom.OuterHTML(distill.Node)
-
-	a.Published = lo.Ternary(a.Published.IsZero(), distillPublished(distill), a.Published)
-}
-
-func distillPublished(distill *distiller.Result) time.Time {
-
-	publishedStr := distill.MarkupInfo.Article.PublishedTime
-	published, timeErr := time.Parse(time.RFC3339, publishedStr)
-	if timeErr == nil {
-		return time.Now()
-	}
-	return published
-}
-
-func distillImages(distill *distiller.Result, resource *url.URL) *dto.Images {
-
-	images := dto.NewImages()
-
-	for _, src := range distill.ContentImages {
-		image := dto.NewImage(media.AbsoluteUrl(resource, src))
-		images.Add(image)
-	}
-
-	return images
-}
-
-// HTMLToMarkdown converts HTML to markdown
-func HTMLToMarkdown(html string) string {
-
-	converter := md.NewConverter("", true, nil)
-	markdown, err := converter.ConvertString(html)
-	return lo.Ternary(err == nil, markdown, "")
-}
-
-func legacyPublished(html string) time.Time {
-
-	fallback := time.Now()
-
-	q, readerErr := goquery.NewDocumentFromReader(strings.NewReader(html))
-	if readerErr != nil {
-		return fallback
-	}
-
-	// .field--name-created
-	if el := q.Find(".field--name-created").Text(); len(el) > 0 {
-
-		// Monday,2 January 2006 format
-		published, err := monday.Parse("Monday, 2 January 2006", el, monday.LocaleRuRU)
-		if err == nil {
-			return published
-		}
-	}
-
-	return fallback
-}
-
-func legacyAuthor(html string) (name string) {
-
-	q, readerErr := goquery.NewDocumentFromReader(strings.NewReader(html))
-	if readerErr != nil {
-		return
-	}
-
-	// look at publisher info
-	for _, node := range q.Find(".node-article__date").Nodes {
-		if node.FirstChild != nil {
-			name = strings.TrimSpace(node.FirstChild.Data)
-			return
-		}
-	}
-
-	return
+	return nil
 }

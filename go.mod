@@ -5,6 +5,7 @@ go 1.23.3
 require (
 	entgo.io/ent v0.14.1
 	github.com/JohannesKaufmann/html-to-markdown v1.6.0
+	github.com/JohannesKaufmann/html-to-markdown/v2 v2.2.1
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/VictoriaMetrics/metrics v1.35.1
 	github.com/avast/retry-go v3.0.0+incompatible
@@ -38,6 +39,7 @@ require (
 
 require (
 	ariga.io/atlas v0.29.0 // indirect
+	github.com/JohannesKaufmann/dom v0.1.1-0.20240706125338-ff9f3b772364 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/antchfx/htmlquery v1.3.3 // indirect

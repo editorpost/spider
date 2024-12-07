@@ -1,65 +1,85 @@
 package article
 
 import (
-	"regexp"
+	md "github.com/JohannesKaufmann/html-to-markdown/v2"
+	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
+	"github.com/PuerkitoBio/goquery"
+	"net/url"
+	"strings"
 )
 
-var (
-	listLeadersReg = regexp.MustCompile(`(?m)^([\s\t]*)([\*\-\+]|\d\.)\s+`)
+// HTMLToMarkdown converts HTML.
+func HTMLToMarkdown(html, domain string) (string, error) {
 
-	headerReg = regexp.MustCompile(`\n={2,}`)
-	strikeReg = regexp.MustCompile(`~~`)
-	codeReg   = regexp.MustCompile("`{3}" + `.*\n`)
+	if domain == "" {
+		return md.ConvertString(html)
+	}
 
-	htmlReg         = regexp.MustCompile("<(.*?)>")
-	emphReg         = regexp.MustCompile(`\*\*([^*]+)\*\*`)
-	emphReg2        = regexp.MustCompile(`\*([^*]+)\*`)
-	emphReg3        = regexp.MustCompile(`__([^_]+)__`)
-	emphReg4        = regexp.MustCompile(`_([^_]+)_`)
-	setextHeaderReg = regexp.MustCompile(`^[=\-]{2,}\s*$`)
-	footnotesReg    = regexp.MustCompile(`\[\^.+?\](\: .*?$)?`)
-	footnotes2Reg   = regexp.MustCompile(`\s{0,2}\[.*?\]: .*?$`)
-	imagesReg       = regexp.MustCompile(`\!\[(.*?)\]\s?[\[\(].*?[\]\)]`)
-	linksReg        = regexp.MustCompile(`\[(.*?)\][\[\(].*?[\]\)]`)
-	blockquoteReg   = regexp.MustCompile(`>\s*`)
-	refLinkReg      = regexp.MustCompile(`^\s{1,2}\[(.*?)\]: (\S+)( ".*?")?\s*$`)
-	atxHeaderReg    = regexp.MustCompile(`(?m)^\#{1,6}\s*([^#]+)\s*(\#{1,6})?$`)
-	atxHeaderReg2   = regexp.MustCompile(`([\*_]{1,3})(\S.*?\S)?P1`)
-	atxHeaderReg3   = regexp.MustCompile("(?m)(`{3,})" + `(.*?)?P1`)
-	atxHeaderReg4   = regexp.MustCompile(`^-{3,}\s*$`)
-	atxHeaderReg5   = regexp.MustCompile("`(.+?)`")
-	atxHeaderReg6   = regexp.MustCompile(`\n{2,}`)
-)
+	return md.ConvertString(html,
+		// replacing relative URLs with absolute
+		converter.WithDomain(domain),
+	)
+}
 
-// StripMarkdown returns the given string sans any Markdown.
-// Where necessary, elements are replaced with their best textual forms, so
-// for example, hyperlinks are stripped of their URL and become only the link
-// text, and images lose their URL and become only the alt text.
-func StripMarkdown(s string) string {
-	res := s
-	res = listLeadersReg.ReplaceAllString(res, "$1")
+// HTMLToStripMarkdown converts HTML to Markdown and cleans unwanted links
+func HTMLToStripMarkdown(html, domain string) (string, error) {
+	html = removeLinksFromHTML(html)
+	return HTMLToMarkdown(html, domain)
+}
 
-	res = headerReg.ReplaceAllString(res, "\n")
-	res = strikeReg.ReplaceAllString(res, "")
-	res = codeReg.ReplaceAllString(res, "")
+// removeLinksFromHTML normalizes the HTML (e.g., removes links containing "http")
+func removeLinksFromHTML(html string) string {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		return html // Fallback to raw HTML if parsing fails
+	}
 
-	res = emphReg.ReplaceAllString(res, "$1")
-	res = emphReg2.ReplaceAllString(res, "$1")
-	res = emphReg3.ReplaceAllString(res, "$1")
-	res = emphReg4.ReplaceAllString(res, "$1")
-	res = htmlReg.ReplaceAllString(res, "$1")
-	res = setextHeaderReg.ReplaceAllString(res, "")
-	res = footnotesReg.ReplaceAllString(res, "")
-	res = footnotes2Reg.ReplaceAllString(res, "")
-	res = imagesReg.ReplaceAllString(res, "$1")
-	res = linksReg.ReplaceAllString(res, "$1")
-	res = blockquoteReg.ReplaceAllString(res, "  ")
-	res = refLinkReg.ReplaceAllString(res, "")
-	res = atxHeaderReg.ReplaceAllString(res, "$1")
-	res = atxHeaderReg2.ReplaceAllString(res, "$2")
-	res = atxHeaderReg3.ReplaceAllString(res, "$2")
-	res = atxHeaderReg4.ReplaceAllString(res, "")
-	res = atxHeaderReg5.ReplaceAllString(res, "$1")
-	res = atxHeaderReg6.ReplaceAllString(res, "\n\n")
-	return res
+	// Normalize links
+	replaceLinks(doc.Selection)
+
+	// Return cleaned HTML
+	out, _ := doc.Html()
+	return out
+}
+
+// replaceLinks cleans links based on the requirements
+func replaceLinks(selection *goquery.Selection) {
+	selection.Find("a").Each(func(i int, s *goquery.Selection) {
+
+		text := s.Text()
+
+		// Remove links where text contains "http"
+		if isUriLikeString(text) {
+			s.Remove()
+		} else {
+			// Replace links with their text content
+			s.ReplaceWithHtml(text)
+		}
+	})
+}
+
+// isUriLikeString checks if a string is a URI
+func isUriLikeString(s string) bool {
+
+	// has schema in it
+	if strings.Contains(s, "://") {
+		return true
+	}
+
+	return false
+}
+
+// QueryToMarkup extracts HTML from a goquery selection and converts it to cleaned Markdown
+func QueryToMarkup(selection *goquery.Selection, uri *url.URL) (string, error) {
+	// Remove h1 from the selection
+	selection.Find("h1").Remove()
+
+	// Get the HTML from the selection
+	html, err := selection.Html()
+	if err != nil {
+		return "", err
+	}
+
+	// Convert the HTML to Markdown
+	return HTMLToStripMarkdown(html, uri.String())
 }
