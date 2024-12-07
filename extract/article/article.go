@@ -52,7 +52,7 @@ func ArticleFromPayload(payload *pipe.Payload) (a *dto.Article, err error) {
 
 	// remove url links from the selection
 	// replace text links with text content
-	replaceLinks(sel)
+	linksToText(sel)
 
 	// get selection html content
 	content, err := sel.Html()

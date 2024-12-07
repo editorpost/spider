@@ -4,7 +4,6 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
 	"github.com/PuerkitoBio/goquery"
-	"net/url"
 	"strings"
 )
 
@@ -35,15 +34,15 @@ func removeLinksFromHTML(html string) string {
 	}
 
 	// Normalize links
-	replaceLinks(doc.Selection)
+	linksToText(doc.Selection)
 
 	// Return cleaned HTML
 	out, _ := doc.Html()
 	return out
 }
 
-// replaceLinks cleans links based on the requirements
-func replaceLinks(selection *goquery.Selection) {
+// linksToText cleans links based on the requirements
+func linksToText(selection *goquery.Selection) {
 	selection.Find("a").Each(func(i int, s *goquery.Selection) {
 
 		text := s.Text()
@@ -67,19 +66,4 @@ func isUriLikeString(s string) bool {
 	}
 
 	return false
-}
-
-// QueryToMarkup extracts HTML from a goquery selection and converts it to cleaned Markdown
-func QueryToMarkup(selection *goquery.Selection, uri *url.URL) (string, error) {
-	// Remove h1 from the selection
-	selection.Find("h1").Remove()
-
-	// Get the HTML from the selection
-	html, err := selection.Html()
-	if err != nil {
-		return "", err
-	}
-
-	// Convert the HTML to Markdown
-	return HTMLToStripMarkdown(html, uri.String())
 }
