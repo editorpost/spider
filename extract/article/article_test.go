@@ -2,7 +2,7 @@ package article_test
 
 import (
 	"fmt"
-	md "github.com/JohannesKaufmann/html-to-markdown"
+	md "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/editorpost/spider/extract/article"
 	"github.com/editorpost/spider/tester"
@@ -76,9 +76,7 @@ func TestMarkdown(t *testing.T) {
 	read, err := readability.FromReader(strings.NewReader(markup), u)
 	require.NoError(t, err)
 
-	converter := md.NewConverter("", true, nil)
-
-	markdown, err := converter.ConvertString(read.Content)
+	markdown, err := md.ConvertString(read.Content)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,7 +4,6 @@ go 1.23.3
 
 require (
 	entgo.io/ent v0.14.1
-	github.com/JohannesKaufmann/html-to-markdown v1.6.0
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.2.1
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/VictoriaMetrics/metrics v1.35.1
@@ -18,7 +17,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/chromedp/cdproto v0.0.0-20241110205750-a72e6703cd9b
 	github.com/chromedp/chromedp v0.11.2
-	github.com/editorpost/article v0.0.1
+	github.com/editorpost/article v0.0.2
 	github.com/editorpost/donq/mongodb v0.0.0-20240404021214-5cf25910c834
 	github.com/editorpost/donq/pkg/valid v0.0.0-20240727223425-e9e6ef081503
 	github.com/editorpost/donq/pkg/vars v0.0.0-20240727223425-e9e6ef081503
