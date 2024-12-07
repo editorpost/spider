@@ -116,7 +116,7 @@ func readabilityArticle(payload *pipe.Payload, content string, a *dto.Article) e
 	if read.Image != "" && !strings.Contains(a.Markup, read.Image) {
 		// @note readability might remove the main image from the content
 		// @see payload_test.readabilityArticle()
-		a.Markup = "![Image](" + read.Image + ")\n" + a.Markup
+		a.Markup = "<img src=\"" + read.Image + "\" />" + a.Markup
 	}
 
 	if read.PublishedTime != nil {
