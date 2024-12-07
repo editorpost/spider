@@ -93,3 +93,18 @@ func TestArticle_ReadabilityMainImage(t *testing.T) {
 
 	assert.Contains(t, pay.Data["markup"], image)
 }
+
+func TestArticle_ReadabilityMainImage2(t *testing.T) {
+
+	// get document
+	pay := tester.TestPayload(t, "../../tester/fixtures/cases/article_image_title_mapping.html")
+
+	// data is not empty
+	assert.NoError(t, article.Article(pay))
+	assert.Greater(t, len(pay.Data), 0)
+
+	// the image must be in the markdown
+	image := "/sites/default/files/storage/images/2016-20/mangostin-thaiskii-frukt.jpg \"Мангостин - фрукт Таиланда\")"
+
+	assert.Contains(t, pay.Data["markup"], image)
+}

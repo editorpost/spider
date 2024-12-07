@@ -9,7 +9,8 @@ import (
 )
 
 // Compile regex once at package initialization
-var markdownImgTag = regexp.MustCompile(`!\[.*?\]\((.*?)\)`)
+// image title might be in quotes after the url
+var markdownImgTag = regexp.MustCompile(`!\[.*?\]\((.*?)\)(?:\s+"(.*?)")?`)
 
 // MediaClaims is the interface for downloading images
 type MediaClaims interface {
@@ -43,6 +44,7 @@ func Images(payloadID string, a *dto.Article, d MediaClaims) {
 
 func MarkdownSourceUrls(md string) []string {
 
+	// clean urls without title and alt
 	matches := markdownImgTag.FindAllStringSubmatch(md, -1)
 	if matches == nil {
 		return nil
