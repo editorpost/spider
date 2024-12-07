@@ -1,85 +1,58 @@
 package article_test
 
 import (
-	"errors"
-	dto "github.com/editorpost/article"
 	"github.com/editorpost/spider/extract/article"
-	"github.com/editorpost/spider/extract/media"
 	"github.com/stretchr/testify/assert"
-	"strings"
 	"testing"
 )
 
-func TestMarkdownImages(t *testing.T) {
-
-	_ = MockDownloadClaims{}
-
+func TestMarkdownSourceUrls(t *testing.T) {
 	tests := []struct {
-		name        string
-		markdown    string
-		expected    string
-		expectedErr error
+		name     string
+		input    string
+		expected []string
 	}{
 		{
-			name: "No ImageDownloader",
-			markdown: `# Sample Markdown
-
-This is a sample markdown without images.`,
-			expected: `# Sample Markdown
-
-This is a sample markdown without images.`,
-			expectedErr: nil,
+			name:     "Simple URL",
+			input:    `![alt](http://example.com/image.png)`,
+			expected: []string{"http://example.com/image.png"},
 		},
 		{
-			name: "Single Image",
-			markdown: `# Sample Markdown
-
-![Alt text](http://example.com/image1.png)`,
-			expected: `# Sample Markdown
-
-![Alt text](http://storage.s3/image1.png)`,
-			expectedErr: nil,
+			name:     "URL with Title",
+			input:    `![alt](http://example.com/image.png "title")`,
+			expected: []string{"http://example.com/image.png"},
 		},
 		{
-			name: "Multiple ImageDownloader",
-			markdown: `# Sample Markdown
-
-![Alt text](http://example.com/image1.png)
-
-![Another alt text](http://example.com/image2.jpg)`,
-			expected: `# Sample Markdown
-
-![Alt text](http://storage.s3/image1.png)
-
-![Another alt text](http://storage.s3/image2.jpg)`,
-			expectedErr: nil,
+			name:     "URL with Single-Quoted Title",
+			input:    `![alt](http://example.com/image.png 'title')`,
+			expected: []string{"http://example.com/image.png"},
+		},
+		{
+			name:     "Multiple Images",
+			input:    `![alt1](http://example.com/img1.png) ![alt2](http://example.com/img2.png "title2")`,
+			expected: []string{"http://example.com/img1.png", "http://example.com/img2.png"},
+		},
+		{
+			name:     "Complex Title",
+			input:    `![alt](http://example.com/image.png "complex title with spaces")`,
+			expected: []string{"http://example.com/image.png"},
+		},
+		{
+			name:     "No Images",
+			input:    `No markdown image tags here!`,
+			expected: nil,
+		},
+		{
+			name:     "Malformed Image Tag",
+			input:    `![alt](http://example.com/image.png "title)`,
+			expected: nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			a := dto.NewArticle()
-
-			a.Markup = tt.markdown
-
-			article.Images("test", a, &MockDownloadClaims{})
-			assert.Equal(t, tt.expected, a.Markup)
+			actual := article.MarkdownSourceUrls(tt.input)
+			assert.Equal(t, tt.expected, actual)
 		})
 	}
-}
-
-// Mock implementation of MediaClaims for testing
-type MockDownloadClaims struct{}
-
-func (m MockDownloadClaims) Add(payloadID string, src string) (media.Claim, error) {
-	// Mock implementation: Just prepend "downloaded_" to the src URL
-	if src == "http://example.com/fail.jpg" {
-		return media.Claim{}, errors.New("failed to download image")
-	}
-
-	return media.Claim{
-		Src: src,
-		Dst: strings.Replace(src, "example.com", "storage.s3", 1),
-	}, nil
 }
