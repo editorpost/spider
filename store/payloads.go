@@ -85,10 +85,14 @@ func (e *SpiderPayloads) Save(p *pipe.Payload) error {
 
 	// job provider meta
 	if jobID, ok := p.Data[extract.JobID].(string); ok {
-		q.SetJobProvider(extract.JobProvider)
 		if jobUUID, err := uuid.Parse(jobID); err == nil {
 			q.SetJobID(jobUUID)
 		}
+	}
+
+	// job provider meta
+	if provider, err := p.Data[extract.JobProvider].(string); err {
+		q.SetJobProvider(provider)
 	}
 
 	_, err := q.Save(context.Background())
