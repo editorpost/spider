@@ -31,7 +31,11 @@ type SpiderPayload struct {
 	// Status holds the value of the "status" field.
 	Status uint8 `json:"status,omitempty"`
 	// Title holds the value of the "title" field.
-	Title        string `json:"title,omitempty"`
+	Title string `json:"title,omitempty"`
+	// JobProvider holds the value of the "job_provider" field.
+	JobProvider string `json:"JobProvider"`
+	// JobID holds the value of the "job_id" field.
+	JobID        uuid.UUID `json:"JobID"`
 	selectValues sql.SelectValues
 }
 
@@ -42,11 +46,11 @@ func (*SpiderPayload) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case spiderpayload.FieldStatus:
 			values[i] = new(sql.NullInt64)
-		case spiderpayload.FieldPayloadID, spiderpayload.FieldURL, spiderpayload.FieldPath, spiderpayload.FieldTitle:
+		case spiderpayload.FieldPayloadID, spiderpayload.FieldURL, spiderpayload.FieldPath, spiderpayload.FieldTitle, spiderpayload.FieldJobProvider:
 			values[i] = new(sql.NullString)
 		case spiderpayload.FieldExtractedAt:
 			values[i] = new(sql.NullTime)
-		case spiderpayload.FieldID, spiderpayload.FieldSpiderID:
+		case spiderpayload.FieldID, spiderpayload.FieldSpiderID, spiderpayload.FieldJobID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -111,6 +115,18 @@ func (sp *SpiderPayload) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				sp.Title = value.String
 			}
+		case spiderpayload.FieldJobProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field job_provider", values[i])
+			} else if value.Valid {
+				sp.JobProvider = value.String
+			}
+		case spiderpayload.FieldJobID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field job_id", values[i])
+			} else if value != nil {
+				sp.JobID = *value
+			}
 		default:
 			sp.selectValues.Set(columns[i], values[i])
 		}
@@ -167,6 +183,12 @@ func (sp *SpiderPayload) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(sp.Title)
+	builder.WriteString(", ")
+	builder.WriteString("job_provider=")
+	builder.WriteString(sp.JobProvider)
+	builder.WriteString(", ")
+	builder.WriteString("job_id=")
+	builder.WriteString(fmt.Sprintf("%v", sp.JobID))
 	builder.WriteByte(')')
 	return builder.String()
 }

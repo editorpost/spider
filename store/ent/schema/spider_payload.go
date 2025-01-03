@@ -24,6 +24,8 @@ func (SpiderPayload) Fields() []ent.Field {
 		field.String("path").Optional(),
 		field.Uint8("status").Default(1),
 		field.String("title"),
+		field.String("job_provider").StructTag(`json:"JobProvider"`).Optional(),
+		field.UUID("job_id", uuid.UUID{}).StructTag(`json:"JobID"`).Optional(),
 	}
 }
 

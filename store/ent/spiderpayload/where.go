@@ -90,6 +90,16 @@ func Title(v string) predicate.SpiderPayload {
 	return predicate.SpiderPayload(sql.FieldEQ(FieldTitle, v))
 }
 
+// JobProvider applies equality check predicate on the "job_provider" field. It's identical to JobProviderEQ.
+func JobProvider(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldEQ(FieldJobProvider, v))
+}
+
+// JobID applies equality check predicate on the "job_id" field. It's identical to JobIDEQ.
+func JobID(v uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldEQ(FieldJobID, v))
+}
+
 // SpiderIDEQ applies the EQ predicate on the "spider_id" field.
 func SpiderIDEQ(v uuid.UUID) predicate.SpiderPayload {
 	return predicate.SpiderPayload(sql.FieldEQ(FieldSpiderID, v))
@@ -488,6 +498,131 @@ func TitleEqualFold(v string) predicate.SpiderPayload {
 // TitleContainsFold applies the ContainsFold predicate on the "title" field.
 func TitleContainsFold(v string) predicate.SpiderPayload {
 	return predicate.SpiderPayload(sql.FieldContainsFold(FieldTitle, v))
+}
+
+// JobProviderEQ applies the EQ predicate on the "job_provider" field.
+func JobProviderEQ(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldEQ(FieldJobProvider, v))
+}
+
+// JobProviderNEQ applies the NEQ predicate on the "job_provider" field.
+func JobProviderNEQ(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldNEQ(FieldJobProvider, v))
+}
+
+// JobProviderIn applies the In predicate on the "job_provider" field.
+func JobProviderIn(vs ...string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldIn(FieldJobProvider, vs...))
+}
+
+// JobProviderNotIn applies the NotIn predicate on the "job_provider" field.
+func JobProviderNotIn(vs ...string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldNotIn(FieldJobProvider, vs...))
+}
+
+// JobProviderGT applies the GT predicate on the "job_provider" field.
+func JobProviderGT(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldGT(FieldJobProvider, v))
+}
+
+// JobProviderGTE applies the GTE predicate on the "job_provider" field.
+func JobProviderGTE(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldGTE(FieldJobProvider, v))
+}
+
+// JobProviderLT applies the LT predicate on the "job_provider" field.
+func JobProviderLT(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldLT(FieldJobProvider, v))
+}
+
+// JobProviderLTE applies the LTE predicate on the "job_provider" field.
+func JobProviderLTE(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldLTE(FieldJobProvider, v))
+}
+
+// JobProviderContains applies the Contains predicate on the "job_provider" field.
+func JobProviderContains(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldContains(FieldJobProvider, v))
+}
+
+// JobProviderHasPrefix applies the HasPrefix predicate on the "job_provider" field.
+func JobProviderHasPrefix(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldHasPrefix(FieldJobProvider, v))
+}
+
+// JobProviderHasSuffix applies the HasSuffix predicate on the "job_provider" field.
+func JobProviderHasSuffix(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldHasSuffix(FieldJobProvider, v))
+}
+
+// JobProviderIsNil applies the IsNil predicate on the "job_provider" field.
+func JobProviderIsNil() predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldIsNull(FieldJobProvider))
+}
+
+// JobProviderNotNil applies the NotNil predicate on the "job_provider" field.
+func JobProviderNotNil() predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldNotNull(FieldJobProvider))
+}
+
+// JobProviderEqualFold applies the EqualFold predicate on the "job_provider" field.
+func JobProviderEqualFold(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldEqualFold(FieldJobProvider, v))
+}
+
+// JobProviderContainsFold applies the ContainsFold predicate on the "job_provider" field.
+func JobProviderContainsFold(v string) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldContainsFold(FieldJobProvider, v))
+}
+
+// JobIDEQ applies the EQ predicate on the "job_id" field.
+func JobIDEQ(v uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldEQ(FieldJobID, v))
+}
+
+// JobIDNEQ applies the NEQ predicate on the "job_id" field.
+func JobIDNEQ(v uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldNEQ(FieldJobID, v))
+}
+
+// JobIDIn applies the In predicate on the "job_id" field.
+func JobIDIn(vs ...uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldIn(FieldJobID, vs...))
+}
+
+// JobIDNotIn applies the NotIn predicate on the "job_id" field.
+func JobIDNotIn(vs ...uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldNotIn(FieldJobID, vs...))
+}
+
+// JobIDGT applies the GT predicate on the "job_id" field.
+func JobIDGT(v uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldGT(FieldJobID, v))
+}
+
+// JobIDGTE applies the GTE predicate on the "job_id" field.
+func JobIDGTE(v uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldGTE(FieldJobID, v))
+}
+
+// JobIDLT applies the LT predicate on the "job_id" field.
+func JobIDLT(v uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldLT(FieldJobID, v))
+}
+
+// JobIDLTE applies the LTE predicate on the "job_id" field.
+func JobIDLTE(v uuid.UUID) predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldLTE(FieldJobID, v))
+}
+
+// JobIDIsNil applies the IsNil predicate on the "job_id" field.
+func JobIDIsNil() predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldIsNull(FieldJobID))
+}
+
+// JobIDNotNil applies the NotNil predicate on the "job_id" field.
+func JobIDNotNil() predicate.SpiderPayload {
+	return predicate.SpiderPayload(sql.FieldNotNull(FieldJobID))
 }
 
 // And groups predicates with the AND operator between them.

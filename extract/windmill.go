@@ -7,6 +7,11 @@ import (
 
 //goland:noinspection GoUnusedConst
 const (
+	JobProvider = "job_provider"
+	JobID       = "job_id"
+
+	// WindmillProvider key
+	WindmillProvider = "windmill"
 	// WindmillJobID is the key for the job ID
 	WindmillJobID = "windmill__job_id"
 	// WindmillFlowPath is the key for the flow path
@@ -24,5 +29,9 @@ func WindmillMeta(p *pipe.Payload) error {
 	p.Data[WindmillJobPath] = e.GetJobPath()
 	p.Data[WindmillFlowPath] = e.GetFlowPath()
 	p.Data[WindmillFlowJobID] = e.GetFlowJobID()
+
+	p.Data[JobProvider] = WindmillProvider
+	p.Data[JobID] = e.GetRootFlowJobID()
+
 	return nil
 }

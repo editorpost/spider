@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/store/ent"
 	"github.com/editorpost/spider/store/ent/spiderpayload"
@@ -69,19 +70,28 @@ func NewEntClient(dsn string) (c *ent.Client, err error) {
 
 func (e *SpiderPayloads) Save(p *pipe.Payload) error {
 
-	spiderID, err := uuid.Parse(e.spiderID)
-	if err != nil {
-		return err
+	spiderID, idErr := uuid.Parse(e.spiderID)
+	if idErr != nil {
+		return idErr
 	}
 
-	_, err = e.db.SpiderPayload.Create().
+	q := e.db.SpiderPayload.Create().
 		SetPayloadID(p.ID).
 		SetSpiderID(spiderID).
 		SetTitle(p.Doc.DOM.Find("title").Text()).
 		SetURL(p.URL.String()).
 		SetPath(e.paths.PayloadFile(e.spiderID, p.ID)).
-		SetStatus(ExtractIndexStatusPending).
-		Save(context.Background())
+		SetStatus(ExtractIndexStatusPending)
+
+	// job provider meta
+	if jobID, ok := p.Data[extract.JobID].(string); ok {
+		q.SetJobProvider(extract.JobProvider)
+		if jobUUID, err := uuid.Parse(jobID); err == nil {
+			q.SetJobID(jobUUID)
+		}
+	}
+
+	_, err := q.Save(context.Background())
 
 	return err
 }

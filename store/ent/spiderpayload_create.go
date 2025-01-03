@@ -95,6 +95,34 @@ func (spc *SpiderPayloadCreate) SetTitle(s string) *SpiderPayloadCreate {
 	return spc
 }
 
+// SetJobProvider sets the "job_provider" field.
+func (spc *SpiderPayloadCreate) SetJobProvider(s string) *SpiderPayloadCreate {
+	spc.mutation.SetJobProvider(s)
+	return spc
+}
+
+// SetNillableJobProvider sets the "job_provider" field if the given value is not nil.
+func (spc *SpiderPayloadCreate) SetNillableJobProvider(s *string) *SpiderPayloadCreate {
+	if s != nil {
+		spc.SetJobProvider(*s)
+	}
+	return spc
+}
+
+// SetJobID sets the "job_id" field.
+func (spc *SpiderPayloadCreate) SetJobID(u uuid.UUID) *SpiderPayloadCreate {
+	spc.mutation.SetJobID(u)
+	return spc
+}
+
+// SetNillableJobID sets the "job_id" field if the given value is not nil.
+func (spc *SpiderPayloadCreate) SetNillableJobID(u *uuid.UUID) *SpiderPayloadCreate {
+	if u != nil {
+		spc.SetJobID(*u)
+	}
+	return spc
+}
+
 // SetID sets the "id" field.
 func (spc *SpiderPayloadCreate) SetID(u uuid.UUID) *SpiderPayloadCreate {
 	spc.mutation.SetID(u)
@@ -242,6 +270,14 @@ func (spc *SpiderPayloadCreate) createSpec() (*SpiderPayload, *sqlgraph.CreateSp
 	if value, ok := spc.mutation.Title(); ok {
 		_spec.SetField(spiderpayload.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := spc.mutation.JobProvider(); ok {
+		_spec.SetField(spiderpayload.FieldJobProvider, field.TypeString, value)
+		_node.JobProvider = value
+	}
+	if value, ok := spc.mutation.JobID(); ok {
+		_spec.SetField(spiderpayload.FieldJobID, field.TypeUUID, value)
+		_node.JobID = value
 	}
 	return _node, _spec
 }

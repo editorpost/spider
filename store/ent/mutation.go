@@ -42,6 +42,8 @@ type SpiderPayloadMutation struct {
 	status        *uint8
 	addstatus     *int8
 	title         *string
+	job_provider  *string
+	job_id        *uuid.UUID
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*SpiderPayload, error)
@@ -450,6 +452,104 @@ func (m *SpiderPayloadMutation) ResetTitle() {
 	m.title = nil
 }
 
+// SetJobProvider sets the "job_provider" field.
+func (m *SpiderPayloadMutation) SetJobProvider(s string) {
+	m.job_provider = &s
+}
+
+// JobProvider returns the value of the "job_provider" field in the mutation.
+func (m *SpiderPayloadMutation) JobProvider() (r string, exists bool) {
+	v := m.job_provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldJobProvider returns the old "job_provider" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SpiderPayloadMutation) OldJobProvider(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldJobProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldJobProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldJobProvider: %w", err)
+	}
+	return oldValue.JobProvider, nil
+}
+
+// ClearJobProvider clears the value of the "job_provider" field.
+func (m *SpiderPayloadMutation) ClearJobProvider() {
+	m.job_provider = nil
+	m.clearedFields[spiderpayload.FieldJobProvider] = struct{}{}
+}
+
+// JobProviderCleared returns if the "job_provider" field was cleared in this mutation.
+func (m *SpiderPayloadMutation) JobProviderCleared() bool {
+	_, ok := m.clearedFields[spiderpayload.FieldJobProvider]
+	return ok
+}
+
+// ResetJobProvider resets all changes to the "job_provider" field.
+func (m *SpiderPayloadMutation) ResetJobProvider() {
+	m.job_provider = nil
+	delete(m.clearedFields, spiderpayload.FieldJobProvider)
+}
+
+// SetJobID sets the "job_id" field.
+func (m *SpiderPayloadMutation) SetJobID(u uuid.UUID) {
+	m.job_id = &u
+}
+
+// JobID returns the value of the "job_id" field in the mutation.
+func (m *SpiderPayloadMutation) JobID() (r uuid.UUID, exists bool) {
+	v := m.job_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldJobID returns the old "job_id" field's value of the SpiderPayload entity.
+// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SpiderPayloadMutation) OldJobID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldJobID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldJobID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldJobID: %w", err)
+	}
+	return oldValue.JobID, nil
+}
+
+// ClearJobID clears the value of the "job_id" field.
+func (m *SpiderPayloadMutation) ClearJobID() {
+	m.job_id = nil
+	m.clearedFields[spiderpayload.FieldJobID] = struct{}{}
+}
+
+// JobIDCleared returns if the "job_id" field was cleared in this mutation.
+func (m *SpiderPayloadMutation) JobIDCleared() bool {
+	_, ok := m.clearedFields[spiderpayload.FieldJobID]
+	return ok
+}
+
+// ResetJobID resets all changes to the "job_id" field.
+func (m *SpiderPayloadMutation) ResetJobID() {
+	m.job_id = nil
+	delete(m.clearedFields, spiderpayload.FieldJobID)
+}
+
 // Where appends a list predicates to the SpiderPayloadMutation builder.
 func (m *SpiderPayloadMutation) Where(ps ...predicate.SpiderPayload) {
 	m.predicates = append(m.predicates, ps...)
@@ -484,7 +584,7 @@ func (m *SpiderPayloadMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SpiderPayloadMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 9)
 	if m.spider_id != nil {
 		fields = append(fields, spiderpayload.FieldSpiderID)
 	}
@@ -505,6 +605,12 @@ func (m *SpiderPayloadMutation) Fields() []string {
 	}
 	if m.title != nil {
 		fields = append(fields, spiderpayload.FieldTitle)
+	}
+	if m.job_provider != nil {
+		fields = append(fields, spiderpayload.FieldJobProvider)
+	}
+	if m.job_id != nil {
+		fields = append(fields, spiderpayload.FieldJobID)
 	}
 	return fields
 }
@@ -528,6 +634,10 @@ func (m *SpiderPayloadMutation) Field(name string) (ent.Value, bool) {
 		return m.Status()
 	case spiderpayload.FieldTitle:
 		return m.Title()
+	case spiderpayload.FieldJobProvider:
+		return m.JobProvider()
+	case spiderpayload.FieldJobID:
+		return m.JobID()
 	}
 	return nil, false
 }
@@ -551,6 +661,10 @@ func (m *SpiderPayloadMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldStatus(ctx)
 	case spiderpayload.FieldTitle:
 		return m.OldTitle(ctx)
+	case spiderpayload.FieldJobProvider:
+		return m.OldJobProvider(ctx)
+	case spiderpayload.FieldJobID:
+		return m.OldJobID(ctx)
 	}
 	return nil, fmt.Errorf("unknown SpiderPayload field %s", name)
 }
@@ -609,6 +723,20 @@ func (m *SpiderPayloadMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTitle(v)
 		return nil
+	case spiderpayload.FieldJobProvider:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetJobProvider(v)
+		return nil
+	case spiderpayload.FieldJobID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetJobID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown SpiderPayload field %s", name)
 }
@@ -660,6 +788,12 @@ func (m *SpiderPayloadMutation) ClearedFields() []string {
 	if m.FieldCleared(spiderpayload.FieldPath) {
 		fields = append(fields, spiderpayload.FieldPath)
 	}
+	if m.FieldCleared(spiderpayload.FieldJobProvider) {
+		fields = append(fields, spiderpayload.FieldJobProvider)
+	}
+	if m.FieldCleared(spiderpayload.FieldJobID) {
+		fields = append(fields, spiderpayload.FieldJobID)
+	}
 	return fields
 }
 
@@ -679,6 +813,12 @@ func (m *SpiderPayloadMutation) ClearField(name string) error {
 		return nil
 	case spiderpayload.FieldPath:
 		m.ClearPath()
+		return nil
+	case spiderpayload.FieldJobProvider:
+		m.ClearJobProvider()
+		return nil
+	case spiderpayload.FieldJobID:
+		m.ClearJobID()
 		return nil
 	}
 	return fmt.Errorf("unknown SpiderPayload nullable field %s", name)
@@ -708,6 +848,12 @@ func (m *SpiderPayloadMutation) ResetField(name string) error {
 		return nil
 	case spiderpayload.FieldTitle:
 		m.ResetTitle()
+		return nil
+	case spiderpayload.FieldJobProvider:
+		m.ResetJobProvider()
+		return nil
+	case spiderpayload.FieldJobID:
+		m.ResetJobID()
 		return nil
 	}
 	return fmt.Errorf("unknown SpiderPayload field %s", name)

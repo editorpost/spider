@@ -28,6 +28,10 @@ const (
 	FieldStatus = "status"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldJobProvider holds the string denoting the job_provider field in the database.
+	FieldJobProvider = "job_provider"
+	// FieldJobID holds the string denoting the job_id field in the database.
+	FieldJobID = "job_id"
 	// Table holds the table name of the spiderpayload in the database.
 	Table = "spider_payloads"
 )
@@ -42,6 +46,8 @@ var Columns = []string{
 	FieldPath,
 	FieldStatus,
 	FieldTitle,
+	FieldJobProvider,
+	FieldJobID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -106,4 +112,14 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// ByJobProvider orders the results by the job_provider field.
+func ByJobProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldJobProvider, opts...).ToFunc()
+}
+
+// ByJobID orders the results by the job_id field.
+func ByJobID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldJobID, opts...).ToFunc()
 }

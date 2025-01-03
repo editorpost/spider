@@ -146,6 +146,46 @@ func (spu *SpiderPayloadUpdate) SetNillableTitle(s *string) *SpiderPayloadUpdate
 	return spu
 }
 
+// SetJobProvider sets the "job_provider" field.
+func (spu *SpiderPayloadUpdate) SetJobProvider(s string) *SpiderPayloadUpdate {
+	spu.mutation.SetJobProvider(s)
+	return spu
+}
+
+// SetNillableJobProvider sets the "job_provider" field if the given value is not nil.
+func (spu *SpiderPayloadUpdate) SetNillableJobProvider(s *string) *SpiderPayloadUpdate {
+	if s != nil {
+		spu.SetJobProvider(*s)
+	}
+	return spu
+}
+
+// ClearJobProvider clears the value of the "job_provider" field.
+func (spu *SpiderPayloadUpdate) ClearJobProvider() *SpiderPayloadUpdate {
+	spu.mutation.ClearJobProvider()
+	return spu
+}
+
+// SetJobID sets the "job_id" field.
+func (spu *SpiderPayloadUpdate) SetJobID(u uuid.UUID) *SpiderPayloadUpdate {
+	spu.mutation.SetJobID(u)
+	return spu
+}
+
+// SetNillableJobID sets the "job_id" field if the given value is not nil.
+func (spu *SpiderPayloadUpdate) SetNillableJobID(u *uuid.UUID) *SpiderPayloadUpdate {
+	if u != nil {
+		spu.SetJobID(*u)
+	}
+	return spu
+}
+
+// ClearJobID clears the value of the "job_id" field.
+func (spu *SpiderPayloadUpdate) ClearJobID() *SpiderPayloadUpdate {
+	spu.mutation.ClearJobID()
+	return spu
+}
+
 // Mutation returns the SpiderPayloadMutation object of the builder.
 func (spu *SpiderPayloadUpdate) Mutation() *SpiderPayloadMutation {
 	return spu.mutation
@@ -229,6 +269,18 @@ func (spu *SpiderPayloadUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if value, ok := spu.mutation.Title(); ok {
 		_spec.SetField(spiderpayload.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := spu.mutation.JobProvider(); ok {
+		_spec.SetField(spiderpayload.FieldJobProvider, field.TypeString, value)
+	}
+	if spu.mutation.JobProviderCleared() {
+		_spec.ClearField(spiderpayload.FieldJobProvider, field.TypeString)
+	}
+	if value, ok := spu.mutation.JobID(); ok {
+		_spec.SetField(spiderpayload.FieldJobID, field.TypeUUID, value)
+	}
+	if spu.mutation.JobIDCleared() {
+		_spec.ClearField(spiderpayload.FieldJobID, field.TypeUUID)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, spu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -367,6 +419,46 @@ func (spuo *SpiderPayloadUpdateOne) SetNillableTitle(s *string) *SpiderPayloadUp
 	return spuo
 }
 
+// SetJobProvider sets the "job_provider" field.
+func (spuo *SpiderPayloadUpdateOne) SetJobProvider(s string) *SpiderPayloadUpdateOne {
+	spuo.mutation.SetJobProvider(s)
+	return spuo
+}
+
+// SetNillableJobProvider sets the "job_provider" field if the given value is not nil.
+func (spuo *SpiderPayloadUpdateOne) SetNillableJobProvider(s *string) *SpiderPayloadUpdateOne {
+	if s != nil {
+		spuo.SetJobProvider(*s)
+	}
+	return spuo
+}
+
+// ClearJobProvider clears the value of the "job_provider" field.
+func (spuo *SpiderPayloadUpdateOne) ClearJobProvider() *SpiderPayloadUpdateOne {
+	spuo.mutation.ClearJobProvider()
+	return spuo
+}
+
+// SetJobID sets the "job_id" field.
+func (spuo *SpiderPayloadUpdateOne) SetJobID(u uuid.UUID) *SpiderPayloadUpdateOne {
+	spuo.mutation.SetJobID(u)
+	return spuo
+}
+
+// SetNillableJobID sets the "job_id" field if the given value is not nil.
+func (spuo *SpiderPayloadUpdateOne) SetNillableJobID(u *uuid.UUID) *SpiderPayloadUpdateOne {
+	if u != nil {
+		spuo.SetJobID(*u)
+	}
+	return spuo
+}
+
+// ClearJobID clears the value of the "job_id" field.
+func (spuo *SpiderPayloadUpdateOne) ClearJobID() *SpiderPayloadUpdateOne {
+	spuo.mutation.ClearJobID()
+	return spuo
+}
+
 // Mutation returns the SpiderPayloadMutation object of the builder.
 func (spuo *SpiderPayloadUpdateOne) Mutation() *SpiderPayloadMutation {
 	return spuo.mutation
@@ -480,6 +572,18 @@ func (spuo *SpiderPayloadUpdateOne) sqlSave(ctx context.Context) (_node *SpiderP
 	}
 	if value, ok := spuo.mutation.Title(); ok {
 		_spec.SetField(spiderpayload.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := spuo.mutation.JobProvider(); ok {
+		_spec.SetField(spiderpayload.FieldJobProvider, field.TypeString, value)
+	}
+	if spuo.mutation.JobProviderCleared() {
+		_spec.ClearField(spiderpayload.FieldJobProvider, field.TypeString)
+	}
+	if value, ok := spuo.mutation.JobID(); ok {
+		_spec.SetField(spiderpayload.FieldJobID, field.TypeUUID, value)
+	}
+	if spuo.mutation.JobIDCleared() {
+		_spec.ClearField(spiderpayload.FieldJobID, field.TypeUUID)
 	}
 	_node = &SpiderPayload{config: spuo.config}
 	_spec.Assign = _node.assignValues

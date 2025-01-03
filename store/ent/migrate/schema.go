@@ -18,6 +18,8 @@ var (
 		{Name: "path", Type: field.TypeString, Nullable: true},
 		{Name: "status", Type: field.TypeUint8, Default: 1},
 		{Name: "title", Type: field.TypeString},
+		{Name: "job_provider", Type: field.TypeString, Nullable: true},
+		{Name: "job_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SpiderPayloadsTable holds the schema information for the "spider_payloads" table.
 	SpiderPayloadsTable = &schema.Table{
