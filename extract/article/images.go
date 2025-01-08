@@ -35,8 +35,7 @@ func Images(payloadID string, a *dto.Article, d MediaClaims) {
 
 	images := dto.NewImages()
 	for _, dst := range claims {
-		image := dto.NewImage(dst.DstPath)
-		images.Add(image)
+		images.Add(dto.NewImage(dst.DstPath))
 	}
 
 	a.Images = images
