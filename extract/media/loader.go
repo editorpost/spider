@@ -111,7 +111,8 @@ func Filename(srcURL string) (string, error) {
 		return "", errors.New("empty source Endpoint for filename")
 	}
 
-	// Generate upload path from the source Endpoint using FNV hash.
+	// filename is FNV hash for the download url
+	// minimizing duplicates
 	name, err := pipe.Hash(srcURL)
 	if err != nil {
 		return "", err
