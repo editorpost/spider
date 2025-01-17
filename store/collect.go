@@ -20,8 +20,9 @@ type CollectStore interface {
 // CollectStorage in-memory colly storage backed by S3
 // @see CollectHistory.Init and CollectStorage.Shutdown
 type CollectStorage struct {
-	b     res.S3
-	store Storage
+	b        res.S3
+	store    Storage
+	filepath string
 	// Based on colly storage.InMemoryStorage
 	// @source github.com/gocolly/colly/v2@v2.1.1-0.20240327170223-5224b972e22b/storage/storage.go
 	visitedURLs map[uint64]bool
@@ -41,6 +42,7 @@ func NewCollectStorage(folder string, b res.S3) (*CollectStorage, func() error, 
 	s := &CollectStorage{
 		b:           b,
 		store:       store,
+		filepath:    VisitedFile,
 		visitedURLs: make(map[uint64]bool),
 		lock:        &sync.RWMutex{},
 		jar:         jar,
@@ -71,13 +73,13 @@ func (s *CollectStorage) shutdown() error {
 		return err
 	}
 
-	return s.store.Save(b, VisitedFile)
+	return s.store.Save(b, s.filepath)
 }
 
 // Init initializes CollectStorage
 func (s *CollectStorage) Init() error {
 
-	b, err := s.store.Load(VisitedFile)
+	b, err := s.store.Load(s.filepath)
 
 	// Check for the "Not Found" error
 	var awsErr *types.NoSuchKey
@@ -94,7 +96,7 @@ func (s *CollectStorage) Init() error {
 }
 
 func (s *CollectStorage) Reset() error {
-	return s.store.Delete(VisitedFile)
+	return s.store.Delete(s.filepath)
 }
 
 // Visited implements Storage.Visited()
