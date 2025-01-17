@@ -12,6 +12,10 @@ type Config struct {
 	Fields []*fields.Field `json:"Fields"`
 	// Media is the configuration for media
 	Media *media.Config `json:"Media"`
+	// ExtractOnce is the flag to extract the entity only once
+	// If true, then existing payloads urls loaded from db
+	// If false, payloads are extracted from the page and stored in db without unique check
+	ExtractOnce bool `json:"ExtractOnce"`
 }
 
 func (c *Config) Normalize() error {

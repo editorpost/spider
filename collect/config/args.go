@@ -31,11 +31,6 @@ type Config struct {
 	// def: false
 	VisitOnce bool `json:"VisitOnce"`
 
-	// ExtractOnce is the flag to extract the entity only once
-	// If true, then existing payloads urls loaded from db
-	// If false, payloads are extracted from the page and stored in db without unique check
-	ExtractOnce bool `json:"ExtractOnce"`
-
 	// ExtractSelector is the css selector to match the elements
 	// use selector for extracting entities and filtering pages
 	// def: html
