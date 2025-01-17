@@ -5,6 +5,7 @@ import (
 	"github.com/editorpost/spider/collect/config"
 	"github.com/editorpost/spider/extract/media"
 	"github.com/editorpost/spider/store"
+	"log/slog"
 )
 
 func (s *Spider) withStorage(deps *config.Deps) error {
@@ -13,11 +14,12 @@ func (s *Spider) withStorage(deps *config.Deps) error {
 		return nil
 	}
 
-	if err := s.withCollectStore(deps); err != nil {
+	if err := s.withVisitedHistory(deps); err != nil {
 		return err
 	}
 
 	if err := WithFn(
+		s.withExtractHistory,
 		s.withExtractStore,
 		s.withExtractIndex,
 		s.withMedia,
@@ -28,7 +30,13 @@ func (s *Spider) withStorage(deps *config.Deps) error {
 	return nil
 }
 
-func (s *Spider) withCollectStore(deps *config.Deps) error {
+func (s *Spider) withVisitedHistory(deps *config.Deps) error {
+
+	// visit once,
+	// stores collector history in S3 between runs
+	if !s.Collect.VisitOnce {
+		return nil
+	}
 
 	folder := fmt.Sprintf(s.Deploy.Paths.Collect, s.ID)
 	storage, upload, err := store.NewCollectStorage(folder, s.Deploy.Storage)
@@ -69,6 +77,32 @@ func (s *Spider) withExtractIndex() error {
 
 	// provide save extractor func
 	s.pipe.Finisher(payloads.Save)
+
+	return nil
+}
+
+func (s *Spider) withExtractHistory() error {
+
+	if !s.Extract.ExtractOnce {
+		return nil
+	}
+
+	// load extracted urls from spider payloads database
+	payloads, err := store.NewSpiderPayloads(s.ID, s.Deploy.Database.DSN(), s.Deploy.Paths)
+	if err != nil {
+		return fmt.Errorf("failed to create extract index store: %w", err)
+	}
+
+	// @todo: provide iterator, load from db in chunks
+	s.pipe.History().Init(func() []string {
+		urls, loadErr := payloads.URLs()
+		if loadErr != nil {
+			slog.Error("extractor history loading", "err", loadErr.Error())
+			return nil
+		}
+
+		return urls
+	})
 
 	return nil
 }
