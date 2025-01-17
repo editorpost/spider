@@ -39,6 +39,9 @@ func (crawler *Crawler) collector() (*colly.Collector, error) {
 		withProxyPool,
 	)
 
+	// revisit the same URL
+	crawler.collect.AllowURLRevisit = !crawler.args.VisitOnce
+
 	if err = crawler.collect.SetStorage(crawler.deps.Storage); err != nil {
 		return nil, err
 	}
