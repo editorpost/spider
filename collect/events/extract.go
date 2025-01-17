@@ -29,9 +29,18 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 
 	return func(doc *colly.HTMLElement) {
 
-		// if expression exists, extract entity urls
+		// the url matches the expression
 		if !match(doc.Request.URL) {
 			slog.Info("extract: url not matched",
+				slog.String("url", doc.Request.URL.String()),
+				slog.String("title", doc.DOM.Find("title").Text()),
+			)
+			return
+		}
+
+		// check extraction limit
+		if crawler.IsExtractionLimitReached() {
+			slog.Info("extract: limit reached",
 				slog.String("url", doc.Request.URL.String()),
 				slog.String("title", doc.DOM.Find("title").Text()),
 			)
@@ -55,8 +64,10 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 			}
 
 			extracted = true
+
+			// send metrics
 			crawler.deps.Monitor.OnExtract(doc.Response)
-			crawler.WatchLimit()
+			crawler.CountExtraction()
 		}
 
 		if !extracted {
@@ -73,17 +84,26 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 	}
 }
 
-// WatchLimit matching the query (with JS browse if Config.ExtractSelector is not found in GET response)
-func (crawler *Dispatch) WatchLimit() {
+// CountExtraction matching the query (with JS browse if Config.ExtractSelector is not found in GET response)
+func (crawler *Dispatch) CountExtraction() {
 
-	count := int(crawler.extractedCount.Add(1))
-	limit := crawler.args.ExtractLimit
+	// add to the extracted count
+	crawler.extractedCount.Add(1)
 
-	// limit is set and reached
-	if limit > 0 && count >= limit {
-		// stop the new requests
+	// check if the limit is reached
+	if crawler.IsExtractionLimitReached() {
+
+		// stop the queue
+		// existing requests will be processed
+		// catch them on extraction with IsExtractionLimitReached
 		crawler.queue.Stop()
 	}
+}
+
+func (crawler *Dispatch) IsExtractionLimitReached() bool {
+	count := int(crawler.extractedCount.Load())
+	limit := crawler.args.ExtractLimit
+	return limit > 0 && count >= limit
 }
 
 // selections matching the query (with JS browse if Config.ExtractSelector is not found in GET response)
