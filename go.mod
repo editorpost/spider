@@ -15,6 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.69.0
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/brianvoe/gofakeit/v6 v6.28.0
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/chromedp/cdproto v0.0.0-20241110205750-a72e6703cd9b
 	github.com/chromedp/chromedp v0.11.2
 	github.com/editorpost/article v0.0.2
@@ -63,7 +64,6 @@ require (
 	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/bits-and-blooms/bitset v1.17.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
-	github.com/caarlos0/env/v10 v10.0.0 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.6.0 // indirect

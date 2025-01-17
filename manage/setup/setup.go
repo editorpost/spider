@@ -114,9 +114,6 @@ func (s *Spider) NewDeps() (*config.Deps, error) {
 		return nil, err
 	}
 
-	// add windmill run metadata to the pipeline payload
-	s.pipe.Starter(extract.WindmillMeta)
-
 	// set the extractor function to the deps
 	deps.Extractor = s.pipe.Extract
 
