@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/store/ent"
+	"github.com/editorpost/spider/store/ent/spiderpayload"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"strings"
@@ -103,8 +104,27 @@ func (e *SpiderPayloads) Save(p *pipe.Payload) error {
 	return err
 }
 
-// ByPayloadID
-// @note: for testing purposes
+func (e *SpiderPayloads) URLs() ([]string, error) {
+
+	id, idErr := uuid.Parse(e.spiderID)
+	if idErr != nil {
+		return nil, idErr
+	}
+
+	fields, err := e.db.SpiderPayload.Query().
+		Select(spiderpayload.FieldURL).
+		Where(spiderpayload.SpiderID(id)).
+		All(context.Background())
+
+	urls := make([]string, 0, len(fields))
+	for _, f := range fields {
+		urls = append(urls, f.URL)
+	}
+
+	return urls, ent.MaskNotFound(err)
+}
+
+// ByID @note: for testing purposes
 func (e *SpiderPayloads) ByID(payloadID string) (*ent.SpiderPayload, error) {
 
 	id, err := uuid.Parse(payloadID)
