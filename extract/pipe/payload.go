@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
-	"hash/fnv"
+	"github.com/google/uuid"
 	"net/url"
 	"time"
 )
@@ -29,8 +29,10 @@ type (
 	//goland:noinspection GoNameStartsWithPackageName
 	Payload struct {
 		// ID is document url hash
-		ID  string          `json:"ID"`
-		Ctx context.Context `json:"-"`
+		ID          string          `json:"ID"`
+		JobProvider string          `json:"JobProvider"`
+		JobID       string          `json:"JobID"`
+		Ctx         context.Context `json:"-"`
 		// Doc is full document
 		Doc *colly.HTMLElement `json:"-"`
 		// Selection of entity in document
@@ -49,13 +51,13 @@ func NewPayload(doc *colly.HTMLElement, s *goquery.Selection) (*Payload, error) 
 		return nil, errors.New("document is nil")
 	}
 
-	id, err := Hash(doc.Request.URL.String())
+	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, fmt.Errorf("url FNV hash error: %w", err)
 	}
 
 	return &Payload{
-		ID:        id,
+		ID:        id.String(),
 		Ctx:       context.Background(),
 		Doc:       doc,
 		Selection: s,
@@ -66,15 +68,6 @@ func NewPayload(doc *colly.HTMLElement, s *goquery.Selection) (*Payload, error) 
 			HostField:     doc.Request.URL.Host,
 			UrlField:      doc.Request.URL.String(),
 		},
+		// @todo: entity types, processors tags or ids
 	}, nil
-}
-
-// Hash generates an FNV hash from the source Endpoint.
-func Hash(uri string) (string, error) {
-	h := fnv.New64a()
-	_, err := h.Write([]byte(uri))
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", h.Sum64()), nil
 }
