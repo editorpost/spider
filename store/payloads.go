@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/store/ent"
 	"github.com/google/uuid"
@@ -88,15 +87,15 @@ func (e *SpiderPayloads) Save(p *pipe.Payload) error {
 		SetStatus(ExtractIndexStatusPending)
 
 	// job provider meta
-	if jobID, ok := p.Data[extract.JobID].(string); ok {
-		if jobUUID, err := uuid.Parse(jobID); err == nil {
+	if p.JobID != "" {
+		if jobUUID, err := uuid.Parse(p.JobID); err == nil {
 			q.SetJobID(jobUUID)
 		}
 	}
 
 	// job provider meta
-	if provider, err := p.Data[extract.JobProvider].(string); err {
-		q.SetJobProvider(provider)
+	if p.JobProvider != "" {
+		q.SetJobProvider(p.JobProvider)
 	}
 
 	_, err := q.Save(context.Background())
