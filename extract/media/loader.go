@@ -3,7 +3,8 @@ package media
 import (
 	"bytes"
 	"errors"
-	"github.com/editorpost/spider/extract/pipe"
+	"fmt"
+	"hash/fnv"
 	"io"
 	"net/http"
 	"net/url"
@@ -113,7 +114,7 @@ func Filename(srcURL string) (string, error) {
 
 	// filename is FNV hash for the download url
 	// minimizing duplicates
-	name, err := pipe.Hash(srcURL)
+	name, err := Hash(srcURL)
 	if err != nil {
 		return "", err
 	}
@@ -124,6 +125,19 @@ func Filename(srcURL string) (string, error) {
 	}
 
 	return name + ext, nil
+}
+
+// Hash generates an FNV hash from the source Endpoint.
+// @note the hash is not equal the colly request ID (colly use url and body hash)
+func Hash(uri string) (string, error) {
+
+	h := fnv.New64a()
+	_, err := h.Write([]byte(uri))
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", h.Sum64()), nil
 }
 
 func FileExtension(uri string) (string, error) {
