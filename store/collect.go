@@ -14,7 +14,6 @@ import (
 
 type CollectStore interface {
 	storage.Storage
-	Reset() error
 }
 
 // CollectStorage in-memory colly storage backed by S3
