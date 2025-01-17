@@ -43,7 +43,12 @@ func (p *Pipeline) Extract(doc *colly.HTMLElement, s *goquery.Selection) error {
 
 	payload, err := NewPayload(doc, s)
 	if err != nil {
-		return fmt.Errorf("url FNV hash error: %w", err)
+		return fmt.Errorf("payload creation error: %w", err)
+	}
+
+	// set job id and provider
+	if err = JobMetadata(payload); err != nil {
+		return err
 	}
 
 	// starter
