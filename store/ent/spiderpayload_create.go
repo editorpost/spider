@@ -27,12 +27,6 @@ func (spc *SpiderPayloadCreate) SetSpiderID(u uuid.UUID) *SpiderPayloadCreate {
 	return spc
 }
 
-// SetPayloadID sets the "payload_id" field.
-func (spc *SpiderPayloadCreate) SetPayloadID(s string) *SpiderPayloadCreate {
-	spc.mutation.SetPayloadID(s)
-	return spc
-}
-
 // SetExtractedAt sets the "extracted_at" field.
 func (spc *SpiderPayloadCreate) SetExtractedAt(t time.Time) *SpiderPayloadCreate {
 	spc.mutation.SetExtractedAt(t)
@@ -191,14 +185,6 @@ func (spc *SpiderPayloadCreate) check() error {
 	if _, ok := spc.mutation.SpiderID(); !ok {
 		return &ValidationError{Name: "spider_id", err: errors.New(`ent: missing required field "SpiderPayload.spider_id"`)}
 	}
-	if _, ok := spc.mutation.PayloadID(); !ok {
-		return &ValidationError{Name: "payload_id", err: errors.New(`ent: missing required field "SpiderPayload.payload_id"`)}
-	}
-	if v, ok := spc.mutation.PayloadID(); ok {
-		if err := spiderpayload.PayloadIDValidator(v); err != nil {
-			return &ValidationError{Name: "payload_id", err: fmt.Errorf(`ent: validator failed for field "SpiderPayload.payload_id": %w`, err)}
-		}
-	}
 	if _, ok := spc.mutation.ExtractedAt(); !ok {
 		return &ValidationError{Name: "extracted_at", err: errors.New(`ent: missing required field "SpiderPayload.extracted_at"`)}
 	}
@@ -246,10 +232,6 @@ func (spc *SpiderPayloadCreate) createSpec() (*SpiderPayload, *sqlgraph.CreateSp
 	if value, ok := spc.mutation.SpiderID(); ok {
 		_spec.SetField(spiderpayload.FieldSpiderID, field.TypeUUID, value)
 		_node.SpiderID = value
-	}
-	if value, ok := spc.mutation.PayloadID(); ok {
-		_spec.SetField(spiderpayload.FieldPayloadID, field.TypeString, value)
-		_node.PayloadID = value
 	}
 	if value, ok := spc.mutation.ExtractedAt(); ok {
 		_spec.SetField(spiderpayload.FieldExtractedAt, field.TypeTime, value)

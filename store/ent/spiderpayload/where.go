@@ -60,11 +60,6 @@ func SpiderID(v uuid.UUID) predicate.SpiderPayload {
 	return predicate.SpiderPayload(sql.FieldEQ(FieldSpiderID, v))
 }
 
-// PayloadID applies equality check predicate on the "payload_id" field. It's identical to PayloadIDEQ.
-func PayloadID(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldEQ(FieldPayloadID, v))
-}
-
 // ExtractedAt applies equality check predicate on the "extracted_at" field. It's identical to ExtractedAtEQ.
 func ExtractedAt(v time.Time) predicate.SpiderPayload {
 	return predicate.SpiderPayload(sql.FieldEQ(FieldExtractedAt, v))
@@ -138,71 +133,6 @@ func SpiderIDLT(v uuid.UUID) predicate.SpiderPayload {
 // SpiderIDLTE applies the LTE predicate on the "spider_id" field.
 func SpiderIDLTE(v uuid.UUID) predicate.SpiderPayload {
 	return predicate.SpiderPayload(sql.FieldLTE(FieldSpiderID, v))
-}
-
-// PayloadIDEQ applies the EQ predicate on the "payload_id" field.
-func PayloadIDEQ(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldEQ(FieldPayloadID, v))
-}
-
-// PayloadIDNEQ applies the NEQ predicate on the "payload_id" field.
-func PayloadIDNEQ(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldNEQ(FieldPayloadID, v))
-}
-
-// PayloadIDIn applies the In predicate on the "payload_id" field.
-func PayloadIDIn(vs ...string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldIn(FieldPayloadID, vs...))
-}
-
-// PayloadIDNotIn applies the NotIn predicate on the "payload_id" field.
-func PayloadIDNotIn(vs ...string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldNotIn(FieldPayloadID, vs...))
-}
-
-// PayloadIDGT applies the GT predicate on the "payload_id" field.
-func PayloadIDGT(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldGT(FieldPayloadID, v))
-}
-
-// PayloadIDGTE applies the GTE predicate on the "payload_id" field.
-func PayloadIDGTE(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldGTE(FieldPayloadID, v))
-}
-
-// PayloadIDLT applies the LT predicate on the "payload_id" field.
-func PayloadIDLT(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldLT(FieldPayloadID, v))
-}
-
-// PayloadIDLTE applies the LTE predicate on the "payload_id" field.
-func PayloadIDLTE(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldLTE(FieldPayloadID, v))
-}
-
-// PayloadIDContains applies the Contains predicate on the "payload_id" field.
-func PayloadIDContains(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldContains(FieldPayloadID, v))
-}
-
-// PayloadIDHasPrefix applies the HasPrefix predicate on the "payload_id" field.
-func PayloadIDHasPrefix(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldHasPrefix(FieldPayloadID, v))
-}
-
-// PayloadIDHasSuffix applies the HasSuffix predicate on the "payload_id" field.
-func PayloadIDHasSuffix(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldHasSuffix(FieldPayloadID, v))
-}
-
-// PayloadIDEqualFold applies the EqualFold predicate on the "payload_id" field.
-func PayloadIDEqualFold(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldEqualFold(FieldPayloadID, v))
-}
-
-// PayloadIDContainsFold applies the ContainsFold predicate on the "payload_id" field.
-func PayloadIDContainsFold(v string) predicate.SpiderPayload {
-	return predicate.SpiderPayload(sql.FieldContainsFold(FieldPayloadID, v))
 }
 
 // ExtractedAtEQ applies the EQ predicate on the "extracted_at" field.

@@ -20,8 +20,6 @@ type SpiderPayload struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// SpiderID holds the value of the "spider_id" field.
 	SpiderID uuid.UUID `json:"spider_id,omitempty"`
-	// PayloadID holds the value of the "payload_id" field.
-	PayloadID string `json:"payload_id,omitempty"`
 	// ExtractedAt holds the value of the "extracted_at" field.
 	ExtractedAt time.Time `json:"extracted_at,omitempty"`
 	// URL holds the value of the "url" field.
@@ -46,7 +44,7 @@ func (*SpiderPayload) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case spiderpayload.FieldStatus:
 			values[i] = new(sql.NullInt64)
-		case spiderpayload.FieldPayloadID, spiderpayload.FieldURL, spiderpayload.FieldPath, spiderpayload.FieldTitle, spiderpayload.FieldJobProvider:
+		case spiderpayload.FieldURL, spiderpayload.FieldPath, spiderpayload.FieldTitle, spiderpayload.FieldJobProvider:
 			values[i] = new(sql.NullString)
 		case spiderpayload.FieldExtractedAt:
 			values[i] = new(sql.NullTime)
@@ -78,12 +76,6 @@ func (sp *SpiderPayload) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field spider_id", values[i])
 			} else if value != nil {
 				sp.SpiderID = *value
-			}
-		case spiderpayload.FieldPayloadID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field payload_id", values[i])
-			} else if value.Valid {
-				sp.PayloadID = value.String
 			}
 		case spiderpayload.FieldExtractedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -165,9 +157,6 @@ func (sp *SpiderPayload) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", sp.ID))
 	builder.WriteString("spider_id=")
 	builder.WriteString(fmt.Sprintf("%v", sp.SpiderID))
-	builder.WriteString(", ")
-	builder.WriteString("payload_id=")
-	builder.WriteString(sp.PayloadID)
 	builder.WriteString(", ")
 	builder.WriteString("extracted_at=")
 	builder.WriteString(sp.ExtractedAt.Format(time.ANSIC))

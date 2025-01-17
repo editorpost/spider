@@ -43,20 +43,6 @@ func (spu *SpiderPayloadUpdate) SetNillableSpiderID(u *uuid.UUID) *SpiderPayload
 	return spu
 }
 
-// SetPayloadID sets the "payload_id" field.
-func (spu *SpiderPayloadUpdate) SetPayloadID(s string) *SpiderPayloadUpdate {
-	spu.mutation.SetPayloadID(s)
-	return spu
-}
-
-// SetNillablePayloadID sets the "payload_id" field if the given value is not nil.
-func (spu *SpiderPayloadUpdate) SetNillablePayloadID(s *string) *SpiderPayloadUpdate {
-	if s != nil {
-		spu.SetPayloadID(*s)
-	}
-	return spu
-}
-
 // SetExtractedAt sets the "extracted_at" field.
 func (spu *SpiderPayloadUpdate) SetExtractedAt(t time.Time) *SpiderPayloadUpdate {
 	spu.mutation.SetExtractedAt(t)
@@ -218,20 +204,7 @@ func (spu *SpiderPayloadUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (spu *SpiderPayloadUpdate) check() error {
-	if v, ok := spu.mutation.PayloadID(); ok {
-		if err := spiderpayload.PayloadIDValidator(v); err != nil {
-			return &ValidationError{Name: "payload_id", err: fmt.Errorf(`ent: validator failed for field "SpiderPayload.payload_id": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (spu *SpiderPayloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := spu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(spiderpayload.Table, spiderpayload.Columns, sqlgraph.NewFieldSpec(spiderpayload.FieldID, field.TypeUUID))
 	if ps := spu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -242,9 +215,6 @@ func (spu *SpiderPayloadUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if value, ok := spu.mutation.SpiderID(); ok {
 		_spec.SetField(spiderpayload.FieldSpiderID, field.TypeUUID, value)
-	}
-	if value, ok := spu.mutation.PayloadID(); ok {
-		_spec.SetField(spiderpayload.FieldPayloadID, field.TypeString, value)
 	}
 	if value, ok := spu.mutation.ExtractedAt(); ok {
 		_spec.SetField(spiderpayload.FieldExtractedAt, field.TypeTime, value)
@@ -312,20 +282,6 @@ func (spuo *SpiderPayloadUpdateOne) SetSpiderID(u uuid.UUID) *SpiderPayloadUpdat
 func (spuo *SpiderPayloadUpdateOne) SetNillableSpiderID(u *uuid.UUID) *SpiderPayloadUpdateOne {
 	if u != nil {
 		spuo.SetSpiderID(*u)
-	}
-	return spuo
-}
-
-// SetPayloadID sets the "payload_id" field.
-func (spuo *SpiderPayloadUpdateOne) SetPayloadID(s string) *SpiderPayloadUpdateOne {
-	spuo.mutation.SetPayloadID(s)
-	return spuo
-}
-
-// SetNillablePayloadID sets the "payload_id" field if the given value is not nil.
-func (spuo *SpiderPayloadUpdateOne) SetNillablePayloadID(s *string) *SpiderPayloadUpdateOne {
-	if s != nil {
-		spuo.SetPayloadID(*s)
 	}
 	return spuo
 }
@@ -504,20 +460,7 @@ func (spuo *SpiderPayloadUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (spuo *SpiderPayloadUpdateOne) check() error {
-	if v, ok := spuo.mutation.PayloadID(); ok {
-		if err := spiderpayload.PayloadIDValidator(v); err != nil {
-			return &ValidationError{Name: "payload_id", err: fmt.Errorf(`ent: validator failed for field "SpiderPayload.payload_id": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (spuo *SpiderPayloadUpdateOne) sqlSave(ctx context.Context) (_node *SpiderPayload, err error) {
-	if err := spuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(spiderpayload.Table, spiderpayload.Columns, sqlgraph.NewFieldSpec(spiderpayload.FieldID, field.TypeUUID))
 	id, ok := spuo.mutation.ID()
 	if !ok {
@@ -545,9 +488,6 @@ func (spuo *SpiderPayloadUpdateOne) sqlSave(ctx context.Context) (_node *SpiderP
 	}
 	if value, ok := spuo.mutation.SpiderID(); ok {
 		_spec.SetField(spiderpayload.FieldSpiderID, field.TypeUUID, value)
-	}
-	if value, ok := spuo.mutation.PayloadID(); ok {
-		_spec.SetField(spiderpayload.FieldPayloadID, field.TypeString, value)
 	}
 	if value, ok := spuo.mutation.ExtractedAt(); ok {
 		_spec.SetField(spiderpayload.FieldExtractedAt, field.TypeTime, value)

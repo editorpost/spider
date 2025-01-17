@@ -16,8 +16,6 @@ const (
 	FieldID = "id"
 	// FieldSpiderID holds the string denoting the spider_id field in the database.
 	FieldSpiderID = "spider_id"
-	// FieldPayloadID holds the string denoting the payload_id field in the database.
-	FieldPayloadID = "payload_id"
 	// FieldExtractedAt holds the string denoting the extracted_at field in the database.
 	FieldExtractedAt = "extracted_at"
 	// FieldURL holds the string denoting the url field in the database.
@@ -40,7 +38,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldSpiderID,
-	FieldPayloadID,
 	FieldExtractedAt,
 	FieldURL,
 	FieldPath,
@@ -61,8 +58,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// PayloadIDValidator is a validator for the "payload_id" field. It is called by the builders before save.
-	PayloadIDValidator func(string) error
 	// DefaultExtractedAt holds the default value on creation for the "extracted_at" field.
 	DefaultExtractedAt func() time.Time
 	// DefaultStatus holds the default value on creation for the "status" field.
@@ -82,11 +77,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // BySpiderID orders the results by the spider_id field.
 func BySpiderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSpiderID, opts...).ToFunc()
-}
-
-// ByPayloadID orders the results by the payload_id field.
-func ByPayloadID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPayloadID, opts...).ToFunc()
 }
 
 // ByExtractedAt orders the results by the extracted_at field.

@@ -35,7 +35,6 @@ type SpiderPayloadMutation struct {
 	typ           string
 	id            *uuid.UUID
 	spider_id     *uuid.UUID
-	payload_id    *string
 	extracted_at  *time.Time
 	url           *string
 	_path         *string
@@ -188,42 +187,6 @@ func (m *SpiderPayloadMutation) OldSpiderID(ctx context.Context) (v uuid.UUID, e
 // ResetSpiderID resets all changes to the "spider_id" field.
 func (m *SpiderPayloadMutation) ResetSpiderID() {
 	m.spider_id = nil
-}
-
-// SetPayloadID sets the "payload_id" field.
-func (m *SpiderPayloadMutation) SetPayloadID(s string) {
-	m.payload_id = &s
-}
-
-// PayloadID returns the value of the "payload_id" field in the mutation.
-func (m *SpiderPayloadMutation) PayloadID() (r string, exists bool) {
-	v := m.payload_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPayloadID returns the old "payload_id" field's value of the SpiderPayload entity.
-// If the SpiderPayload object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SpiderPayloadMutation) OldPayloadID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPayloadID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPayloadID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPayloadID: %w", err)
-	}
-	return oldValue.PayloadID, nil
-}
-
-// ResetPayloadID resets all changes to the "payload_id" field.
-func (m *SpiderPayloadMutation) ResetPayloadID() {
-	m.payload_id = nil
 }
 
 // SetExtractedAt sets the "extracted_at" field.
@@ -584,12 +547,9 @@ func (m *SpiderPayloadMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SpiderPayloadMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.spider_id != nil {
 		fields = append(fields, spiderpayload.FieldSpiderID)
-	}
-	if m.payload_id != nil {
-		fields = append(fields, spiderpayload.FieldPayloadID)
 	}
 	if m.extracted_at != nil {
 		fields = append(fields, spiderpayload.FieldExtractedAt)
@@ -622,8 +582,6 @@ func (m *SpiderPayloadMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case spiderpayload.FieldSpiderID:
 		return m.SpiderID()
-	case spiderpayload.FieldPayloadID:
-		return m.PayloadID()
 	case spiderpayload.FieldExtractedAt:
 		return m.ExtractedAt()
 	case spiderpayload.FieldURL:
@@ -649,8 +607,6 @@ func (m *SpiderPayloadMutation) OldField(ctx context.Context, name string) (ent.
 	switch name {
 	case spiderpayload.FieldSpiderID:
 		return m.OldSpiderID(ctx)
-	case spiderpayload.FieldPayloadID:
-		return m.OldPayloadID(ctx)
 	case spiderpayload.FieldExtractedAt:
 		return m.OldExtractedAt(ctx)
 	case spiderpayload.FieldURL:
@@ -680,13 +636,6 @@ func (m *SpiderPayloadMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSpiderID(v)
-		return nil
-	case spiderpayload.FieldPayloadID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPayloadID(v)
 		return nil
 	case spiderpayload.FieldExtractedAt:
 		v, ok := value.(time.Time)
@@ -830,9 +779,6 @@ func (m *SpiderPayloadMutation) ResetField(name string) error {
 	switch name {
 	case spiderpayload.FieldSpiderID:
 		m.ResetSpiderID()
-		return nil
-	case spiderpayload.FieldPayloadID:
-		m.ResetPayloadID()
 		return nil
 	case spiderpayload.FieldExtractedAt:
 		m.ResetExtractedAt()

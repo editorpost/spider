@@ -12,7 +12,6 @@ var (
 	SpiderPayloadsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "spider_id", Type: field.TypeUUID},
-		{Name: "payload_id", Type: field.TypeString},
 		{Name: "extracted_at", Type: field.TypeTime},
 		{Name: "url", Type: field.TypeString, Nullable: true},
 		{Name: "path", Type: field.TypeString, Nullable: true},
@@ -30,7 +29,7 @@ var (
 			{
 				Name:    "spiderpayload_spider_id_extracted_at",
 				Unique:  true,
-				Columns: []*schema.Column{SpiderPayloadsColumns[1], SpiderPayloadsColumns[3]},
+				Columns: []*schema.Column{SpiderPayloadsColumns[1], SpiderPayloadsColumns[2]},
 			},
 		},
 	}

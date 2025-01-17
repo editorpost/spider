@@ -16,16 +16,12 @@ import (
 func init() {
 	spiderpayloadFields := schema.SpiderPayload{}.Fields()
 	_ = spiderpayloadFields
-	// spiderpayloadDescPayloadID is the schema descriptor for payload_id field.
-	spiderpayloadDescPayloadID := spiderpayloadFields[2].Descriptor()
-	// spiderpayload.PayloadIDValidator is a validator for the "payload_id" field. It is called by the builders before save.
-	spiderpayload.PayloadIDValidator = spiderpayloadDescPayloadID.Validators[0].(func(string) error)
 	// spiderpayloadDescExtractedAt is the schema descriptor for extracted_at field.
-	spiderpayloadDescExtractedAt := spiderpayloadFields[3].Descriptor()
+	spiderpayloadDescExtractedAt := spiderpayloadFields[2].Descriptor()
 	// spiderpayload.DefaultExtractedAt holds the default value on creation for the extracted_at field.
 	spiderpayload.DefaultExtractedAt = spiderpayloadDescExtractedAt.Default.(func() time.Time)
 	// spiderpayloadDescStatus is the schema descriptor for status field.
-	spiderpayloadDescStatus := spiderpayloadFields[6].Descriptor()
+	spiderpayloadDescStatus := spiderpayloadFields[5].Descriptor()
 	// spiderpayload.DefaultStatus holds the default value on creation for the status field.
 	spiderpayload.DefaultStatus = spiderpayloadDescStatus.Default.(uint8)
 	// spiderpayloadDescID is the schema descriptor for id field.

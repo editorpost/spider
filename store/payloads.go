@@ -5,7 +5,6 @@ import (
 	"github.com/editorpost/spider/extract"
 	"github.com/editorpost/spider/extract/pipe"
 	"github.com/editorpost/spider/store/ent"
-	"github.com/editorpost/spider/store/ent/spiderpayload"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"strings"
@@ -75,8 +74,13 @@ func (e *SpiderPayloads) Save(p *pipe.Payload) error {
 		return idErr
 	}
 
+	payloadID, idErr := uuid.Parse(p.ID)
+	if idErr != nil {
+		return idErr
+	}
+
 	q := e.db.SpiderPayload.Create().
-		SetPayloadID(p.ID).
+		SetID(payloadID).
 		SetSpiderID(spiderID).
 		SetTitle(p.Doc.DOM.Find("title").Text()).
 		SetURL(p.URL.String()).
@@ -100,10 +104,16 @@ func (e *SpiderPayloads) Save(p *pipe.Payload) error {
 	return err
 }
 
-func (e *SpiderPayloads) ByPayloadID(payloadID string) (*ent.SpiderPayload, error) {
-	return e.db.SpiderPayload.Query().
-		Where(spiderpayload.PayloadID(payloadID)).
-		Only(context.Background())
+// ByPayloadID
+// @note: for testing purposes
+func (e *SpiderPayloads) ByID(payloadID string) (*ent.SpiderPayload, error) {
+
+	id, err := uuid.Parse(payloadID)
+	if err != nil {
+		return nil, err
+	}
+
+	return e.db.SpiderPayload.Get(context.Background(), id)
 }
 
 func (e *SpiderPayloads) Client() *ent.Client {

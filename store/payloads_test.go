@@ -45,7 +45,7 @@ func TestSpiderPayloads_Save(t *testing.T) {
 	require.NoError(t, idx.Save(payload))
 
 	// load and check
-	row, err := idx.ByPayloadID(payload.ID)
+	row, err := idx.ByID(payload.ID)
 	require.NoError(t, err)
-	require.Equal(t, payload.ID, row.PayloadID)
+	require.Equal(t, payload.ID, row.ID)
 }
