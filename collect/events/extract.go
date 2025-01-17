@@ -53,7 +53,9 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 		// might be empty if the query is not found
 		for _, selected := range crawler.selections(doc) {
 
-			if err := crawler.deps.Extractor(doc, selected); err != nil {
+			ok, err := crawler.deps.Extractor.Extract(doc, selected)
+
+			if err != nil {
 				crawler.deps.Monitor.OnError(doc.Response, err)
 				slog.Warn("extraction error",
 					slog.String("error", err.Error()),
@@ -63,11 +65,18 @@ func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 				continue
 			}
 
-			extracted = true
+			if !ok {
+				slog.Info("skipped",
+					slog.String("url", doc.Request.URL.String()),
+					slog.String("title", doc.DOM.Find("title").Text()),
+				)
+				continue
+			}
 
 			// send metrics
 			crawler.deps.Monitor.OnExtract(doc.Response)
 			crawler.CountExtraction()
+			extracted = true
 		}
 
 		if !extracted {

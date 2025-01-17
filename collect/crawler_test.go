@@ -31,10 +31,10 @@ func TestCollect(t *testing.T) {
 			ExtractSelector: ".article--ssr",
 		},
 		&config.Deps{
-			Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
+			Extractor: config.NewExtractor(func(*colly.HTMLElement, *goquery.Selection) (bool, error) {
 				dispatched = true
-				return nil
-			},
+				return dispatched, nil
+			}),
 		},
 	)
 	require.NoError(t, err)
@@ -61,10 +61,10 @@ func TestJSCollect(t *testing.T) {
 			UseBrowser:      true,
 		},
 		&config.Deps{
-			Extractor: func(*colly.HTMLElement, *goquery.Selection) error {
+			Extractor: config.NewExtractor(func(*colly.HTMLElement, *goquery.Selection) (bool, error) {
 				dispatched = true
-				return nil
-			},
+				return dispatched, nil
+			}),
 		},
 	)
 

@@ -8,11 +8,15 @@ import (
 	"net/http"
 )
 
+type Extractor interface {
+	Extract(*colly.HTMLElement, *goquery.Selection) (bool, error)
+}
+
 type Deps struct {
 	// RoundTripper is the function to return the next proxy from the list
 	RoundTripper http.RoundTripper
 	// Extractor is the function to process matched the data, e.g. html tag node
-	Extractor func(*colly.HTMLElement, *goquery.Selection) error
+	Extractor Extractor
 	// Storage is the storage backend for the collector
 	Storage storage.Storage
 	// Debugger is the function to debug/Monitor spider
@@ -25,9 +29,7 @@ type Deps struct {
 func (deps *Deps) Normalize() *Deps {
 
 	if deps.Extractor == nil {
-		deps.Extractor = func(_ *colly.HTMLElement, _ *goquery.Selection) error {
-			return nil
-		}
+		deps.Extractor = &ExtractorFn{}
 	}
 
 	if deps.Monitor == nil {
@@ -39,4 +41,19 @@ func (deps *Deps) Normalize() *Deps {
 	}
 
 	return deps
+}
+
+type ExtractorFn struct {
+	fn func(_ *colly.HTMLElement, _ *goquery.Selection) (bool, error)
+}
+
+func NewExtractor(fn func(_ *colly.HTMLElement, _ *goquery.Selection) (bool, error)) *ExtractorFn {
+	return &ExtractorFn{fn: fn}
+}
+
+func (e *ExtractorFn) Extract(doc *colly.HTMLElement, selection *goquery.Selection) (bool, error) {
+	if e.fn == nil {
+		return false, nil
+	}
+	return e.fn(doc, selection)
 }

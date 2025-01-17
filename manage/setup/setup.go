@@ -115,7 +115,7 @@ func (s *Spider) NewDeps() (*config.Deps, error) {
 	}
 
 	// set the extractor function to the deps
-	deps.Extractor = s.pipe.Extract
+	deps.Extractor = s.pipe
 
 	return deps, nil
 }
