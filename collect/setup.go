@@ -34,7 +34,7 @@ func (crawler *Crawler) collector() (*colly.Collector, error) {
 	crawler.collect = colly.NewCollector(
 		colly.MaxDepth(crawler.args.Depth),
 		colly.MaxBodySize(10<<20), // 10MB
-		crawler.VisitUrlFilter(crawler.args),
+		crawler.VisitUrlsFilter(crawler.args),
 		events.WithDispatcher(crawler.args, crawler.deps, events.Queue(crawler.queue), events.Browser(crawler)),
 		withProxyPool,
 	)
@@ -59,22 +59,31 @@ func (crawler *Crawler) collector() (*colly.Collector, error) {
 	return crawler.collect, nil
 }
 
-// VisitUrlFilter sets up the Endpoint filters for the collector.
+// VisitUrlsFilter sets up the Endpoint filters for the collector.
 // It applies a regular expression filter to the URLs visited by the collector.
 // Allowed Endpoint pattern is used to extract links in hope to find entity URLs.
 // In other hand, ExtractURL is used to run extractors on the page.
-func (crawler *Crawler) VisitUrlFilter(args *config.Config) colly.CollectorOption {
+func (crawler *Crawler) VisitUrlsFilter(args *config.Config) colly.CollectorOption {
 	return func(collector *colly.Collector) {
-
-		// Generate regular expressions from the start, allowed, and entity URLs
-		allowed := config.RegexPattern(args.AllowedURL)
 
 		// Append the host of the start Endpoint to the allowed domains of the collector
 		collector.AllowedDomains = append(collector.AllowedDomains, config.MustHostname(args.StartURL))
 
-		// Append a regular expression from the allowed Endpoint to the Endpoint filters of the collector
-		collector.URLFilters = append(collector.URLFilters, regexp.MustCompile(allowed))
+		// Append the allowed Endpoint to the Endpoint filters of the collector
+		for _, allowedURL := range args.AllowedURLs {
+			crawler.VisitUrlFilter(allowedURL, collector)
+		}
 	}
+}
+
+func (crawler *Crawler) VisitUrlFilter(allowedURL string, collector *colly.Collector) {
+
+	// Generate regular expressions from the start, allowed, and entity URLs
+	allowed := config.RegexPattern(allowedURL)
+
+	// URLFilters is a list of regular expressions of allowed urls.
+	// if ANY expression matches the URL, the URL is allowed to be visited.
+	collector.URLFilters = append(collector.URLFilters, regexp.MustCompile(allowed))
 }
 
 // withQueue sets up the request queue for the crawler.

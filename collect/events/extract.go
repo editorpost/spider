@@ -12,19 +12,25 @@ import (
 // extract entries from html selections
 func (crawler *Dispatch) extract() func(e *colly.HTMLElement) {
 
-	var entityURL *regexp.Regexp
+	var patterns []*regexp.Regexp
 
-	// If the entity Endpoint is not empty, compile a regular expression from it
-	if len(crawler.args.ExtractURL) > 0 {
-		regex := config.RegexPattern(crawler.args.ExtractURL)
-		entityURL = regexp.MustCompile(regex)
+	for _, expr := range crawler.args.ExtractURLs {
+		patterns = append(patterns, regexp.MustCompile(config.RegexPattern(expr)))
 	}
 
 	match := func(u *url.URL) bool {
-		if entityURL == nil {
+
+		if len(patterns) == 0 {
 			return true
 		}
-		return entityURL.MatchString(u.String())
+
+		for _, pattern := range patterns {
+			if pattern.MatchString(u.String()) {
+				return true
+			}
+		}
+
+		return false
 	}
 
 	return func(doc *colly.HTMLElement) {

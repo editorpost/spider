@@ -15,8 +15,8 @@ func NewSpiderWith(t *testing.T, server *TestServer) *setup.Spider {
 
 	args := NewArgs()
 	args.StartURL = server.URL + "/index.html"
-	args.AllowedURL = server.URL
-	args.ExtractURL = server.URL + "/{dir}/{some}-{num}.html"
+	args.AllowedURLs = []string{server.URL}
+	args.ExtractURLs = []string{server.URL + "/{dir}/{some}-{num}.html"}
 	args.ExtractLimit = 5
 	args.Depth = 3
 
@@ -30,8 +30,6 @@ func NewSpiderWith(t *testing.T, server *TestServer) *setup.Spider {
 func NewArgs() *config.Config {
 	return &config.Config{
 		StartURL:        "",
-		AllowedURL:      "",
-		ExtractURL:      "",
 		ExtractSelector: "",
 		ExtractLimit:    0,
 		UseBrowser:      false,

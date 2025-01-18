@@ -17,13 +17,13 @@ type Config struct {
 	// StartURL is the url to start the scraping
 	StartURL string `json:"StartURL"`
 
-	// AllowedURL is comma separated regex to match the urls
+	// AllowedURLs is comma separated regex to match the urls
 	// use it to reduce the number of urls to visit
-	AllowedURL string `json:"AllowedURL"`
+	AllowedURLs []string `json:"AllowedURLs"`
 
-	// ExtractURL is the regex to match the entity urls
+	// ExtractURLs is the regex to match the entity urls
 	// use it to extract the entity urls
-	ExtractURL string `json:"ExtractURL"`
+	ExtractURLs []string `json:"ExtractURLs"`
 
 	// VisitOnce is the flag to visit the url only once
 	// If true, then visited urls stored in S3 between runs
@@ -42,9 +42,11 @@ type Config struct {
 
 	// UseBrowser is a flag to use browser for rendering the page
 	UseBrowser bool `json:"UseBrowser"`
+
 	// Depth if is 1, so only the links on the scraped page
 	// is visited, and no further links are followed
 	Depth int `json:"Depth"`
+
 	// UserAgent is the user agent string used by the collector
 	UserAgent string `json:"UserAgent"`
 
@@ -90,8 +92,8 @@ func (args *Config) Normalize() error {
 func (args *Config) Log() slog.Attr {
 	return slog.Group("args",
 		slog.String("start_url", args.StartURL),
-		slog.String("allowed_url", args.AllowedURL),
-		slog.String("entity_url", args.ExtractURL),
+		slog.String("allowed_urls", strings.Join(args.AllowedURLs, ",")),
+		slog.String("extract_urls", strings.Join(args.ExtractURLs, ",")),
 		slog.String("entity_selector", args.ExtractSelector),
 		slog.Bool("use_browser", args.UseBrowser),
 		slog.Int("depth", args.Depth),
@@ -126,15 +128,11 @@ func (args *Config) NormalizeURLs() error {
 	}
 
 	// by default all urls are allowed including main page
-	args.AllowedURL = strings.TrimSpace(args.AllowedURL)
-	if len(args.AllowedURL) == 0 {
+	if len(args.AllowedURLs) == 0 {
 		// no slash separator between root url and any
 		// to include main page w/o trailing slash.
-		args.AllowedURL = RootUrl(startURI) + "{any}"
+		args.AllowedURLs = []string{RootUrl(startURI) + "{any}"}
 	}
-
-	// optional, but recommended
-	args.ExtractURL = strings.TrimSpace(args.ExtractURL)
 
 	return nil
 }

@@ -15,7 +15,8 @@ func TestFlags(t *testing.T) {
 	require.NoError(t, flag.Set("deploy", deployStr))
 	require.NoError(t, flag.Set("cmd", "start"))
 
-	cmd, s, _ := Flags()
+	cmd, s, err := Flags()
+	require.NoError(t, err)
 
 	assert.Equal(t, "start", cmd)
 
@@ -24,8 +25,12 @@ func TestFlags(t *testing.T) {
 	assert.Equal(t, 1, collect.Depth)
 	assert.Equal(t, "https://thailand-news.ru/news/turizm/", collect.StartURL)
 	assert.Equal(t, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3", collect.UserAgent)
-	assert.Equal(t, "https://thailand-news.ru/news/{turizm,puteshestviya}{any}", collect.AllowedURL)
-	assert.Equal(t, "https://thailand-news.ru/news/{turizm,puteshestviya}/{some}", collect.ExtractURL)
+
+	require.NotEmpty(t, collect.AllowedURLs)
+	require.NotEmpty(t, collect.ExtractURLs)
+	assert.Equal(t, "https://thailand-news.ru/news/{turizm,puteshestviya}{any}", collect.AllowedURLs[0])
+	assert.Equal(t, "https://thailand-news.ru/news/{turizm,puteshestviya}/{some}", collect.ExtractURLs[0])
+
 	assert.Equal(t, false, collect.UseBrowser)
 	assert.Equal(t, 3, collect.ExtractLimit)
 	assert.Equal(t, false, collect.ProxyEnabled)
@@ -167,8 +172,12 @@ var validSpider = `{
     "Scheduled": false,
     "Schedules": null,
     "UserAgent": "",
-    "AllowedURL": "https://thailand-news.ru/news/{turizm,puteshestviya}{any}",
-    "ExtractURL": "https://thailand-news.ru/news/{turizm,puteshestviya}/{some}",
+    "AllowedURLs": [
+		"https://thailand-news.ru/news/{turizm,puteshestviya}{any}"
+	],
+    "ExtractURLs": [
+		"https://thailand-news.ru/news/{turizm,puteshestviya}/{some}"
+	],
     "UseBrowser": false,
     "ExtractLimit": 3,
     "ProxyEnabled": false,

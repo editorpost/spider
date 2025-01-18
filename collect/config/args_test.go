@@ -49,8 +49,8 @@ func TestNormalizeURLs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			args := &config.Config{
-				StartURL:   tt.start,
-				AllowedURL: tt.allow,
+				StartURL:    tt.start,
+				AllowedURLs: []string{tt.allow},
 			}
 
 			err := args.NormalizeURLs()

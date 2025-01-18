@@ -26,7 +26,7 @@ func TestCollect(t *testing.T) {
 	crawler, err := collect.NewCrawler(
 		&config.Config{
 			StartURL:        srv.URL,
-			AllowedURL:      ".*",
+			AllowedURLs:     []string{".*"},
 			Depth:           1,
 			ExtractSelector: ".article--ssr",
 		},
@@ -55,7 +55,7 @@ func TestJSCollect(t *testing.T) {
 	crawler, err := collect.NewCrawler(
 		&config.Config{
 			StartURL:        srv.URL,
-			AllowedURL:      ".*",
+			AllowedURLs:     []string{".*"},
 			Depth:           1,
 			ExtractSelector: ".article--js",
 			UseBrowser:      true,
