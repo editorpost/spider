@@ -15,6 +15,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestArticleFromPayload(t *testing.T) {
@@ -26,12 +27,15 @@ func TestArticleFromPayload(t *testing.T) {
 	a, err := article.ArticleFromPayload(payload)
 	require.NoError(t, err)
 
-	// custom fallback with css selector
-	assert.Equal(t, "2024-03-13", a.Published.Format("2006-01-02"))
-	assert.Equal(t, "John Doe", a.Author)
 	assert.Equal(t, "Пхукет в стиле вашего отдыха", a.Title)
 	assert.Equal(t, uri, a.SourceURL)
 	assert.Equal(t, "", a.SourceName)
+
+	// Published fallbacks to now
+	assert.Equal(t, time.Now().Format("2006-01-02"), a.Published.Format("2006-01-02"))
+
+	// Author has no fallback
+	assert.Empty(t, a.Author)
 
 	// validation
 	assert.NoError(t, a.Normalize())

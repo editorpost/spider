@@ -46,30 +46,40 @@ func ArticleFromPayload(payload *pipe.Payload) (a *dto.Article, err error) {
 
 	// get the selection
 	sel := payload.Selection.Clone()
-
-	// remove h1 from the selection
+	// remove title from content
 	sel.Find("h1").Remove()
-
-	// remove url links from the selection
-	// replace text links with text content
+	// remove links, keep anchor text
 	linksToText(sel)
 
-	// get selection html content
-	content, err := sel.Html()
+	// get full DOM, including meta, scripts, etc.
+	pageHTML, err := payload.Doc.DOM.Html()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get HTML from selection: %w", err)
+		return nil, fmt.Errorf("failed to get HTML from document: %w", err)
 	}
 
 	// fill data from readability
 	// note article.Markup is still HTML here, not markdown
-	if err = readabilityArticle(payload, content, a); err != nil {
-		return nil, fmt.Errorf("failed to get readability article: %w", err)
+	// get full DOM, including meta, scripts, etc.
+	if err = articleMetadata(pageHTML, payload.URL, a); err != nil {
+		return nil, fmt.Errorf("failed to get article metadata: %w", err)
+	}
+
+	// get selection html content
+	contentHTML, err := sel.Html()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get HTML from selection: %w", err)
+	}
+
+	// article html and text content from selection
+	// @todo: avoid using readability twice
+	if err = articleContent(contentHTML, payload.URL, a); err != nil {
+		return nil, fmt.Errorf("failed to get article content: %w", err)
 	}
 
 	// html to markdown
 	// article.Markup is now converted to markdown
-	if a.Markup, err = HTMLToMarkdown(a.Markup, HostUrl(payload.URL)); err != nil {
-		return nil, err
+	if a.Markup, err = HTMLToMarkdown(a.Markup, payload.URL); err != nil {
+		return nil, fmt.Errorf("failed to convert HTML to markdown: %w", err)
 	}
 
 	// nil dto if it's invalid
@@ -85,42 +95,49 @@ func HostUrl(base *url.URL) string {
 	return base.Scheme + "://" + base.Host
 }
 
-func readabilityArticle(payload *pipe.Payload, content string, a *dto.Article) error {
-
-	// get head tags as a string
-	// @note whole html is required for effective readability (meta, scripts, etc.)
-	html, _ := payload.Doc.DOM.Html()
+func articleMetadata(html string, addr *url.URL, a *dto.Article) error {
 
 	// readability: title, summary, text, markup, html, language, summary
-	read, err := readability.FromReader(strings.NewReader(html), payload.URL)
+	read, err := readability.FromReader(strings.NewReader(html), addr)
 	if err != nil {
 		return nil
 	}
 
 	a.Title = read.Title
-	a.Text = read.TextContent
-	a.Markup = read.Content
+
 	a.Language = read.Language
 	a.Summary = lo.Ternary(len(read.Byline) > 0, read.Byline, read.Excerpt)
 
 	// fallback fields applied only if the fields are empty
 	a.Title = lo.Ternary(a.Title == "", read.Title, a.Title)
 	a.Summary = lo.Ternary(a.Summary == "", read.Excerpt, a.Summary)
-	a.Text = lo.Ternary(a.Text == "", read.TextContent, a.Text)
 	a.Language = lo.Ternary(a.Language == "", read.Language, a.Language)
-
-	if read.Image != "" && !strings.Contains(a.Markup, read.Image) {
-		// @note readability might remove the main image from the content
-		// @see payload_test.readabilityArticle()
-		a.Markup = "<img src=\"" + read.Image + "\" />" + a.Markup
-	}
 
 	if read.PublishedTime != nil {
 		a.Published = *read.PublishedTime
 	}
 
 	if len(a.Title) == 0 {
-		a.Title = payload.URL.String()
+		a.Title = addr.String()
+	}
+
+	return nil
+}
+
+func articleContent(htmlSelection string, addr *url.URL, a *dto.Article) error {
+
+	read, err := readability.FromReader(strings.NewReader(htmlSelection), addr)
+	if err != nil {
+		return nil
+	}
+
+	a.Markup = read.Content
+	a.Text = lo.Ternary(a.Text == "", read.TextContent, a.Text)
+
+	if read.Image != "" && !strings.Contains(a.Markup, read.Image) {
+		// @note readability might remove the main image from the content
+		// @see payload_test.articleMetadata()
+		a.Markup = "<img src=\"" + read.Image + "\" />" + a.Markup
 	}
 
 	return nil

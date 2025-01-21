@@ -27,7 +27,7 @@ func TestHTMLToMarkdown(t *testing.T) {
 func TestHTMLToMarkdownImage(t *testing.T) {
 	in := `<img src="https://example.com/image.jpg" width="1200" height="800" alt="Image Alt" title="Image Title" class="some-css-class es" style="margin-bottom: 10px;" />`
 	out := "![Image Alt](https://example.com/image.jpg \"Image Title\")"
-	mark, err := article.HTMLToMarkdown(in, "")
+	mark, err := article.HTMLToMarkdown(in, nil)
 	require.NoError(t, err)
 	assert.Equal(t, out, mark)
 }
@@ -43,7 +43,7 @@ func TestHTMLToMarkdownImageFromMany(t *testing.T) {
 	require.NoError(t, err)
 
 	image := "![](/sites/default/files/storage/images/2016-20/rambutan-thaiskii-frukt.jpg)"
-	mark, err := article.HTMLToStripMarkdown(in, "")
+	mark, err := article.HTMLToStripMarkdown(in, nil)
 	require.NoError(t, err)
 	assert.Contains(t, mark, image)
 }
@@ -55,7 +55,7 @@ func TestHTMLToMarkdownStripLinks(t *testing.T) {
 	in := `<a href="https://example.com">Example</a>`
 	out := "Example"
 
-	mark, err := article.HTMLToStripMarkdown(in, "")
+	mark, err := article.HTMLToStripMarkdown(in, nil)
 	require.NoError(t, err)
 
 	// markdown has no link
@@ -69,7 +69,7 @@ func TestHTMLToMarkdownRemoveUrlLinks(t *testing.T) {
 	in := `<a href="https://example.com">https://example.com</a>`
 	out := ""
 
-	mark, err := article.HTMLToStripMarkdown(in, "")
+	mark, err := article.HTMLToStripMarkdown(in, nil)
 	require.NoError(t, err)
 
 	// markdown has no link
@@ -79,7 +79,7 @@ func TestHTMLToMarkdownRemoveUrlLinks(t *testing.T) {
 func TestArticle_ReadabilityMainImage(t *testing.T) {
 
 	// @note readability might remove the main image from the content
-	// @see article.readabilityArticle()
+	// @see article.articleMetadata()
 
 	// get document
 	pay := tester.TestPayload(t, "../../tester/fixtures/cases/must_article_image.html")

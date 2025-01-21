@@ -4,26 +4,27 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
 	"github.com/PuerkitoBio/goquery"
+	"net/url"
 	"strings"
 )
 
 // HTMLToMarkdown converts HTML.
-func HTMLToMarkdown(html, domain string) (string, error) {
+func HTMLToMarkdown(html string, addr *url.URL) (string, error) {
 
-	if domain == "" {
+	if addr == nil {
 		return md.ConvertString(html)
 	}
 
 	return md.ConvertString(html,
 		// replacing relative URLs with absolute
-		converter.WithDomain(domain),
+		converter.WithDomain(HostUrl(addr)),
 	)
 }
 
 // HTMLToStripMarkdown converts HTML to Markdown and cleans unwanted links
-func HTMLToStripMarkdown(html, domain string) (string, error) {
+func HTMLToStripMarkdown(html string, addr *url.URL) (string, error) {
 	html = removeLinksFromHTML(html)
-	return HTMLToMarkdown(html, domain)
+	return HTMLToMarkdown(html, addr)
 }
 
 // removeLinksFromHTML normalizes the HTML (e.g., removes links containing "http")
