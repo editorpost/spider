@@ -66,10 +66,6 @@ func ArticleFromPayload(payload *pipe.Payload) (a *dto.Article, err error) {
 		return nil, fmt.Errorf("failed to get readability article: %w", err)
 	}
 
-	// fallback: published
-	a.Published = lo.Ternary(a.Published.IsZero(), legacyPublished(content), a.Published)
-	a.Author = lo.Ternary(a.Author == "", legacyAuthor(content), a.Author)
-
 	// html to markdown
 	// article.Markup is now converted to markdown
 	if a.Markup, err = HTMLToMarkdown(a.Markup, HostUrl(payload.URL)); err != nil {
